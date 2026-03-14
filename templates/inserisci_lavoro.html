@@ -75,7 +75,7 @@ html,body{
 
 /* ── ESEMPI SIMILI ── */
 .esempi-header{
-  padding:16px 14px 0;
+  padding:14px 14px 0;
   display:flex;align-items:center;justify-content:space-between;
 }
 .esempi-label{
@@ -83,18 +83,38 @@ html,body{
   text-transform:uppercase;color:var(--grigio);
 }
 .esempi-label span{color:var(--stella)}
-.esempi-hint{font-size:9px;font-weight:600;color:var(--grigio2)}
+.esempi-counter{
+  font-size:10px;font-weight:700;color:var(--grigio2);
+  background:var(--nero3);border:1px solid var(--bordo);
+  border-radius:5px;padding:2px 8px;
+}
 
+/* Wrapper con fade a destra */
+.esempi-wrap{
+  position:relative;
+}
+.esempi-wrap::after{
+  content:'';
+  position:absolute;right:0;top:0;bottom:12px;
+  width:36px;
+  background:linear-gradient(to right, transparent, var(--nero));
+  pointer-events:none;z-index:2;
+}
 .esempi-scroll{
   display:flex;gap:8px;overflow-x:auto;
-  padding:8px 14px 12px;scrollbar-width:none;
+  padding:8px 40px 12px 14px;scrollbar-width:none;
+  scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
 }
 .esempi-scroll::-webkit-scrollbar{display:none}
 .esempio-card{
-  flex-shrink:0;width:148px;
+  flex-shrink:0;
+  width:calc((100vw - 14px * 2 - 8px * 2) / 3);
+  max-width:130px;min-width:100px;
   background:var(--nero2);border:1px solid var(--bordo);
   border-radius:10px;overflow:hidden;cursor:pointer;
   transition:border-color .15s,transform .1s;
+  scroll-snap-align:start;
 }
 .esempio-card:active{transform:scale(.97);border-color:var(--stella)}
 .esempio-strip{
@@ -396,11 +416,13 @@ textarea{resize:none;line-height:1.55}
 
 <!-- ── STEP 2: ESEMPI DA COPIARE ── -->
 <div class="esempi-header">
-  <div class="esempi-label">2 · Lavori simili · <span id="cat-label">Idraulica</span></div>
-  <div class="esempi-hint">scorri →</div>
+  <div class="esempi-label">2 · Simili · <span id="cat-label">Idraulica</span></div>
+  <div class="esempi-counter" id="esempi-counter">1 di —</div>
 </div>
-<div class="esempi-scroll" id="esempi-container">
-  <!-- Popolato da JS -->
+<div class="esempi-wrap">
+  <div class="esempi-scroll" id="esempi-container">
+    <!-- Popolato da JS -->
+  </div>
 </div>
 
 <div class="sep"></div>
@@ -694,6 +716,7 @@ async function caricaEsempi(categoria) {
   } catch(err) {
     cont.innerHTML = '<div style="padding:10px 14px;font-size:11px;color:var(--grigio)">Nessun esempio disponibile</div>';
   }
+  setTimeout(aggiornaContatore, 50);
 }
 
 function copiaTuoLavoro(idx) {
@@ -909,12 +932,25 @@ function vaiAlProfilo() {
   window.location.href = '/scheda/' + artigiano.id;
 }
 
+// ── CONTATORE ESEMPI ──
+function aggiornaContatore() {
+  const scroll = document.getElementById('esempi-container');
+  const cards  = scroll.querySelectorAll('.esempio-card');
+  const tot    = cards.length;
+  if (!tot) return;
+  const cardW  = cards[0].offsetWidth + 8;
+  const pos    = Math.round(scroll.scrollLeft / cardW) + 1;
+  const cur    = Math.min(pos, tot);
+  document.getElementById('esempi-counter').textContent = `${cur} di ${tot}`;
+}
+
 // ── INIT ──
 document.addEventListener('DOMContentLoaded', () => {
   caricaEsempi('Idraulica');
   controllaForm();
   document.getElementById('f-citta').addEventListener('input', () => { if(stato.gps) { const c=document.getElementById('f-citta').value; const q=document.getElementById('f-quartiere').value; document.getElementById('mappa-label').textContent=q?`${q}, ${c}`:c; } });
   document.getElementById('f-quartiere').addEventListener('input', () => { if(stato.gps) { const c=document.getElementById('f-citta').value; const q=document.getElementById('f-quartiere').value; document.getElementById('mappa-label').textContent=q?`${q}, ${c}`:c; } });
+  document.getElementById('esempi-container').addEventListener('scroll', aggiornaContatore, {passive:true});
 });
 </script>
 </body>
