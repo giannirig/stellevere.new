@@ -39,19 +39,51 @@ ARTIGIANI = {
             {'id': 1, 'titolo': 'Sostituzione Caldaia Condominiale',
              'descrizione': 'Sostituzione completa caldaia condominiale da 80kW con modello ad alta efficienza. Lavoro eseguito in 2 giorni, compreso smaltimento vecchia caldaia e collaudo impianto.',
              'citta': 'Milano', 'quartiere': 'Porta Venezia', 'stelle': 5, 'visite': 38,
-             'recensione': 'Caldaia sostituita in 2 giorni. Preciso, pulito, puntuale.', 'cliente': 'Luca C.'},
+             'recensione': 'Caldaia sostituita in 2 giorni. Preciso, pulito, puntuale.', 'cliente': 'Luca C.',
+             'immagini': [
+                 {'file': 'idraulica-sostituzione-caldaia-condominiale-milano-porta-venezia-01.jpg',
+                  'alt': 'Foto principale – Idraulica: sostituzione caldaia condominiale a Porta Venezia, Milano – Fossati Antonio',
+                  'caption': 'Nuova caldaia a condensazione classe A+ installata', 'posizione': 'Principale'},
+                 {'file': 'idraulica-sostituzione-caldaia-condominiale-milano-porta-venezia-02.jpg',
+                  'alt': 'Dettaglio tubazioni raccordi in rame – installazione caldaia Porta Venezia Milano',
+                  'caption': 'Raccordi in rame con guarnizioni nuove', 'posizione': 'Dettaglio'},
+                 {'file': 'idraulica-sostituzione-caldaia-condominiale-milano-porta-venezia-03.jpg',
+                  'alt': 'Risultato finale – impianto caldaia condominiale Milano Porta Venezia collaudato',
+                  'caption': 'Impianto ultimato, collaudato e certificato', 'posizione': 'Risultato'},
+             ]},
             {'id': 2, 'titolo': 'Rifacimento Bagno Completo',
              'descrizione': 'Rifacimento completo del bagno: demolizione pavimento e rivestimenti, nuova posa piastrelle, installazione sanitari e rubinetteria.',
              'citta': 'Milano', 'quartiere': 'Navigli', 'stelle': 5, 'visite': 52,
-             'recensione': 'Bagno rifatto in una settimana, tutto perfetto. Prezzo onesto.', 'cliente': 'Maria R.'},
+             'recensione': 'Bagno rifatto in una settimana, tutto perfetto. Prezzo onesto.', 'cliente': 'Maria R.',
+             'immagini': [
+                 {'file': 'idraulica-rifacimento-bagno-completo-milano-navigli-01.jpg',
+                  'alt': 'Foto principale – rifacimento bagno completo ai Navigli Milano – Fossati Antonio idraulico',
+                  'caption': 'Nuovo box doccia e sanitari sospesi installati', 'posizione': 'Principale'},
+                 {'file': 'idraulica-rifacimento-bagno-completo-milano-navigli-02.jpg',
+                  'alt': 'Dettaglio posa piastrelle grande formato bagno Navigli Milano',
+                  'caption': 'Piastrelle 60×120 posate a filo', 'posizione': 'Dettaglio'},
+             ]},
             {'id': 3, 'titolo': 'Perdita Urgente H24',
              'descrizione': 'Intervento di emergenza per perdita d\'acqua notturna. Riparazione tubazione rotta sotto pavimento.',
              'citta': 'Milano', 'quartiere': 'Città Studi', 'stelle': 5, 'visite': 29,
-             'recensione': 'Perdita di notte risolta in un\'ora. Disponibile H24, professionista vero.', 'cliente': 'Giorgio P.'},
+             'recensione': 'Perdita di notte risolta in un\'ora. Disponibile H24, professionista vero.', 'cliente': 'Giorgio P.',
+             'immagini': [
+                 {'file': 'idraulica-perdita-urgente-h24-milano-citta-studi-01.jpg',
+                  'alt': 'Riparazione perdita urgente – tubazione rotta riparata in notturna Città Studi Milano',
+                  'caption': 'Tubazione riparata con giunto a pressione', 'posizione': 'Principale'},
+             ]},
             {'id': 4, 'titolo': 'Impianto Termosifoni',
              'descrizione': 'Installazione nuovo impianto di riscaldamento con termosifoni in alluminio. Progettazione, fornitura e posa completa.',
              'citta': 'Milano', 'quartiere': 'Brera', 'stelle': 5, 'visite': 41,
-             'recensione': 'Impianto realizzato a regola d\'arte. Consigliatissimo!', 'cliente': 'Sara M.'},
+             'recensione': 'Impianto realizzato a regola d\'arte. Consigliatissimo!', 'cliente': 'Sara M.',
+             'immagini': [
+                 {'file': 'idraulica-impianto-termosifoni-milano-brera-01.jpg',
+                  'alt': 'Nuovi termosifoni in alluminio installati a Brera Milano – Fossati Antonio',
+                  'caption': 'Radiatori in alluminio con valvole termostatiche', 'posizione': 'Principale'},
+                 {'file': 'idraulica-impianto-termosifoni-milano-brera-02.jpg',
+                  'alt': 'Dettaglio raccordi impianto termosifoni Brera Milano',
+                  'caption': 'Bilanciamento impianto e test pressione completati', 'posizione': 'Dettaglio'},
+             ]},
         ]
     },
     'ricci-marco': {
@@ -296,9 +328,40 @@ def esempi_categoria(categoria):
 
 @app.route('/api/lavoro/salva', methods=['POST'])
 def salva_lavoro():
-    data = request.get_json()
-    # In futuro: salva nel database
-    return jsonify({'success': True, 'message': 'Lavoro salvato con successo'})
+    import base64 as _b64
+    data = request.get_json() or {}
+    os.makedirs('static/uploads', exist_ok=True)
+
+    foto_data  = data.get('foto_data', [None, None, None])
+    nomi_file  = data.get('nomi_file', [None, None, None])
+    alt_texts  = data.get('alt_text',  [None, None, None])
+    captions   = data.get('caption',   [None, None, None])
+
+    immagini_salvate = []
+    for i, (b64, nome, alt, cap) in enumerate(zip(foto_data, nomi_file, alt_texts, captions)):
+        if not b64 or not nome:
+            continue
+        try:
+            raw = b64.split(',', 1)[1] if ',' in b64 else b64
+            img_bytes = _b64.b64decode(raw)
+            path = os.path.join('static', 'uploads', nome)
+            with open(path, 'wb') as f:
+                f.write(img_bytes)
+            immagini_salvate.append({
+                'url':       f'/static/uploads/{nome}',
+                'nome_file': nome,
+                'alt':       alt or f'Foto lavoro {i+1}',
+                'caption':   cap or '',
+                'posizione': ['Principale', 'Dettaglio', 'Risultato'][i],
+            })
+        except Exception:
+            pass
+
+    return jsonify({
+        'success': True,
+        'message': 'Lavoro salvato con successo',
+        'immagini': immagini_salvate,
+    })
 
 
 @app.route('/<categoria_slug>')
@@ -324,6 +387,83 @@ def pagina_categoria(categoria_slug):
         cat=cat, categoria_slug=categoria_slug,
         jobs=jobs, citta_list=citta_list,
         artigiani=artigiani_cat, slugify=slugify)
+
+
+@app.route('/sitemap.xml')
+def sitemap():
+    """Sitemap XML con tutte le pagine e le immagini dei lavori."""
+    from flask import Response
+    from datetime import date
+    today = date.today().isoformat()
+    base  = 'https://www.stellevere.it'
+
+    lines = ['<?xml version="1.0" encoding="UTF-8"?>',
+             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"',
+             '        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">',
+             f'  <url><loc>{base}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>']
+
+    # Pagine categoria
+    for cat_slug in CATEGORIE:
+        lines.append(f'  <url><loc>{base}/{cat_slug}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>')
+
+    # Pagine città + gallerie
+    citta_per_cat = defaultdict(set)
+    for art in ARTIGIANI.values():
+        for l in art['lavori']:
+            citta_per_cat[art.get('cat_slug', '')].add(slugify(l.get('citta', '')))
+    for cat_slug, citta_set in citta_per_cat.items():
+        for cs in citta_set:
+            lines.append(f'  <url><loc>{base}/{cat_slug}/{cs}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>')
+            lines.append(f'  <url><loc>{base}/{cat_slug}/{cs}/foto-lavori</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>')
+
+    # Pagine singolo lavoro + immagini
+    for art in ARTIGIANI.values():
+        cat_slug = art.get('cat_slug', 'altro')
+        for l in art['lavori']:
+            ts = slugify(l['titolo'])
+            cs = slugify(l['citta']) + '-' + slugify(l.get('quartiere', ''))
+            url = f'{base}/{cat_slug}/{ts}/{cs}'
+            immagini = l.get('immagini', [])
+            if immagini:
+                lines.append(f'  <url>')
+                lines.append(f'    <loc>{url}</loc>')
+                lines.append(f'    <changefreq>monthly</changefreq><priority>0.6</priority>')
+                for img in immagini:
+                    img_url = f'{base}/static/uploads/{img["file"]}'
+                    lines.append(f'    <image:image>')
+                    lines.append(f'      <image:loc>{img_url}</image:loc>')
+                    lines.append(f'      <image:title>{img.get("caption", "")}</image:title>')
+                    lines.append(f'      <image:caption>{img.get("alt", "")}</image:caption>')
+                    lines.append(f'    </image:image>')
+                lines.append(f'  </url>')
+            else:
+                lines.append(f'  <url><loc>{url}</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>')
+
+    lines.append('</urlset>')
+    return Response('\n'.join(lines), mimetype='application/xml')
+
+
+@app.route('/<categoria_slug>/<citta_slug>/foto-lavori')
+def galleria_foto(categoria_slug, citta_slug):
+    """Galleria foto lavori per categoria e città: /idraulica/milano/foto-lavori"""
+    cat = CATEGORIE.get(categoria_slug)
+    if not cat:
+        return "Categoria non trovata", 404
+
+    tutti_jobs = build_jobs_index()
+    jobs = jobs_by_category_city(tutti_jobs, cat_slug=categoria_slug, citta_slug=citta_slug)
+
+    # Raccoglie tutte le immagini dai lavori
+    foto = []
+    for j in jobs:
+        for img in j.get('immagini', []):
+            foto.append({**img, 'lavoro': j, 'artigiano': j['artigiano']})
+
+    citta_nome = citta_slug.replace('-', ' ').title()
+    return render_template('galleria_foto.html',
+        cat=cat, categoria_slug=categoria_slug,
+        citta_slug=citta_slug, citta_nome=citta_nome,
+        foto=foto, n_lavori=len(jobs), slugify=slugify)
 
 
 @app.route('/<categoria_slug>/<citta_slug>')
@@ -396,7 +536,8 @@ def pagina_lavoro(categoria_slug, titolo_slug, loc_slug):
         categoria_slug=categoria_slug,
         titolo_slug=titolo_slug,
         loc_slug=loc_slug,
-        artigiano_slug=artigiano_trovato['id']
+        artigiano_slug=artigiano_trovato['id'],
+        slugify=slugify,
     )
 
 
