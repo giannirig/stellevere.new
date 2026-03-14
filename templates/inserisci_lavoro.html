@@ -475,6 +475,26 @@ textarea{resize:none;line-height:1.55}
       </div>
     </div>
     <div class="foto-tip">★ Schede con 3 foto ricevono <strong>4× più visite</strong> da Google</div>
+
+    <!-- AREA CAPTION & ALT (appare dopo il caricamento foto) -->
+    <div id="caption-area" style="display:none;margin-top:12px">
+      <div style="font-size:10px;font-weight:800;color:var(--grigio);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">
+        ★ Aggiungi una breve didascalia · Google la legge
+      </div>
+      {% for i in [0,1,2] %}
+      <div id="cap-item-{{ i }}" class="cap-item" style="display:none;flex-direction:column;gap:5px;margin-bottom:10px">
+        <div style="font-size:10px;font-weight:700;color:var(--grigio)">
+          Foto {{ i+1 }} – <span class="cap-alt" style="color:var(--grigio2);font-style:italic"></span>
+        </div>
+        <input type="text"
+               id="cap-{{ i }}"
+               placeholder="Es: Impianto ultimato e collaudato"
+               maxlength="80"
+               oninput="stato.caption[{{ i }}]=this.value"
+               style="background:var(--nero3);border:1px solid var(--bordo2);color:var(--testo);border-radius:8px;padding:8px 12px;font-size:12px;font-family:'Inter',sans-serif;width:100%">
+      </div>
+      {% endfor %}
+    </div>
   </div>
 
   <!-- LOCALIZZAZIONE -->
@@ -593,6 +613,9 @@ let stato = {
   titolo: '',
   descrizione: '',
   foto: [null, null, null],
+  nomi_file: [null, null, null],
+  alt_text: [null, null, null],
+  caption: [null, null, null],
   citta: artigiano.citta,
   quartiere: '',
   gps: null,
@@ -764,24 +787,64 @@ function aggiornaConto(el, cntId) {
 function triggerFoto(idx) {
   document.getElementById('file-' + idx).click();
 }
+function generaNomefile(idx) {
+  const labels = ['principale','dettaglio','risultato'];
+  const cat   = slugify(stato.categoria || 'lavoro');
+  const tit   = slugify(document.getElementById('f-titolo').value.trim() || 'lavoro').slice(0,30);
+  const cit   = slugify(document.getElementById('f-citta').value.trim() || artigiano.citta || 'italia');
+  const qua   = slugify(document.getElementById('f-quartiere').value.trim() || 'zona');
+  const n     = String(idx + 1).padStart(2, '0');
+  return `${cat}-${tit}-${cit}-${qua}-${n}.jpg`;
+}
+function generaAlt(idx) {
+  const pos   = ['principale','dettaglio','risultato'][idx];
+  const tit   = document.getElementById('f-titolo').value.trim() || 'lavoro';
+  const cat   = stato.categoria || 'lavoro';
+  const cit   = document.getElementById('f-citta').value.trim() || artigiano.citta || '';
+  const qua   = document.getElementById('f-quartiere').value.trim();
+  const loc   = qua ? `${qua}, ${cit}` : cit;
+  return `Foto ${pos} – ${cat}: ${tit} a ${loc} – ${artigiano.nome}`;
+}
+function aggiornaCaptionArea() {
+  const labels = ['Principale','Dettaglio','Risultato'];
+  let hasFoto = false;
+  [0,1,2].forEach(i => {
+    const item = document.getElementById('cap-item-' + i);
+    if (!item) return;
+    if (stato.foto[i]) {
+      hasFoto = true;
+      item.style.display = 'flex';
+      item.querySelector('.cap-alt').textContent = stato.alt_text[i] || '';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+  document.getElementById('caption-area').style.display = hasFoto ? 'block' : 'none';
+}
 function caricaFoto(e, idx) {
   const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = ev => {
     stato.foto[idx] = ev.target.result;
+    stato.nomi_file[idx] = generaNomefile(idx);
+    stato.alt_text[idx]  = generaAlt(idx);
+    stato.caption[idx]   = stato.caption[idx] || '';
     const slot = document.getElementById('slot-' + idx);
-    const labels = ['Principale','Dettaglio','Risultato'];
     slot.innerHTML = `
-      <img src="${ev.target.result}" alt="Foto ${idx+1}">
+      <img src="${ev.target.result}" alt="${stato.alt_text[idx]}">
       <div class="foto-del" onclick="event.stopPropagation();rimuoviFoto(${idx})">✕</div>
       <div class="foto-slot-num">${idx+1}</div>`;
+    aggiornaCaptionArea();
     controllaForm();
   };
   reader.readAsDataURL(file);
 }
 function rimuoviFoto(idx) {
-  stato.foto[idx] = null;
+  stato.foto[idx]      = null;
+  stato.nomi_file[idx] = null;
+  stato.alt_text[idx]  = null;
+  stato.caption[idx]   = null;
   const slot = document.getElementById('slot-' + idx);
   const labels = ['Principale','Dettaglio','Risultato'];
   slot.onclick = () => triggerFoto(idx);
@@ -790,6 +853,7 @@ function rimuoviFoto(idx) {
     <div class="foto-slot-icon">📷</div>
     <div class="foto-slot-label">${labels[idx]}</div>
     <input type="file" id="file-${idx}" accept="image/*" capture="environment" onchange="caricaFoto(event,${idx})" style="display:none">`;
+  aggiornaCaptionArea();
   controllaForm();
 }
 
@@ -895,7 +959,11 @@ async function pubblicaLavoro() {
   const payload = {
     artigianoId: artigiano.id, categoria: stato.categoria,
     titolo, descrizione: desc, citta, quartiere: quart,
-    gps: stato.gps, foto: stato.foto.filter(f=>f).length,
+    gps: stato.gps,
+    foto_data:  stato.foto,
+    nomi_file:  stato.nomi_file,
+    alt_text:   stato.alt_text,
+    caption:    stato.caption,
     url: stato.urlGenerata
   };
   try {

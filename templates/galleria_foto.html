@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foto {{ cat.nome }} a {{ citta_nome }} · StelleVere</title>
+<meta name="description" content="Galleria foto lavori di {{ cat.plurale|lower }} verificati a {{ citta_nome }}. Immagini reali di cantieri completati, con didascalie e alt text.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://www.stellevere.it/{{ categoria_slug }}/{{ citta_slug }}/foto-lavori">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ImageGallery",
+  "name": "Foto lavori {{ cat.nome }} a {{ citta_nome }}",
+  "description": "Galleria foto lavori di {{ cat.plurale|lower }} verificati a {{ citta_nome }} su StelleVere",
+  "url": "https://www.stellevere.it/{{ categoria_slug }}/{{ citta_slug }}/foto-lavori"{% if foto %},
+  "image": [{% for f in foto %}
+    {
+      "@type": "ImageObject",
+      "url": "https://www.stellevere.it/static/uploads/{{ f.file }}",
+      "name": "{{ f.alt }}",
+      "description": "{{ f.caption }}"
+    }{% if not loop.last %},{% endif %}{% endfor %}
+  ]{% endif %}
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--nero:#0a0a0a;--nero2:#111;--nero3:#1a1a1a;--bordo:#2a2a2a;--bordo2:#333;--stella:#f5c842;--verde:#25d366;--bianco:#fff;--testo:#e0e0e0;--grigio:#777}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--nero);font-family:'Inter',sans-serif;color:var(--testo);line-height:1.6}
+a{text-decoration:none;color:inherit}
+
+.topbar{background:var(--nero2);border-bottom:1px solid var(--bordo);padding:13px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10}
+.logo{font-size:15px;font-weight:900;color:var(--stella)}
+.topbar-bc{flex:1;font-size:11px;color:var(--grigio);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.wrap{max-width:900px;margin:0 auto;padding:0 16px 60px}
+
+.bc{font-size:11px;color:var(--grigio);padding:12px 0 0;display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.bc a{color:var(--grigio)}
+.bc a:hover{color:var(--stella)}
+
+.hero{padding:22px 0 18px;border-bottom:1px solid var(--bordo);margin-bottom:24px}
+h1{font-size:clamp(18px,4.5vw,28px);font-weight:900;color:var(--bianco);line-height:1.2;margin-bottom:6px}
+.hero-sub{font-size:13px;color:var(--grigio)}
+.hero-stats{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap}
+.stat-pill{background:var(--nero3);border:1px solid var(--bordo);border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;color:var(--testo);display:flex;align-items:center;gap:6px}
+.stat-num{color:var(--stella);font-size:14px;font-weight:900}
+
+/* FILTRO POSIZIONE */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.filt-btn{background:var(--nero2);border:1px solid var(--bordo);border-radius:20px;padding:6px 14px;font-size:11px;font-weight:700;color:var(--testo);cursor:pointer;transition:border-color .15s,background .15s;font-family:'Inter',sans-serif}
+.filt-btn:hover,.filt-btn.active{border-color:var(--stella);background:rgba(245,200,66,.06);color:var(--stella)}
+
+/* MASONRY-LIKE GRID */
+.foto-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:12px;
+}
+.foto-card{
+  background:var(--nero2);border:1px solid var(--bordo);border-radius:14px;
+  overflow:hidden;transition:border-color .15s,transform .15s;
+  display:block;
+}
+.foto-card:hover{border-color:var(--stella);transform:translateY(-2px)}
+.foto-img{position:relative;aspect-ratio:4/3;overflow:hidden;background:var(--nero3)}
+.foto-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+.foto-card:hover .foto-img img{transform:scale(1.05)}
+.foto-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:36px;background:linear-gradient(135deg,#1a2540,#2a3a5a)}
+.foto-badge{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.1);border-radius:4px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--testo);padding:3px 7px}
+.foto-badge.principale{border-color:rgba(245,200,66,.3);color:var(--stella)}
+.foto-badge.risultato{border-color:rgba(37,211,102,.3);color:var(--verde)}
+.foto-body{padding:10px 12px}
+.foto-titolo{font-size:12px;font-weight:800;color:var(--bianco);margin-bottom:3px;line-height:1.3;
+  overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.foto-caption{font-size:11px;color:var(--grigio);margin-bottom:6px;font-style:italic}
+.foto-alt{font-size:9px;color:var(--bordo2);line-height:1.4;display:none}
+.foto-footer{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+.foto-art{font-size:10px;font-weight:700;color:var(--grigio)}
+.foto-loc{font-size:10px;color:var(--grigio)}
+.foto-link{font-size:10px;font-weight:800;color:var(--stella);display:flex;align-items:center;gap:3px}
+
+/* EMPTY */
+.empty{text-align:center;padding:60px 20px;color:var(--grigio)}
+.empty-icon{font-size:48px;margin-bottom:12px}
+.empty-title{font-size:16px;font-weight:800;color:var(--bianco);margin-bottom:8px}
+.empty-sub{font-size:13px;margin-bottom:20px}
+.btn-back{display:inline-flex;align-items:center;gap:6px;background:var(--stella);color:var(--nero);padding:10px 20px;border-radius:8px;font-size:13px;font-weight:900}
+
+/* CTA */
+.cta-strip{background:linear-gradient(135deg,rgba(245,200,66,.06),rgba(245,200,66,.02));border:1px solid rgba(245,200,66,.15);border-radius:14px;padding:20px;text-align:center;margin-top:32px}
+.cta-title{font-size:15px;font-weight:900;color:var(--bianco);margin-bottom:5px}
+.cta-sub{font-size:12px;color:var(--grigio);margin-bottom:14px}
+.btn-cta{display:inline-flex;align-items:center;gap:8px;background:var(--stella);color:var(--nero);padding:11px 22px;border-radius:10px;font-size:13px;font-weight:900}
+
+/* LIGHTBOX */
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:100;display:none;align-items:center;justify-content:center;flex-direction:column;padding:20px}
+.lightbox.open{display:flex}
+.lightbox img{max-width:100%;max-height:75vh;object-fit:contain;border-radius:8px}
+.lb-caption{margin-top:12px;text-align:center;max-width:500px}
+.lb-cap-title{font-size:13px;font-weight:700;color:var(--bianco);margin-bottom:4px}
+.lb-cap-alt{font-size:10px;color:var(--grigio);font-style:italic}
+.lb-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:20px;width:36px;height:36px;border-radius:50%;cursor:pointer;font-family:'Inter',sans-serif}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.1);border:none;color:#fff;font-size:18px;width:44px;height:44px;border-radius:50%;cursor:pointer;font-family:'Inter',sans-serif}
+#lb-prev{left:16px}
+#lb-next{right:16px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="logo" href="/">★ StelleVere</a>
+  <div class="topbar-bc">
+    · <a href="/{{ categoria_slug }}" style="color:var(--grigio)">{{ cat.nome }}</a>
+    · <a href="/{{ categoria_slug }}/{{ citta_slug }}" style="color:var(--grigio)">{{ citta_nome }}</a>
+    · Foto lavori
+  </div>
+</div>
+
+<div class="wrap">
+  <nav class="bc">
+    <a href="/">StelleVere</a>
+    <span>›</span>
+    <a href="/{{ categoria_slug }}">{{ cat.nome }}</a>
+    <span>›</span>
+    <a href="/{{ categoria_slug }}/{{ citta_slug }}">{{ citta_nome }}</a>
+    <span>›</span>
+    <span style="color:var(--testo)">Foto lavori</span>
+  </nav>
+
+  <div class="hero">
+    <h1>Foto lavori {{ cat.nome }}<br>a {{ citta_nome }}</h1>
+    <div class="hero-sub">Immagini reali di cantieri completati. Stelle vere, non comprate.</div>
+    <div class="hero-stats">
+      <div class="stat-pill"><span class="stat-num">{{ foto|length }}</span> foto pubblicate</div>
+      <div class="stat-pill"><span class="stat-num">{{ n_lavori }}</span> lavori documentati</div>
+    </div>
+  </div>
+
+  {% if foto %}
+  <!-- FILTRO -->
+  <div class="filter-bar">
+    <button class="filt-btn active" onclick="filtra(this,'')">Tutte ({{ foto|length }})</button>
+    <button class="filt-btn" onclick="filtra(this,'Principale')">Foto principale</button>
+    <button class="filt-btn" onclick="filtra(this,'Dettaglio')">Dettaglio</button>
+    <button class="filt-btn" onclick="filtra(this,'Risultato')">Risultato finale</button>
+  </div>
+
+  <!-- GRIGLIA FOTO -->
+  <div class="foto-grid" id="foto-grid">
+    {% for f in foto %}
+    <div class="foto-card" data-pos="{{ f.posizione }}" onclick="openLightbox({{ loop.index0 }})">
+      <div class="foto-img">
+        <img src="/static/uploads/{{ f.file }}"
+             alt="{{ f.alt }}"
+             loading="lazy"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="foto-placeholder" style="display:none">🔧</div>
+        <div class="foto-badge {{ f.posizione | lower }}">{{ f.posizione }}</div>
+      </div>
+      <div class="foto-body">
+        <div class="foto-titolo">{{ f.lavoro.titolo }}</div>
+        {% if f.caption %}
+        <div class="foto-caption">{{ f.caption }}</div>
+        {% endif %}
+        <div class="foto-footer">
+          <span class="foto-art">{{ f.artigiano.nome }}</span>
+          <span class="foto-loc">📍 {{ f.lavoro.quartiere }}</span>
+          <a class="foto-link" href="/{{ categoria_slug }}/{{ slugify(f.lavoro.titolo) }}/{{ slugify(f.lavoro.citta) }}-{{ slugify(f.lavoro.quartiere) }}" onclick="event.stopPropagation()">
+            Vedi lavoro →
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+    <button class="lb-close" onclick="closeLightbox()">✕</button>
+    <button class="lb-nav" id="lb-prev" onclick="event.stopPropagation();navLightbox(-1)">‹</button>
+    <button class="lb-nav" id="lb-next" onclick="event.stopPropagation();navLightbox(1)">›</button>
+    <img id="lb-img" src="" alt="">
+    <div class="lb-caption">
+      <div class="lb-cap-title" id="lb-caption"></div>
+      <div class="lb-cap-alt" id="lb-alt"></div>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="empty">
+    <div class="empty-icon">📷</div>
+    <div class="empty-title">Nessuna foto ancora</div>
+    <div class="empty-sub">Gli artigiani verificati di {{ citta_nome }} stanno documentando i loro lavori.</div>
+    <a class="btn-back" href="/{{ categoria_slug }}/{{ citta_slug }}">
+      ← Vedi i lavori a {{ citta_nome }}
+    </a>
+  </div>
+  {% endif %}
+
+  <div class="cta-strip">
+    <div class="cta-title">Sei un {{ cat.cat_tipo | lower }} a {{ citta_nome }}?</div>
+    <div class="cta-sub">Documenta i tuoi lavori con foto reali — ogni immagine indicizzata da Google porta nuovi clienti.</div>
+    <a class="btn-cta" href="/">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      Pubblica le tue foto — gratis
+    </a>
+  </div>
+</div>
+
+<script>
+const fotoData = [
+  {% for f in foto %}
+  {
+    src: '/static/uploads/{{ f.file }}',
+    alt: {{ f.alt | tojson }},
+    caption: {{ f.caption | tojson }},
+    pos: '{{ f.posizione }}'
+  }{% if not loop.last %},{% endif %}
+  {% endfor %}
+];
+let lbIdx = 0;
+
+function openLightbox(idx) {
+  lbIdx = idx;
+  const lb = document.getElementById('lightbox');
+  const f  = fotoData[idx];
+  document.getElementById('lb-img').src     = f.src;
+  document.getElementById('lb-img').alt     = f.alt;
+  document.getElementById('lb-caption').textContent = f.caption || f.pos;
+  document.getElementById('lb-alt').textContent     = f.alt;
+  lb.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox(e) {
+  if (e && e.target !== document.getElementById('lightbox') && e.target.tagName !== 'BUTTON') return;
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function navLightbox(dir) {
+  lbIdx = (lbIdx + dir + fotoData.length) % fotoData.length;
+  openLightbox(lbIdx);
+}
+document.addEventListener('keydown', e => {
+  const lb = document.getElementById('lightbox');
+  if (!lb.classList.contains('open')) return;
+  if (e.key === 'ArrowRight') navLightbox(1);
+  if (e.key === 'ArrowLeft')  navLightbox(-1);
+  if (e.key === 'Escape')     closeLightbox({target: lb});
+});
+
+function filtra(btn, pos) {
+  document.querySelectorAll('.filt-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#foto-grid .foto-card').forEach(c => {
+    c.style.display = (!pos || c.dataset.pos === pos) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>
