@@ -1,37 +1,37 @@
 # Stellevere
 
-Website for stellevere.it, imported from GitHub (`giannirig/stellevere.it`).
+Sito web per stellevere.it, importato da GitHub (`giannirig/stellevere.it`).
 
-## Project Structure
+## Struttura del Progetto
 
-- `main.py` — Flask application entry point
-- `templates/` — Jinja2 HTML templates
-- `static/` — Static assets (CSS, JS, images)
-  - `static/css/style.css` — Main stylesheet
-  - `static/js/main.js` — Main JavaScript
-- `pyproject.toml` — Python project config and dependencies
+- `main.py` — Punto di ingresso dell'applicazione Flask
+- `templates/` — Template HTML con Jinja2
+- `static/` — Risorse statiche (CSS, JS, immagini)
+  - `static/css/style.css` — Foglio di stile principale
+  - `static/js/main.js` — JavaScript principale
+- `pyproject.toml` — Configurazione del progetto Python e dipendenze
 
-## Tech Stack
+## Stack Tecnologico
 
-- **Language:** Python 3.11
+- **Linguaggio:** Python 3.11
 - **Framework:** Flask
-- **Production server:** Gunicorn
-- **Port:** 5000
+- **Server di produzione:** Gunicorn
+- **Porta:** 5000
 
-## Running the App
+## Avviare l'Applicazione
 
-Development:
+Sviluppo:
 ```bash
 python main.py
 ```
 
-Production:
+Produzione:
 ```bash
 gunicorn --bind=0.0.0.0:5000 --reuse-port main:app
 ```
 
-## Notes
+## Note
 
-- The original GitHub repository only contained a `test` file at import time.
-- A placeholder Flask website was created as the starting point.
-- The site content (`templates/index.html`) should be updated with actual content.
+- Il repository GitHub originale conteneva solo un file `test` al momento dell'importazione.
+- È stato creato un sito Flask di base come punto di partenza.
+- Il contenuto del sito (`templates/index.html`) va aggiornato con il contenuto reale.

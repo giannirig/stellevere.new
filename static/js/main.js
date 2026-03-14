@@ -1,3 +1,3 @@
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Stellevere loaded');
+    console.log('Stellevere caricato');
 });
