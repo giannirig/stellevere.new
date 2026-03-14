@@ -59,33 +59,57 @@ html,body{
 }
 .section-title span{color:var(--stella)}
 
+/* ── CATEGORIE ── */
+.catgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cattile{
+  background:var(--nero3);border:1.5px solid var(--bordo);
+  border-radius:11px;padding:12px 8px;cursor:pointer;
+  text-align:center;transition:border-color .15s,background .15s,transform .1s;
+  user-select:none;
+}
+.cattile:active{transform:scale(.96)}
+.cattile.sel{border-color:var(--stella);background:rgba(245,200,66,.07)}
+.cat-icon{font-size:22px;margin-bottom:4px}
+.cat-name{font-size:10px;font-weight:700;color:var(--testo)}
+
 /* ── ESEMPI SIMILI ── */
+.esempi-header{
+  padding:16px 14px 0;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.esempi-label{
+  font-size:10px;font-weight:800;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--grigio);
+}
+.esempi-label span{color:var(--stella)}
+.esempi-hint{font-size:9px;font-weight:600;color:var(--grigio2)}
+
 .esempi-scroll{
   display:flex;gap:10px;overflow-x:auto;
-  padding:0 14px 14px;scrollbar-width:none;
-  margin:0 -14px;
+  padding:10px 14px 14px;scrollbar-width:none;
+  margin:0 -0px;
 }
 .esempi-scroll::-webkit-scrollbar{display:none}
 .esempio-card{
-  flex-shrink:0;width:200px;
+  flex-shrink:0;width:185px;
   background:var(--nero2);border:1px solid var(--bordo);
   border-radius:12px;overflow:hidden;cursor:pointer;
   transition:border-color .15s,transform .1s;
 }
-.esempio-card:active{transform:scale(.97)}
-.esempio-card:hover{border-color:var(--stella)}
+.esempio-card:active{transform:scale(.97);border-color:var(--stella)}
 .esempio-img{
-  width:100%;height:90px;
+  width:100%;height:85px;
   display:flex;align-items:center;justify-content:center;
-  font-size:32px;position:relative;
+  font-size:30px;position:relative;
 }
 .esempio-img.bg1{background:linear-gradient(135deg,#1a2a3a,#2d4a6a)}
 .esempio-img.bg2{background:linear-gradient(135deg,#1a2a1a,#2a4a2a)}
 .esempio-img.bg3{background:linear-gradient(135deg,#2a1a1a,#4a2a1a)}
 .esempio-img.bg4{background:linear-gradient(135deg,#1a1a2a,#2a2a4a)}
 .esempio-body{padding:9px 10px 10px}
-.esempio-titolo{font-size:12px;font-weight:700;color:var(--bianco);margin-bottom:4px;line-height:1.3}
-.esempio-desc{font-size:10px;color:var(--grigio);line-height:1.4;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.esempio-titolo{font-size:12px;font-weight:700;color:var(--bianco);margin-bottom:3px;line-height:1.3}
+.esempio-desc{font-size:10px;color:var(--grigio);line-height:1.4;margin-bottom:8px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .btn-copia{
   width:100%;background:rgba(245,200,66,.1);
   border:1px solid rgba(245,200,66,.25);
@@ -94,11 +118,13 @@ html,body{
   cursor:pointer;font-family:'Inter',sans-serif;
   transition:background .15s;
 }
-.btn-copia:active{background:rgba(245,200,66,.2)}
+.btn-copia:active{background:rgba(245,200,66,.22)}
+
+/* ── SEPARATORE ── */
+.sep{height:1px;background:var(--bordo);margin:4px 14px 0}
 
 /* ── FORM ── */
-.form-wrap{padding:0 14px 120px}
-
+.form-wrap{padding:16px 14px 140px}
 .fgroup{margin-bottom:18px}
 .flabel{
   font-size:10px;font-weight:800;letter-spacing:.1em;
@@ -106,9 +132,9 @@ html,body{
   margin-bottom:8px;display:flex;align-items:center;gap:5px;
 }
 .freq{color:var(--stella)}
-.fhint{font-size:10px;color:var(--grigio2);margin-top:4px;line-height:1.4}
+.fhint{font-size:11px;color:var(--grigio2);margin-top:5px;line-height:1.5}
 
-input[type=text],input[type=tel],textarea,select{
+input[type=text],input[type=tel],textarea{
   width:100%;background:var(--nero3);
   border:1px solid var(--bordo2);border-radius:10px;
   padding:13px 14px;font-size:15px;
@@ -122,67 +148,51 @@ textarea{resize:none;line-height:1.55}
 .char-count{text-align:right;font-size:10px;color:var(--grigio);margin-top:4px}
 
 /* ── FOTO ── */
-.foto-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.foto-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:9px}
 .foto-slot{
   aspect-ratio:1;border-radius:10px;
   background:var(--nero3);border:1.5px dashed var(--bordo2);
   display:flex;flex-direction:column;align-items:center;
   justify-content:center;gap:4px;cursor:pointer;
-  position:relative;overflow:hidden;
-  transition:border-color .15s;
+  position:relative;overflow:hidden;transition:border-color .15s;
 }
-.foto-slot:nth-child(1){border-style:solid;border-color:var(--bordo2)}
 .foto-slot:active{border-color:var(--stella)}
-.foto-slot input[type=file]{
-  position:absolute;inset:0;opacity:0;
-  cursor:pointer;width:100%;height:100%;
-}
-.foto-slot-icon{font-size:22px;opacity:.5}
-.foto-slot-label{font-size:9px;font-weight:700;color:var(--grigio);text-transform:uppercase;letter-spacing:.06em}
+.foto-slot-icon{font-size:22px;opacity:.45}
+.foto-slot-label{font-size:9px;font-weight:700;color:var(--grigio);text-transform:uppercase;letter-spacing:.05em}
 .foto-slot-num{
   position:absolute;top:5px;left:6px;
   background:rgba(0,0,0,.7);color:var(--grigio);
   font-size:8px;font-weight:700;padding:2px 5px;border-radius:3px;
 }
-.foto-slot img{
-  position:absolute;inset:0;width:100%;height:100%;
-  object-fit:cover;border-radius:8px;
-}
+.foto-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:8px}
 .foto-del{
   position:absolute;top:4px;right:4px;
-  background:rgba(0,0,0,.75);color:white;
+  background:rgba(0,0,0,.78);color:white;
   width:20px;height:20px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  font-size:11px;z-index:2;cursor:pointer;
+  font-size:11px;z-index:2;
 }
 .foto-tip{
-  background:rgba(245,200,66,.07);
-  border:1px solid rgba(245,200,66,.2);
-  border-radius:8px;padding:9px 12px;
-  font-size:11px;color:#c8a830;line-height:1.4;
+  background:rgba(245,200,66,.07);border:1px solid rgba(245,200,66,.2);
+  border-radius:8px;padding:9px 12px;font-size:11px;color:#c8a830;line-height:1.4;
 }
 
 /* ── LOCALIZZAZIONE ── */
 .loc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
 .gps-btn{
-  width:100%;background:var(--nero3);
-  border:1.5px solid var(--bordo2);border-radius:10px;
-  padding:13px;font-size:13px;font-weight:700;
-  color:var(--testo);cursor:pointer;
+  width:100%;background:var(--nero3);border:1.5px solid var(--bordo2);
+  border-radius:10px;padding:13px;font-size:13px;font-weight:700;
+  color:var(--testo);cursor:pointer;margin-bottom:10px;
   display:flex;align-items:center;justify-content:center;gap:8px;
   font-family:'Inter',sans-serif;transition:border-color .15s,color .15s;
-  margin-bottom:10px;
 }
 .gps-btn:active{border-color:var(--stella)}
 .gps-btn.rilevato{border-color:var(--verde);color:var(--verde)}
 .gps-btn.caricamento{border-color:var(--stella);color:var(--stella)}
-
 .mappa-ph{
-  background:var(--nero3);border:1px solid var(--bordo);
-  border-radius:12px;aspect-ratio:16/9;
-  display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:7px;
-  position:relative;overflow:hidden;margin-bottom:6px;
+  background:var(--nero3);border:1px solid var(--bordo);border-radius:12px;
+  aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:7px;position:relative;overflow:hidden;margin-bottom:6px;
 }
 .mappa-griglia{
   position:absolute;inset:0;
@@ -193,52 +203,71 @@ textarea{resize:none;line-height:1.55}
 .mappa-label{font-size:13px;font-weight:700;color:var(--bianco);position:relative;z-index:2;text-align:center;padding:0 20px}
 .mappa-sub{font-size:11px;color:var(--grigio);position:relative;z-index:2}
 .mappa-coords{
-  background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.2);
-  border-radius:8px;padding:8px 12px;font-size:11px;color:#c8a830;
+  background:rgba(37,211,102,.07);border:1px solid rgba(37,211,102,.2);
+  border-radius:8px;padding:8px 12px;font-size:11px;color:#6aaa7a;
   display:none;align-items:center;gap:6px;margin-bottom:6px;
 }
 .mappa-coords.visible{display:flex}
 
+/* ── URL PREVIEW ── */
+.url-preview{
+  background:rgba(245,200,66,.06);border:1px solid rgba(245,200,66,.2);
+  border-radius:10px;padding:12px 13px;margin-bottom:6px;
+}
+.url-preview-label{
+  font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--stella);margin-bottom:6px;display:flex;align-items:center;gap:5px;
+}
+.url-preview-val{
+  font-size:12px;color:#c8a830;font-weight:600;word-break:break-all;line-height:1.5;
+}
+.url-preview-val span{color:var(--bianco)}
+.url-preview-note{font-size:10px;color:var(--grigio);margin-top:6px;line-height:1.4}
+
 /* ── WHATSAPP RECENSIONE ── */
 .wa-section{
   background:linear-gradient(135deg,rgba(37,211,102,.08),rgba(37,211,102,.03));
-  border:1px solid rgba(37,211,102,.2);
-  border-radius:14px;padding:16px;margin-bottom:18px;
+  border:1px solid rgba(37,211,102,.2);border-radius:14px;padding:15px;
 }
 .wa-section-title{
   font-size:13px;font-weight:800;color:var(--bianco);
-  margin-bottom:4px;display:flex;align-items:center;gap:6px;
+  margin-bottom:4px;display:flex;align-items:center;gap:7px;
 }
-.wa-section-sub{font-size:11px;color:#8a9a8a;line-height:1.5;margin-bottom:14px}
+.wa-section-sub{font-size:11px;color:#8a9a8a;line-height:1.5;margin-bottom:13px}
 .wa-input-wrap{position:relative;margin-bottom:10px}
-.wa-flag{
-  position:absolute;left:12px;top:50%;transform:translateY(-50%);
-  font-size:16px;pointer-events:none;
-}
+.wa-flag{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none}
 .wa-input-wrap input{padding-left:36px}
 .btn-wa-richiedi{
-  width:100%;background:var(--verde);color:#fff;
-  border:none;border-radius:11px;padding:14px;
-  font-size:14px;font-weight:800;cursor:pointer;
+  width:100%;background:var(--verde);color:#fff;border:none;
+  border-radius:11px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;
   display:flex;align-items:center;justify-content:center;gap:9px;
   font-family:'Inter',sans-serif;transition:background .15s,transform .1s;
 }
 .btn-wa-richiedi:active{background:var(--verde2);transform:scale(.98)}
 .btn-wa-richiedi:disabled{background:var(--grigio2);color:var(--grigio);cursor:not-allowed;transform:none}
-.wa-preview{
-  background:var(--nero3);border:1px solid var(--bordo);
-  border-radius:10px;padding:11px 13px;font-size:11px;
-  color:var(--grigio);line-height:1.5;margin-top:10px;display:none;
+.wa-msg-preview{
+  margin-top:10px;background:var(--nero3);border:1px solid var(--bordo);
+  border-radius:10px;padding:11px 13px;display:none;
 }
-.wa-preview.visible{display:block}
-.wa-preview strong{color:var(--testo)}
+.wa-msg-preview.visible{display:block}
+.wa-msg-label{font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--verde);margin-bottom:7px}
+.wa-bubble-preview{
+  background:#1e3a2a;border:1px solid #2a4a35;
+  border-radius:4px 12px 12px 12px;padding:10px 12px;
+  font-size:12px;color:#d0e8d8;line-height:1.55;
+  position:relative;
+}
+.wa-bubble-preview::before{
+  content:'';position:absolute;top:0;left:-6px;
+  border:6px solid transparent;
+  border-top-color:#2a4a35;border-right-color:#2a4a35;
+}
 
 /* ── BOTTOM CTA ── */
 .bottom-cta{
   position:fixed;bottom:0;left:0;right:0;
   background:var(--nero2);border-top:1px solid var(--bordo);
-  padding:12px 14px calc(12px + var(--safe-bottom));
-  z-index:100;
+  padding:10px 14px calc(10px + var(--safe-bottom));z-index:100;
 }
 .btn-pubblica{
   width:100%;background:var(--stella);color:var(--nero);
@@ -249,51 +278,51 @@ textarea{resize:none;line-height:1.55}
 }
 .btn-pubblica:active{background:var(--stella2);transform:scale(.99)}
 .btn-pubblica:disabled{background:var(--grigio2);color:var(--grigio);cursor:not-allowed;transform:none}
-
-/* ── CATEGORIE ── */
-.catgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.cattile{
-  background:var(--nero3);border:1.5px solid var(--bordo);
-  border-radius:11px;padding:12px 8px;cursor:pointer;
-  text-align:center;transition:border-color .15s,background .15s;
-  user-select:none;
+.btn-pubblica-sub{
+  font-size:10px;color:var(--grigio);text-align:center;
+  margin-top:6px;
 }
-.cattile:active{transform:scale(.96)}
-.cattile.sel{border-color:var(--stella);background:rgba(245,200,66,.06)}
-.cat-icon{font-size:22px;margin-bottom:4px}
-.cat-name{font-size:10px;font-weight:700;color:var(--testo)}
 
 /* ── TOAST ── */
 .toast{
   position:fixed;top:calc(70px + var(--safe-top));left:50%;
-  transform:translateX(-50%) translateY(-10px);
-  background:var(--verde-scuro,#128c3e);color:white;
-  padding:10px 18px;border-radius:10px;font-size:13px;font-weight:700;
+  transform:translateX(-50%) translateY(-12px);
+  background:#128c3e;color:white;padding:10px 18px;
+  border-radius:10px;font-size:13px;font-weight:700;
   z-index:999;opacity:0;transition:opacity .25s,transform .25s;
-  white-space:nowrap;pointer-events:none;
+  white-space:nowrap;pointer-events:none;max-width:calc(100% - 28px);
+  text-align:center;
 }
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ── ANIMAZIONI ── */
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.fade-up{animation:fadeUp .25s ease both}
+.fade-up{animation:fadeUp .22s ease both}
 
-/* ── CAMPO SELECT CUSTOM ── */
-.select-wrap{position:relative}
-.select-wrap select{padding-right:36px}
-.select-arrow{
-  position:absolute;right:12px;top:50%;transform:translateY(-50%);
-  font-size:12px;color:var(--grigio);pointer-events:none;
+/* ── SCHERMATA SUCCESSO ── */
+.succ-overlay{
+  position:fixed;inset:0;background:var(--nero2);z-index:200;
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:24px;
 }
-
-/* ── PREVIEW ANTEPRIMA ── */
-.anteprima-badge{
-  display:flex;align-items:center;gap:6px;
-  background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.2);
-  border-radius:10px;padding:10px 13px;margin-bottom:12px;
-  font-size:12px;color:#c8a830;cursor:pointer;
+.succ-overlay.show{display:flex}
+.succ-icon{font-size:72px;margin-bottom:14px;animation:popIn .4s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes popIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.succ-title{font-size:24px;font-weight:900;color:var(--bianco);margin-bottom:6px}
+.succ-sub{font-size:13px;color:var(--grigio);line-height:1.6;max-width:280px;margin-bottom:22px}
+.succ-url{
+  background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.22);
+  border-radius:12px;padding:13px 16px;margin-bottom:22px;width:100%;max-width:340px;
 }
-.anteprima-badge:active{background:rgba(245,200,66,.15)}
+.succ-url-label{font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--grigio);margin-bottom:6px}
+.succ-url-val{font-size:12px;color:var(--stella);font-weight:600;word-break:break-all;line-height:1.5}
+.succ-btns{display:flex;flex-direction:column;gap:9px;width:100%;max-width:340px}
+.btn-succ{
+  padding:14px;border-radius:12px;font-size:14px;font-weight:800;
+  cursor:pointer;border:none;font-family:'Inter',sans-serif;
+}
+.btn-succ-gold{background:var(--stella);color:var(--nero)}
+.btn-succ-dark{background:var(--nero3);border:1px solid var(--bordo2);color:var(--testo)}
 </style>
 </head>
 <body>
@@ -301,87 +330,77 @@ textarea{resize:none;line-height:1.55}
 <!-- ── TOPBAR ── -->
 <div class="topbar">
   <div class="logo">★ StelleVere</div>
-  <div style="flex:1;font-size:12px;color:var(--grigio);padding-left:4px">· Inserisci lavoro</div>
+  <div style="flex:1;font-size:12px;color:var(--grigio);padding-left:4px">· Aggiungi lavoro</div>
   <div class="artigiano-pill">
     <div class="artigiano-av">{{ artigiano.emoji }}</div>
     <div class="artigiano-nome">{{ artigiano.nome.split()[0] }}</div>
   </div>
 </div>
 
-<!-- ── ESEMPI SIMILI ── -->
+<!-- ── STEP 1: CATEGORIA ── -->
 <div class="section">
-  <div class="section-title">
-    Esempi simili · <span id="cat-label">Idraulica</span>
-    <span style="margin-left:auto;font-size:9px;font-weight:600;color:var(--grigio2)">scorri →</span>
+  <div class="section-title">1 · Che lavoro hai fatto? <span class="freq" style="color:var(--stella)">*</span></div>
+  <div class="catgrid" id="catgrid">
+    <div class="cattile sel" onclick="selCat(this,'Idraulica','🔧')"><div class="cat-icon">🔧</div><div class="cat-name">Idraulica</div></div>
+    <div class="cattile" onclick="selCat(this,'Elettricista','⚡')"><div class="cat-icon">⚡</div><div class="cat-name">Elettricista</div></div>
+    <div class="cattile" onclick="selCat(this,'Imbianchino','🖌️')"><div class="cat-icon">🖌️</div><div class="cat-name">Imbianchino</div></div>
+    <div class="cattile" onclick="selCat(this,'Muratore','🧱')"><div class="cat-icon">🧱</div><div class="cat-name">Muratore</div></div>
+    <div class="cattile" onclick="selCat(this,'Falegname','🪚')"><div class="cat-icon">🪚</div><div class="cat-name">Falegname</div></div>
+    <div class="cattile" onclick="selCat(this,'Altro','🔩')"><div class="cat-icon">🔩</div><div class="cat-name">Altro</div></div>
   </div>
+</div>
+
+<!-- ── STEP 2: ESEMPI DA COPIARE ── -->
+<div class="esempi-header">
+  <div class="esempi-label">2 · Lavori simili · <span id="cat-label">Idraulica</span></div>
+  <div class="esempi-hint">scorri →</div>
 </div>
 <div class="esempi-scroll" id="esempi-container">
-  {% for lavoro in artigiano.lavori %}
-  <div class="esempio-card" onclick="copiaLavoro({{ loop.index0 }})">
-    <div class="esempio-img bg{{ loop.index }}">{{ lavoro.emoji }}</div>
-    <div class="esempio-body">
-      <div class="esempio-titolo">{{ lavoro.titolo }}</div>
-      <div class="esempio-desc">{{ lavoro.descrizione }}</div>
-      <button class="btn-copia" onclick="event.stopPropagation();copiaLavoro({{ loop.index0 }})">
-        📋 Copia e modifica
-      </button>
-    </div>
-  </div>
-  {% endfor %}
+  <!-- Popolato da JS -->
 </div>
+
+<div class="sep"></div>
 
 <!-- ── FORM ── -->
 <div class="form-wrap">
 
-  <!-- CATEGORIA -->
-  <div class="fgroup fade-up" style="animation-delay:.05s">
-    <div class="flabel">Tipo di lavoro <span class="freq">*</span></div>
-    <div class="catgrid" id="catgrid">
-      <div class="cattile sel" onclick="selCat(this,'Idraulica','🔧')"><div class="cat-icon">🔧</div><div class="cat-name">Idraulica</div></div>
-      <div class="cattile" onclick="selCat(this,'Elettricista','⚡')"><div class="cat-icon">⚡</div><div class="cat-name">Elettricista</div></div>
-      <div class="cattile" onclick="selCat(this,'Imbianchino','🖌️')"><div class="cat-icon">🖌️</div><div class="cat-name">Imbianchino</div></div>
-      <div class="cattile" onclick="selCat(this,'Muratore','🧱')"><div class="cat-icon">🧱</div><div class="cat-name">Muratore</div></div>
-      <div class="cattile" onclick="selCat(this,'Falegname','🪚')"><div class="cat-icon">🪚</div><div class="cat-name">Falegname</div></div>
-      <div class="cattile" onclick="selCat(this,'Altro','🔩')"><div class="cat-icon">🔩</div><div class="cat-name">Altro</div></div>
-    </div>
-  </div>
-
   <!-- TITOLO -->
-  <div class="fgroup fade-up" style="animation-delay:.1s">
-    <div class="flabel">Titolo del lavoro <span class="freq">*</span></div>
-    <input type="text" id="f-titolo" placeholder="Es: Sostituzione caldaia condominiale"
-           maxlength="60" oninput="aggiornaConto(this,'cnt-titolo');controllaForm()">
+  <div class="fgroup fade-up" style="animation-delay:.05s">
+    <div class="flabel">3 · Titolo del lavoro <span class="freq">*</span></div>
+    <input type="text" id="f-titolo"
+           placeholder="Es: Sostituzione caldaia condominiale"
+           maxlength="60"
+           oninput="aggiornaConto(this,'cnt-titolo');aggiornaURL();controllaForm()">
     <div class="char-count"><span id="cnt-titolo">0</span>/60</div>
   </div>
 
   <!-- DESCRIZIONE -->
-  <div class="fgroup fade-up" style="animation-delay:.12s">
-    <div class="flabel">Descrizione <span class="freq">*</span></div>
-    <textarea id="f-desc" rows="4" placeholder="Descrivi il lavoro: materiali usati, tempo impiegato, risultato finale..."
-              maxlength="500" oninput="aggiornaConto(this,'cnt-desc');controllaForm()"></textarea>
+  <div class="fgroup fade-up" style="animation-delay:.08s">
+    <div class="flabel">4 · Descrizione <span class="freq">*</span></div>
+    <textarea id="f-desc" rows="4"
+              placeholder="Descrivi il lavoro: materiali usati, tempo impiegato, risultato finale..."
+              maxlength="500"
+              oninput="aggiornaConto(this,'cnt-desc');controllaForm()"></textarea>
     <div class="char-count"><span id="cnt-desc">0</span>/500</div>
-    <div class="fhint">💡 Una buona descrizione aiuta Google a trovare la tua scheda</div>
+    <div class="fhint">💡 Una buona descrizione aiuta Google a trovare la tua pagina</div>
   </div>
 
   <!-- FOTO -->
-  <div class="fgroup fade-up" style="animation-delay:.15s">
-    <div class="flabel">Foto del lavoro <span class="freq">*</span></div>
+  <div class="fgroup fade-up" style="animation-delay:.1s">
+    <div class="flabel">5 · Foto del lavoro <span class="freq">*</span></div>
     <div class="foto-grid">
-      <!-- Foto 1 -->
       <div class="foto-slot" id="slot-0" onclick="triggerFoto(0)">
         <div class="foto-slot-num">1</div>
         <div class="foto-slot-icon">📷</div>
         <div class="foto-slot-label">Principale</div>
         <input type="file" id="file-0" accept="image/*" capture="environment" onchange="caricaFoto(event,0)" style="display:none">
       </div>
-      <!-- Foto 2 -->
       <div class="foto-slot" id="slot-1" onclick="triggerFoto(1)">
         <div class="foto-slot-num">2</div>
         <div class="foto-slot-icon">📷</div>
         <div class="foto-slot-label">Dettaglio</div>
         <input type="file" id="file-1" accept="image/*" capture="environment" onchange="caricaFoto(event,1)" style="display:none">
       </div>
-      <!-- Foto 3 -->
       <div class="foto-slot" id="slot-2" onclick="triggerFoto(2)">
         <div class="foto-slot-num">3</div>
         <div class="foto-slot-icon">📷</div>
@@ -393,48 +412,57 @@ textarea{resize:none;line-height:1.55}
   </div>
 
   <!-- LOCALIZZAZIONE -->
-  <div class="fgroup fade-up" style="animation-delay:.18s">
-    <div class="flabel">Dove hai lavorato <span class="freq">*</span></div>
-    <div class="loc-grid" style="margin-bottom:10px">
+  <div class="fgroup fade-up" style="animation-delay:.12s">
+    <div class="flabel">6 · Dove hai lavorato <span class="freq">*</span></div>
+    <div class="loc-grid">
       <div>
-        <div class="flabel" style="margin-bottom:6px">Città</div>
-        <input type="text" id="f-citta" placeholder="{{ artigiano.citta }}"
-               oninput="controllaForm()" value="{{ artigiano.citta }}">
+        <div style="font-size:10px;font-weight:700;color:var(--grigio);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">Città</div>
+        <input type="text" id="f-citta"
+               placeholder="{{ artigiano.citta }}"
+               value="{{ artigiano.citta }}"
+               oninput="aggiornaURL();controllaForm()">
       </div>
       <div>
-        <div class="flabel" style="margin-bottom:6px">Quartiere / Zona</div>
-        <input type="text" id="f-quartiere" placeholder="Es: Navigli"
-               oninput="controllaForm()">
+        <div style="font-size:10px;font-weight:700;color:var(--grigio);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">Quartiere / Zona</div>
+        <input type="text" id="f-quartiere"
+               placeholder="Es: Navigli"
+               oninput="aggiornaURL();controllaForm()">
       </div>
     </div>
-    <!-- GPS -->
+
     <button class="gps-btn" id="gps-btn" onclick="rilevaGPS()">
       <span id="gps-icon">📍</span>
-      <span id="gps-label">Usa la mia posizione GPS</span>
+      <span id="gps-label">Rileva posizione GPS automatica</span>
     </button>
-    <!-- Mappa placeholder -->
-    <div class="mappa-ph" id="mappa">
+
+    <div class="mappa-ph">
       <div class="mappa-griglia"></div>
       <div class="mappa-pin" id="mappa-pin">📍</div>
-      <div class="mappa-label" id="mappa-label">Rileva la tua posizione</div>
-      <div class="mappa-sub" id="mappa-sub">La zona viene mostrata ai clienti su Google</div>
+      <div class="mappa-label" id="mappa-label">Nessuna posizione rilevata</div>
+      <div class="mappa-sub" id="mappa-sub">La zona appare su Google Maps per i tuoi clienti</div>
     </div>
     <div class="mappa-coords" id="mappa-coords">
-      <span>🌍</span>
-      <span id="coords-text"></span>
+      <span>✓</span><span id="coords-text"></span>
+    </div>
+
+    <!-- URL PREVIEW -->
+    <div class="url-preview" id="url-preview" style="display:none">
+      <div class="url-preview-label">🔍 La tua pagina su Google</div>
+      <div class="url-preview-val" id="url-preview-val">stellevere.it/…</div>
+      <div class="url-preview-note">Questa pagina sarà indicizzata da Google e porterà nuovi clienti nella tua zona</div>
     </div>
   </div>
 
   <!-- WHATSAPP RECENSIONE -->
-  <div class="fgroup fade-up" style="animation-delay:.22s">
-    <div class="flabel">Richiedi recensione al cliente</div>
+  <div class="fgroup fade-up" style="animation-delay:.15s">
+    <div class="flabel">7 · Chiedi la recensione al cliente</div>
     <div class="wa-section">
       <div class="wa-section-title">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.134.558 4.137 1.535 5.874L.057 23.404a.5.5 0 0 0 .61.61l5.488-1.467A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.944 9.944 0 0 1-5.193-1.453l-.37-.22-3.844 1.028 1.044-3.806-.242-.382A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
-        Chiedi la recensione con un tap
+        Richiedi 5 stelle con un tap
       </div>
       <div class="wa-section-sub">
-        Inserisci il numero WhatsApp del cliente: gli invieremo automaticamente un messaggio per lasciare una <strong style="color:var(--verde)">stella vera</strong>.
+        Inserisci il numero del cliente: riceverà un messaggio su WhatsApp per lasciare la sua valutazione.
       </div>
       <div class="wa-input-wrap">
         <span class="wa-flag">🇮🇹</span>
@@ -445,11 +473,12 @@ textarea{resize:none;line-height:1.55}
       </div>
       <button class="btn-wa-richiedi" id="btn-wa" disabled onclick="inviaRichiestaWA()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.134.558 4.137 1.535 5.874L.057 23.404a.5.5 0 0 0 .61.61l5.488-1.467A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.944 9.944 0 0 1-5.193-1.453l-.37-.22-3.844 1.028 1.044-3.806-.242-.382A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
-        Invia richiesta WhatsApp
+        Invia messaggio WhatsApp
       </button>
-      <div class="wa-preview" id="wa-preview">
-        <strong>Anteprima messaggio:</strong><br>
-        <span id="wa-preview-text"></span>
+      <!-- Anteprima messaggio -->
+      <div class="wa-msg-preview" id="wa-msg-preview">
+        <div class="wa-msg-label">Anteprima messaggio che riceverà il cliente</div>
+        <div class="wa-bubble-preview" id="wa-bubble-text"></div>
       </div>
     </div>
   </div>
@@ -459,25 +488,39 @@ textarea{resize:none;line-height:1.55}
 <!-- ── BOTTOM CTA ── -->
 <div class="bottom-cta">
   <button class="btn-pubblica" id="btn-pubblica" disabled onclick="pubblicaLavoro()">
-    🚀 Pubblica su Google
+    ★ Pubblica sul tuo profilo
   </button>
+  <div class="btn-pubblica-sub" id="pubblica-hint">Completa titolo, descrizione, 1 foto e città per pubblicare</div>
 </div>
 
 <!-- ── TOAST ── -->
 <div class="toast" id="toast"></div>
 
+<!-- ── SCHERMATA SUCCESSO ── -->
+<div class="succ-overlay" id="succ-overlay">
+  <div class="succ-icon">🎉</div>
+  <div class="succ-title">Lavoro pubblicato!</div>
+  <div class="succ-sub">La tua pagina è ora sul tuo profilo e sarà indicizzata da Google entro 24–48 ore.</div>
+  <div class="succ-url">
+    <div class="succ-url-label">🔍 La tua pagina su Google</div>
+    <div class="succ-url-val" id="succ-url-val">stellevere.it/…</div>
+  </div>
+  <div class="succ-btns">
+    <button class="btn-succ btn-succ-gold" onclick="nuovoLavoro()">➕ Aggiungi un altro lavoro</button>
+    <button class="btn-succ btn-succ-dark" onclick="vaiAlProfilo()">👤 Vai al tuo profilo</button>
+  </div>
+</div>
+
 <script>
-// ── DATI ARTIGIANO ──
+// ── DATI ──
 const artigiano = {
   nome: "{{ artigiano.nome }}",
   categoria: "{{ artigiano.categoria }}",
   citta: "{{ artigiano.citta }}",
   id: "{{ artigiano.id }}"
 };
-
 const lavoriEsistenti = {{ artigiano.lavori | tojson }};
 
-// ── STATO FORM ──
 let stato = {
   categoria: 'Idraulica',
   catEmoji: '🔧',
@@ -487,15 +530,50 @@ let stato = {
   citta: artigiano.citta,
   quartiere: '',
   gps: null,
-  waCliente: ''
+  waCliente: '',
+  urlGenerata: ''
 };
 
 // ── TOAST ──
-function mostraToast(msg, durata=2200) {
+function mostraToast(msg, durata=2300) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), durata);
+}
+
+// ── SLUG ──
+function slugify(str) {
+  return str.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9\s-]/g,'')
+    .trim().replace(/\s+/g,'-')
+    .replace(/-+/g,'-');
+}
+
+// ── AGGIORNA URL PREVIEW ──
+function aggiornaURL() {
+  const titolo = document.getElementById('f-titolo').value.trim();
+  const citta  = document.getElementById('f-citta').value.trim();
+  const quart  = document.getElementById('f-quartiere').value.trim();
+  const artId  = artigiano.id;
+
+  if (!titolo || !citta) {
+    document.getElementById('url-preview').style.display = 'none';
+    return;
+  }
+
+  const slugTitolo = slugify(titolo);
+  const slugLoc    = quart
+    ? slugify(citta) + '_' + slugify(quart)
+    : slugify(citta);
+
+  const url = `www.stellevere.it/${slugTitolo}/${slugLoc}/${artId}`;
+  stato.urlGenerata = url;
+
+  document.getElementById('url-preview-val').innerHTML =
+    `stellevere.it/<span>${slugTitolo}</span>/<span>${slugLoc}</span>/<span>${artId}</span>`;
+  document.getElementById('url-preview').style.display = 'block';
 }
 
 // ── CATEGORIA ──
@@ -503,25 +581,57 @@ function selCat(el, nome, emoji) {
   document.querySelectorAll('.cattile').forEach(c => c.classList.remove('sel'));
   el.classList.add('sel');
   stato.categoria = nome;
-  stato.catEmoji = emoji;
+  stato.catEmoji  = emoji;
   document.getElementById('cat-label').textContent = nome;
   caricaEsempi(nome);
   controllaForm();
 }
 
-// ── ESEMPI SIMILI ──
+// ── ESEMPI ──
 async function caricaEsempi(categoria) {
+  const cont = document.getElementById('esempi-container');
+  cont.innerHTML = '<div style="padding:10px 14px;font-size:11px;color:var(--grigio)">Caricamento...</div>';
+
+  // Prima mostra i lavori già fatti dall'artigiano per questa categoria (o tutti)
+  const lavoriCat = lavoriEsistenti.filter(l =>
+    !categoria || l.categoria === categoria ||
+    l.emoji === stato.catEmoji
+  );
+
   try {
     const r = await fetch('/api/esempi/' + encodeURIComponent(categoria));
-    const esempi = await r.json();
-    const cont = document.getElementById('esempi-container');
+    const esempiDB = await r.json();
+    window._esempiCorrente = esempiDB;
+
     cont.innerHTML = '';
-    const bg = ['bg1','bg2','bg3','bg4'];
-    esempi.forEach((e, i) => {
+    const bgs = ['bg1','bg2','bg3','bg4'];
+
+    // Prima: lavori già fatti dall'artigiano
+    if (lavoriEsistenti.length > 0) {
+      lavoriEsistenti.forEach((l, i) => {
+        const card = document.createElement('div');
+        card.className = 'esempio-card';
+        card.innerHTML = `
+          <div class="esempio-img ${bgs[i%4]}" style="position:relative">
+            ${l.emoji}
+            <div style="position:absolute;top:6px;left:6px;background:rgba(37,211,102,.9);color:#000;font-size:8px;font-weight:800;padding:2px 6px;border-radius:3px">✓ TUO</div>
+          </div>
+          <div class="esempio-body">
+            <div class="esempio-titolo">${l.titolo}</div>
+            <div class="esempio-desc">${l.descrizione}</div>
+            <button class="btn-copia" onclick="event.stopPropagation();copiaTuoLavoro(${i})">📋 Copia e modifica</button>
+          </div>`;
+        card.onclick = () => copiaTuoLavoro(i);
+        cont.appendChild(card);
+      });
+    }
+
+    // Poi: esempi generici per categoria
+    esempiDB.forEach((e, i) => {
       const card = document.createElement('div');
       card.className = 'esempio-card';
       card.innerHTML = `
-        <div class="esempio-img ${bg[i%4]}">${stato.catEmoji}</div>
+        <div class="esempio-img ${bgs[(lavoriEsistenti.length+i)%4]}">${stato.catEmoji}</div>
         <div class="esempio-body">
           <div class="esempio-titolo">${e.titolo}</div>
           <div class="esempio-desc">${e.descrizione}</div>
@@ -530,56 +640,57 @@ async function caricaEsempi(categoria) {
       card.onclick = () => copiaEsempio(i);
       cont.appendChild(card);
     });
-    window._esempiCorrente = esempi;
-  } catch(e) {}
+
+  } catch(err) {
+    cont.innerHTML = '<div style="padding:10px 14px;font-size:11px;color:var(--grigio)">Nessun esempio disponibile</div>';
+  }
+}
+
+function copiaTuoLavoro(idx) {
+  const l = lavoriEsistenti[idx];
+  if (!l) return;
+  document.getElementById('f-titolo').value = l.titolo;
+  document.getElementById('f-desc').value   = l.descrizione;
+  if (l.quartiere) document.getElementById('f-quartiere').value = l.quartiere;
+  sincronizzaForm();
+  mostraToast('✓ Copiato dal tuo lavoro — ora modifica i dati diversi');
+  scrollAlForm();
 }
 
 function copiaEsempio(idx) {
   const e = (window._esempiCorrente || [])[idx];
   if (!e) return;
   document.getElementById('f-titolo').value = e.titolo;
-  document.getElementById('f-desc').value = e.descrizione;
+  document.getElementById('f-desc').value   = e.descrizione;
   if (e.quartiere) document.getElementById('f-quartiere').value = e.quartiere;
-  aggiornaConto(document.getElementById('f-titolo'), 'cnt-titolo');
-  aggiornaConto(document.getElementById('f-desc'), 'cnt-desc');
-  stato.titolo = e.titolo;
-  stato.descrizione = e.descrizione;
-  controllaForm();
-  mostraToast('✓ Lavoro copiato! Modifica i tuoi dati');
-  document.getElementById('f-titolo').scrollIntoView({behavior:'smooth', block:'center'});
-  document.getElementById('f-titolo').focus();
+  sincronizzaForm();
+  mostraToast('✓ Esempio copiato — personalizza titolo e descrizione');
+  scrollAlForm();
 }
 
-function copiaLavoro(idx) {
-  const l = lavoriEsistenti[idx];
-  if (!l) return;
-  document.getElementById('f-titolo').value = l.titolo;
-  document.getElementById('f-desc').value = l.descrizione;
-  if (l.quartiere) document.getElementById('f-quartiere').value = l.quartiere;
+function sincronizzaForm() {
   aggiornaConto(document.getElementById('f-titolo'), 'cnt-titolo');
   aggiornaConto(document.getElementById('f-desc'), 'cnt-desc');
-  stato.titolo = l.titolo;
-  stato.descrizione = l.descrizione;
+  aggiornaURL();
   controllaForm();
-  mostraToast('✓ Copiato! Modifica titolo e descrizione');
+}
+
+function scrollAlForm() {
   setTimeout(() => {
     document.getElementById('f-titolo').scrollIntoView({behavior:'smooth', block:'center'});
     document.getElementById('f-titolo').focus();
-  }, 300);
+  }, 350);
 }
 
-// ── CONTATORE CARATTERI ──
+// ── CONTATORI ──
 function aggiornaConto(el, cntId) {
   document.getElementById(cntId).textContent = el.value.length;
-  if (cntId === 'cnt-titolo') stato.titolo = el.value;
-  if (cntId === 'cnt-desc') stato.descrizione = el.value;
 }
 
 // ── FOTO ──
 function triggerFoto(idx) {
   document.getElementById('file-' + idx).click();
 }
-
 function caricaFoto(e, idx) {
   const file = e.target.files[0];
   if (!file) return;
@@ -587,6 +698,7 @@ function caricaFoto(e, idx) {
   reader.onload = ev => {
     stato.foto[idx] = ev.target.result;
     const slot = document.getElementById('slot-' + idx);
+    const labels = ['Principale','Dettaglio','Risultato'];
     slot.innerHTML = `
       <img src="${ev.target.result}" alt="Foto ${idx+1}">
       <div class="foto-del" onclick="event.stopPropagation();rimuoviFoto(${idx})">✕</div>
@@ -595,78 +707,67 @@ function caricaFoto(e, idx) {
   };
   reader.readAsDataURL(file);
 }
-
 function rimuoviFoto(idx) {
   stato.foto[idx] = null;
   const slot = document.getElementById('slot-' + idx);
-  const labels = ['Principale', 'Dettaglio', 'Risultato'];
+  const labels = ['Principale','Dettaglio','Risultato'];
+  slot.onclick = () => triggerFoto(idx);
   slot.innerHTML = `
     <div class="foto-slot-num">${idx+1}</div>
     <div class="foto-slot-icon">📷</div>
     <div class="foto-slot-label">${labels[idx]}</div>
     <input type="file" id="file-${idx}" accept="image/*" capture="environment" onchange="caricaFoto(event,${idx})" style="display:none">`;
-  slot.onclick = () => triggerFoto(idx);
   controllaForm();
 }
 
 // ── GPS ──
 function rilevaGPS() {
+  if (!navigator.geolocation) { mostraToast('⚠️ GPS non disponibile'); return; }
   const btn = document.getElementById('gps-btn');
   const icon = document.getElementById('gps-icon');
   const label = document.getElementById('gps-label');
-  if (!navigator.geolocation) {
-    mostraToast('⚠️ GPS non disponibile su questo dispositivo');
-    return;
-  }
   btn.classList.add('caricamento');
-  icon.textContent = '⌛';
-  label.textContent = 'Rilevamento in corso...';
+  icon.textContent = '⌛'; label.textContent = 'Rilevamento in corso...';
   navigator.geolocation.getCurrentPosition(
     pos => {
       stato.gps = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      btn.classList.remove('caricamento');
-      btn.classList.add('rilevato');
-      icon.textContent = '✓';
-      label.textContent = 'Posizione rilevata!';
-      aggiornaMappaUI();
+      btn.classList.remove('caricamento'); btn.classList.add('rilevato');
+      icon.textContent = '✓'; label.textContent = 'Posizione rilevata!';
+      const citta   = document.getElementById('f-citta').value || artigiano.citta;
+      const quart   = document.getElementById('f-quartiere').value;
+      const loc = quart ? `${quart}, ${citta}` : citta;
+      document.getElementById('mappa-label').textContent = loc;
+      document.getElementById('mappa-sub').textContent = `GPS: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`;
+      const coords = document.getElementById('mappa-coords');
+      document.getElementById('coords-text').textContent =
+        `Posizione rilevata · ${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`;
+      coords.classList.add('visible');
       controllaForm();
     },
-    err => {
+    () => {
       btn.classList.remove('caricamento');
-      icon.textContent = '📍';
-      label.textContent = 'Usa la mia posizione GPS';
-      mostraToast('⚠️ Impossibile rilevare la posizione. Inserisci manualmente.');
+      icon.textContent = '📍'; label.textContent = 'Rileva posizione GPS automatica';
+      mostraToast('⚠️ Posizione non disponibile — inserisci manualmente');
     },
-    { timeout: 10000, maximumAge: 60000 }
+    { timeout: 10000 }
   );
 }
 
-function aggiornaMappaUI() {
-  if (!stato.gps) return;
-  const lat = stato.gps.lat.toFixed(4);
-  const lng = stato.gps.lng.toFixed(4);
-  const citta = document.getElementById('f-citta').value || artigiano.citta;
-  const quartiere = document.getElementById('f-quartiere').value;
-  const loc = quartiere ? `${quartiere}, ${citta}` : citta;
-  document.getElementById('mappa-pin').textContent = '📍';
-  document.getElementById('mappa-label').textContent = loc;
-  document.getElementById('mappa-sub').textContent = `Coord: ${lat}, ${lng}`;
-  const coords = document.getElementById('mappa-coords');
-  document.getElementById('coords-text').textContent = `${lat}, ${lng} · Precisione ~${Math.round(10 + Math.random()*20)}m`;
-  coords.classList.add('visible');
-}
-
-// ── WHATSAPP PREVIEW ──
+// ── WHATSAPP ──
 function aggiornaPrevWA(val) {
   stato.waCliente = val.trim();
-  const btn = document.getElementById('btn-wa');
-  const prev = document.getElementById('wa-preview');
-  const numOk = val.replace(/\s/g,'').length >= 10;
-  btn.disabled = !numOk;
+  const numOk = val.replace(/\s/g,'').length >= 9;
+  document.getElementById('btn-wa').disabled = !numOk;
+  const prev = document.getElementById('wa-msg-preview');
+  const bubble = document.getElementById('wa-bubble-text');
   if (numOk) {
-    const titolo = document.getElementById('f-titolo').value || '[titolo del lavoro]';
-    const msg = `Ciao! Sono ${artigiano.nome}, ti ricordi del lavoro che ho fatto per te (${titolo})? Se sei soddisfatto, mi faresti un grande favore lasciando una recensione su StelleVere: stellevere.it/schede/${artigiano.id} — grazie mille! ⭐`;
-    document.getElementById('wa-preview-text').textContent = msg;
+    const titolo = document.getElementById('f-titolo').value.trim() || 'lavoro recente';
+    const citta  = document.getElementById('f-citta').value.trim()  || artigiano.citta;
+    const quart  = document.getElementById('f-quartiere').value.trim();
+    const zona   = quart ? `${quart}, ${citta}` : citta;
+    const url    = stato.urlGenerata || `stellevere.it/schede/${artigiano.id}`;
+    bubble.textContent =
+      `Ciao! Sono ${artigiano.nome} 👋\n\nGrazie per avermi scelto per il lavoro "${titolo}" a ${zona}!\n\nSe sei soddisfatto, ti chiedo un grande favore: lasciami 5 stelle ⭐⭐⭐⭐⭐ su StelleVere — ci vuole solo un minuto e mi aiuta tantissimo a trovare nuovi clienti:\n\n🔗 ${url}\n\nGrazie di cuore! 🙏`;
     prev.classList.add('visible');
   } else {
     prev.classList.remove('visible');
@@ -674,69 +775,96 @@ function aggiornaPrevWA(val) {
 }
 
 function inviaRichiestaWA() {
-  const num = stato.waCliente.replace(/[\s\-\+]/g,'');
-  const titolo = document.getElementById('f-titolo').value || 'lavoro recente';
-  const msg = encodeURIComponent(`Ciao! Sono ${artigiano.nome}, ti ricordi del lavoro che ho fatto per te (${titolo})? Se sei soddisfatto, mi faresti un grande favore lasciando una recensione su StelleVere: stellevere.it/schede/${artigiano.id} — grazie mille! ⭐`);
+  const num    = stato.waCliente.replace(/[\s\-\+]/g,'');
+  const titolo = document.getElementById('f-titolo').value.trim() || 'lavoro recente';
+  const citta  = document.getElementById('f-citta').value.trim()  || artigiano.citta;
+  const quart  = document.getElementById('f-quartiere').value.trim();
+  const zona   = quart ? `${quart}, ${citta}` : citta;
+  const url    = stato.urlGenerata || `stellevere.it/schede/${artigiano.id}`;
+  const msg = encodeURIComponent(
+    `Ciao! Sono ${artigiano.nome} 👋\n\nGrazie per avermi scelto per il lavoro "${titolo}" a ${zona}!\n\nSe sei soddisfatto, ti chiedo un grande favore: lasciami 5 stelle ⭐⭐⭐⭐⭐ su StelleVere — ci vuole solo un minuto e mi aiuta tantissimo a trovare nuovi clienti:\n\n🔗 ${url}\n\nGrazie di cuore! 🙏`
+  );
   window.open(`https://wa.me/${num}?text=${msg}`, '_blank');
-  mostraToast('✓ Apertura WhatsApp...');
+  mostraToast('✓ Apertura WhatsApp...', 1800);
 }
 
-// ── VALIDA FORM ──
+// ── VALIDA ──
 function controllaForm() {
-  stato.titolo = document.getElementById('f-titolo').value.trim();
-  stato.descrizione = document.getElementById('f-desc').value.trim();
-  stato.citta = document.getElementById('f-citta').value.trim();
-  stato.quartiere = document.getElementById('f-quartiere').value.trim();
-  const fotoOk = stato.foto.some(f => f !== null);
-  const ok = stato.titolo.length >= 5 &&
-             stato.descrizione.length >= 20 &&
-             fotoOk &&
-             stato.citta.length >= 2;
+  const titolo  = document.getElementById('f-titolo').value.trim();
+  const desc    = document.getElementById('f-desc').value.trim();
+  const citta   = document.getElementById('f-citta').value.trim();
+  const fotoOk  = stato.foto.some(f => f !== null);
+  const ok = titolo.length >= 5 && desc.length >= 20 && fotoOk && citta.length >= 2;
   document.getElementById('btn-pubblica').disabled = !ok;
+  const hint = document.getElementById('pubblica-hint');
+  if (ok) {
+    hint.textContent = '★ Il lavoro sarà pubblicato sul tuo profilo e indicizzato da Google';
+    hint.style.color = 'var(--stella)';
+  } else {
+    const mancanti = [];
+    if (titolo.length < 5) mancanti.push('titolo');
+    if (desc.length < 20)  mancanti.push('descrizione');
+    if (!fotoOk)           mancanti.push('almeno 1 foto');
+    if (citta.length < 2)  mancanti.push('città');
+    hint.textContent = 'Manca: ' + mancanti.join(', ');
+    hint.style.color = 'var(--grigio)';
+  }
 }
 
 // ── PUBBLICA ──
 async function pubblicaLavoro() {
   const btn = document.getElementById('btn-pubblica');
-  btn.disabled = true;
-  btn.textContent = '⏳ Pubblicazione...';
+  btn.disabled = true; btn.textContent = '⏳ Pubblicazione...';
+  const titolo  = document.getElementById('f-titolo').value.trim();
+  const desc    = document.getElementById('f-desc').value.trim();
+  const citta   = document.getElementById('f-citta').value.trim();
+  const quart   = document.getElementById('f-quartiere').value.trim();
   const payload = {
-    artigianoId: artigiano.id,
-    categoria: stato.categoria,
-    titolo: stato.titolo,
-    descrizione: stato.descrizione,
-    citta: stato.citta,
-    quartiere: stato.quartiere,
-    gps: stato.gps,
-    foto: stato.foto.filter(f => f !== null).length
+    artigianoId: artigiano.id, categoria: stato.categoria,
+    titolo, descrizione: desc, citta, quartiere: quart,
+    gps: stato.gps, foto: stato.foto.filter(f=>f).length,
+    url: stato.urlGenerata
   };
   try {
-    const r = await fetch('/api/lavoro/salva', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
+    const r   = await fetch('/api/lavoro/salva', {
+      method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify(payload)
     });
     const res = await r.json();
     if (res.success) {
-      btn.textContent = '✓ Pubblicato!';
-      btn.style.background = 'var(--verde)';
-      mostraToast('🎉 Lavoro pubblicato! Sarà su Google in 24 ore', 3500);
+      document.getElementById('succ-url-val').textContent = stato.urlGenerata || `stellevere.it/schede/${artigiano.id}`;
+      document.getElementById('succ-overlay').classList.add('show');
     }
   } catch(e) {
-    btn.disabled = false;
-    btn.textContent = '🚀 Pubblica su Google';
-    mostraToast('⚠️ Errore. Riprova tra poco.');
+    btn.disabled = false; btn.textContent = '★ Pubblica sul tuo profilo';
+    mostraToast('⚠️ Errore di rete — riprova');
   }
+}
+
+function nuovoLavoro() {
+  document.getElementById('succ-overlay').classList.remove('show');
+  window.scrollTo({top:0,behavior:'smooth'});
+  document.getElementById('f-titolo').value = '';
+  document.getElementById('f-desc').value   = '';
+  document.getElementById('f-quartiere').value = '';
+  aggiornaConto(document.getElementById('f-titolo'),'cnt-titolo');
+  aggiornaConto(document.getElementById('f-desc'),'cnt-desc');
+  stato.foto = [null,null,null];
+  [0,1,2].forEach(i => rimuoviFoto(i));
+  aggiornaURL(); controllaForm();
+  mostraToast('Pronto per un nuovo lavoro!', 1800);
+}
+
+function vaiAlProfilo() {
+  window.location.href = '/scheda/' + artigiano.id;
 }
 
 // ── INIT ──
 document.addEventListener('DOMContentLoaded', () => {
-  // Aggiorna contatori esistenti
-  aggiornaConto(document.getElementById('f-titolo'), 'cnt-titolo');
-  aggiornaConto(document.getElementById('f-desc'), 'cnt-desc');
-  // Aggiorna mappa se si cambia città/quartiere
-  document.getElementById('f-citta').addEventListener('input', () => { stato.citta = document.getElementById('f-citta').value; if(stato.gps) aggiornaMappaUI(); controllaForm(); });
-  document.getElementById('f-quartiere').addEventListener('input', () => { stato.quartiere = document.getElementById('f-quartiere').value; if(stato.gps) aggiornaMappaUI(); controllaForm(); });
+  caricaEsempi('Idraulica');
+  controllaForm();
+  document.getElementById('f-citta').addEventListener('input', () => { if(stato.gps) { const c=document.getElementById('f-citta').value; const q=document.getElementById('f-quartiere').value; document.getElementById('mappa-label').textContent=q?`${q}, ${c}`:c; } });
+  document.getElementById('f-quartiere').addEventListener('input', () => { if(stato.gps) { const c=document.getElementById('f-citta').value; const q=document.getElementById('f-quartiere').value; document.getElementById('mappa-label').textContent=q?`${q}, ${c}`:c; } });
 });
 </script>
 </body>

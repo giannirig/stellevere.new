@@ -135,6 +135,42 @@ def salva_lavoro():
     return jsonify({'success': True, 'message': 'Lavoro salvato con successo'})
 
 
+@app.route('/<lavoro_slug>/<loc_slug>/<artigiano_slug>')
+def pagina_lavoro(lavoro_slug, loc_slug, artigiano_slug):
+    """Pagina pubblica indicizzabile da Google per ogni singolo lavoro."""
+    artigiano = ARTIGIANI.get(artigiano_slug)
+    if not artigiano:
+        return "Pagina non trovata", 404
+
+    # Trova il lavoro corrispondente allo slug (confronto approssimativo)
+    lavoro_trovato = None
+    for l in artigiano['lavori']:
+        slug_titolo = l['titolo'].lower().replace(' ', '-')
+        import re
+        slug_clean = re.sub(r'[^a-z0-9-]', '', slug_titolo)
+        if lavoro_slug in slug_clean or slug_clean.startswith(lavoro_slug[:10]):
+            lavoro_trovato = l
+            break
+
+    if not lavoro_trovato and artigiano['lavori']:
+        lavoro_trovato = artigiano['lavori'][0]
+
+    # Costruisce titolo SEO dalla URL
+    titolo_seo = lavoro_slug.replace('-', ' ').title()
+    loc_seo = loc_slug.replace('_', ', ').replace('-', ' ').title()
+
+    return render_template(
+        'pagina_lavoro.html',
+        artigiano=artigiano,
+        lavoro=lavoro_trovato,
+        titolo_seo=titolo_seo,
+        loc_seo=loc_seo,
+        lavoro_slug=lavoro_slug,
+        loc_slug=loc_slug,
+        artigiano_slug=artigiano_slug
+    )
+
+
 @app.route('/manifest.json')
 def manifest():
     return jsonify({

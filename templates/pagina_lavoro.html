@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ titolo_seo }} a {{ loc_seo }} · {{ artigiano.nome }} · StelleVere</title>
+<meta name="description" content="{{ lavoro.descrizione[:155] if lavoro else titolo_seo + ' a ' + loc_seo + ' — ' + artigiano.nome + ', artigiano verificato su StelleVere.' }}">
+<meta name="robots" content="index, follow">
+<!-- Open Graph -->
+<meta property="og:title" content="{{ titolo_seo }} a {{ loc_seo }} · {{ artigiano.nome }}">
+<meta property="og:description" content="{{ lavoro.descrizione[:200] if lavoro else '' }}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.stellevere.it/{{ lavoro_slug }}/{{ loc_slug }}/{{ artigiano_slug }}">
+<!-- Schema.org LocalBusiness JSON-LD -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "{{ artigiano.nome }}",
+  "description": "{{ lavoro.descrizione if lavoro else titolo_seo }}",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "{{ loc_seo }}",
+    "addressCountry": "IT"
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "{{ artigiano.stelle }}",
+    "reviewCount": "{{ artigiano.recensioni }}"
+  },
+  "url": "https://www.stellevere.it/schede/{{ artigiano_slug }}"
+}
+</script>
+<link rel="canonical" href="https://www.stellevere.it/{{ lavoro_slug }}/{{ loc_slug }}/{{ artigiano_slug }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--nero:#0a0a0a;--nero2:#111;--nero3:#1a1a1a;--bordo:#2a2a2a;--bordo2:#333;--stella:#f5c842;--verde:#25d366;--bianco:#fff;--testo:#e0e0e0;--grigio:#777}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--nero);font-family:'Inter',sans-serif;color:var(--testo);line-height:1.6}
+
+/* TOPBAR */
+.topbar{background:var(--nero2);border-bottom:1px solid var(--bordo);padding:13px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10}
+.logo{font-size:15px;font-weight:900;color:var(--stella);text-decoration:none}
+.topbar-bc{flex:1;font-size:11px;color:var(--grigio);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* WRAPPER */
+.wrap{max-width:760px;margin:0 auto;padding:0 16px 80px}
+
+/* HERO LAVORO */
+.lav-hero{
+  background:linear-gradient(135deg,#1a2a3a,#2d4a6a);
+  border-radius:0 0 16px 16px;
+  aspect-ratio:16/7;
+  display:flex;align-items:center;justify-content:center;
+  font-size:64px;margin-bottom:20px;position:relative;overflow:hidden;
+}
+.lav-hero-bg{position:absolute;inset:0;opacity:.15;background:radial-gradient(ellipse at 30% 50%,rgba(245,200,66,.4),transparent 60%)}
+.lav-emoji{position:relative;z-index:1;filter:drop-shadow(0 4px 20px rgba(0,0,0,.5))}
+
+/* BADGES */
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:5px}
+.badge-v{background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.25);color:var(--verde)}
+.badge-s{background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.2);color:var(--stella)}
+.badge-g{background:var(--nero3);border:1px solid var(--bordo2);color:var(--grigio)}
+
+/* TITOLO SEO */
+h1{font-size:clamp(20px,5vw,28px);font-weight:900;color:var(--bianco);line-height:1.2;margin-bottom:8px}
+.loc-tag{font-size:13px;color:var(--grigio);margin-bottom:16px;display:flex;align-items:center;gap:5px}
+
+/* DESCRIZIONE */
+.desc-box{font-size:15px;color:var(--testo);line-height:1.7;margin-bottom:24px;background:var(--nero2);border:1px solid var(--bordo);border-radius:12px;padding:16px 18px}
+
+/* ARTIGIANO CARD */
+.art-card{
+  background:var(--nero2);border:1px solid var(--bordo);
+  border-top:2px solid var(--stella);border-radius:14px;
+  padding:16px;margin-bottom:24px;
+  display:flex;align-items:center;gap:14px;
+}
+.art-av{
+  width:56px;height:56px;border-radius:50%;background:var(--nero3);
+  border:2px solid var(--bordo2);display:flex;align-items:center;
+  justify-content:center;font-size:26px;flex-shrink:0;
+}
+.art-nome{font-size:17px;font-weight:900;color:var(--bianco);margin-bottom:3px}
+.art-cat{font-size:12px;color:var(--grigio);margin-bottom:7px}
+.art-rating{display:flex;align-items:center;gap:6px;font-size:13px}
+.art-stars{color:var(--stella)}
+.art-num{font-weight:800;color:var(--bianco)}
+.art-rec{color:var(--grigio)}
+
+/* RECENSIONE */
+.rec-box{background:var(--nero2);border:1px solid var(--bordo);border-top:2px solid var(--stella);border-radius:12px;padding:15px;margin-bottom:24px}
+.rec-stars{font-size:16px;color:var(--stella);margin-bottom:8px}
+.rec-text{font-style:italic;font-size:14px;color:var(--testo);line-height:1.6;margin-bottom:12px}
+.rec-author{display:flex;align-items:center;gap:8px}
+.rec-av{width:30px;height:30px;border-radius:50%;background:var(--nero3);border:1px solid var(--bordo2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--grigio)}
+.rec-name{font-size:13px;font-weight:700;color:var(--testo)}
+.rec-badge{margin-left:auto;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);color:var(--verde);font-size:9px;font-weight:700;padding:3px 7px;border-radius:3px}
+
+/* ALTRI LAVORI */
+.altri-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:24px}
+.alt-card{background:var(--nero2);border:1px solid var(--bordo);border-radius:11px;overflow:hidden;text-decoration:none;display:block;transition:border-color .15s}
+.alt-card:hover{border-color:var(--stella)}
+.alt-img{width:100%;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:26px}
+.alt-img.bg1{background:linear-gradient(135deg,#1a2a3a,#2d4a6a)}
+.alt-img.bg2{background:linear-gradient(135deg,#1a2a1a,#2a4a2a)}
+.alt-img.bg3{background:linear-gradient(135deg,#2a1a1a,#4a2a1a)}
+.alt-img.bg4{background:linear-gradient(135deg,#1a1a2a,#2a2a4a)}
+.alt-body{padding:9px 10px}
+.alt-title{font-size:11px;font-weight:700;color:var(--bianco);margin-bottom:2px;line-height:1.3}
+.alt-loc{font-size:10px;color:var(--grigio)}
+
+/* SECTION LABEL */
+.slabel{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--grigio);margin-bottom:12px;margin-top:24px}
+
+/* CTA FISSO */
+.cta-fixed{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--nero2);border-top:1px solid var(--bordo);
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));
+}
+.cta-inner{max-width:760px;margin:0 auto;display:flex;gap:10px}
+.btn-chiama{
+  flex:1;background:var(--verde);color:#fff;border:none;
+  border-radius:12px;padding:14px;font-size:14px;font-weight:800;
+  cursor:pointer;font-family:'Inter',sans-serif;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+}
+.btn-profilo{
+  flex:1;background:var(--nero3);color:var(--testo);
+  border:1px solid var(--bordo2);border-radius:12px;padding:14px;
+  font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;
+  text-decoration:none;display:flex;align-items:center;justify-content:center;gap:7px;
+}
+
+/* BREADCRUMB SEO */
+.breadcrumb{font-size:11px;color:var(--grigio);padding:12px 0 16px;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.breadcrumb a{color:var(--grigio);text-decoration:none}
+.breadcrumb a:hover{color:var(--stella)}
+.breadcrumb span{color:var(--bordo2)}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a class="logo" href="/">★ StelleVere</a>
+  <div class="topbar-bc">› {{ artigiano.categoria }} › {{ loc_seo }} › {{ artigiano.nome }}</div>
+</div>
+
+<div class="wrap">
+
+  <!-- BREADCRUMB (SEO) -->
+  <nav class="breadcrumb" aria-label="Percorso">
+    <a href="/">StelleVere</a>
+    <span>›</span>
+    <a href="/scheda/{{ artigiano_slug }}">{{ artigiano.nome }}</a>
+    <span>›</span>
+    <span style="color:var(--testo)">{{ titolo_seo }}</span>
+  </nav>
+
+  <!-- IMMAGINE PRINCIPALE -->
+  <div class="lav-hero">
+    <div class="lav-hero-bg"></div>
+    <div class="lav-emoji">{{ lavoro.emoji if lavoro else '🔧' }}</div>
+  </div>
+
+  <!-- BADGES -->
+  <div class="badges">
+    <span class="badge badge-v">✓ Lavoro verificato</span>
+    <span class="badge badge-s">★★★★★ 5.0</span>
+    <span class="badge badge-g">📍 {{ loc_seo }}</span>
+    <span class="badge badge-g">{{ artigiano.categoria }}</span>
+  </div>
+
+  <!-- TITOLO H1 (ottimizzato per Google) -->
+  <h1>{{ titolo_seo }} a {{ loc_seo }}</h1>
+  <div class="loc-tag">
+    <span>👤</span> {{ artigiano.nome }} · {{ artigiano.categoria }} · {{ artigiano.citta }}
+  </div>
+
+  <!-- DESCRIZIONE -->
+  <div class="desc-box">
+    {{ lavoro.descrizione if lavoro else 'Lavoro eseguito da ' + artigiano.nome + ', artigiano verificato su StelleVere.' }}
+  </div>
+
+  <!-- ARTIGIANO -->
+  <div class="slabel">Chi ha eseguito il lavoro</div>
+  <div class="art-card">
+    <div class="art-av">{{ artigiano.emoji }}</div>
+    <div>
+      <div class="art-nome">{{ artigiano.nome }}</div>
+      <div class="art-cat">{{ artigiano.categoria }} · {{ artigiano.citta }}</div>
+      <div class="art-rating">
+        <span class="art-stars">★★★★★</span>
+        <span class="art-num">{{ artigiano.stelle }}</span>
+        <span class="art-rec">· {{ artigiano.recensioni }} recensioni verificate</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECENSIONE -->
+  {% if lavoro %}
+  <div class="slabel">Recensione del cliente</div>
+  <div class="rec-box">
+    <div class="rec-stars">★★★★★</div>
+    <div class="rec-text">"{{ lavoro.recensione }}"</div>
+    <div class="rec-author">
+      <div class="rec-av">{{ lavoro.cliente[0] }}</div>
+      <div>
+        <div class="rec-name">{{ lavoro.cliente }}</div>
+        <div style="font-size:10px;color:var(--grigio)">Cliente verificato</div>
+      </div>
+      <div class="rec-badge">★ Stella Vera</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ALTRI LAVORI -->
+  <div class="slabel">Altri lavori di {{ artigiano.nome }}</div>
+  <div class="altri-grid">
+    {% for l in artigiano.lavori %}
+    {% if l.id != (lavoro.id if lavoro else -1) %}
+    <a class="alt-card" href="/{{ l.titolo.lower().replace(' ','-') }}/{{ artigiano.citta.lower() }}_{{ l.quartiere.lower().replace(' ','-') }}/{{ artigiano_slug }}">
+      <div class="alt-img bg{{ loop.index }}">{{ l.emoji }}</div>
+      <div class="alt-body">
+        <div class="alt-title">{{ l.titolo }}</div>
+        <div class="alt-loc">📍 {{ l.quartiere }}</div>
+      </div>
+    </a>
+    {% endif %}
+    {% endfor %}
+  </div>
+
+</div><!-- end wrap -->
+
+<!-- CTA FISSO -->
+<div class="cta-fixed">
+  <div class="cta-inner">
+    <button class="btn-chiama" onclick="contattaWA()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.134.558 4.137 1.535 5.874L.057 23.404a.5.5 0 0 0 .61.61l5.488-1.467A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.944 9.944 0 0 1-5.193-1.453l-.37-.22-3.844 1.028 1.044-3.806-.242-.382A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+      Contatta su WhatsApp
+    </button>
+    <a class="btn-profilo" href="/scheda/{{ artigiano_slug }}">
+      👤 Vedi profilo
+    </a>
+  </div>
+</div>
+
+<script>
+function contattaWA() {
+  var tel = "{{ artigiano.telefono }}".replace(/[\s\+\-]/g,'');
+  var nome = "{{ artigiano.nome }}";
+  var msg = encodeURIComponent("Ciao " + nome + ", ho visto il tuo lavoro su StelleVere e vorrei un preventivo!");
+  window.open("https://wa.me/" + tel + "?text=" + msg, "_blank");
+}
+</script>
+</body>
+</html>
