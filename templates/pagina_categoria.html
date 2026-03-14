@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ cat.nome }} verificati vicino a te · StelleVere</title>
+<meta name="description" content="Trova {{ cat.plurale|lower }} verificati con recensioni reali. Stelle vere, non comprate. Cerca per città e quartiere.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://www.stellevere.it/{{ categoria_slug }}">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"CollectionPage","name":"{{ cat.nome }} verificati · StelleVere","description":"Trova {{ cat.plurale|lower }} con recensioni verificate su StelleVere.","url":"https://www.stellevere.it/{{ categoria_slug }}"}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--nero:#0a0a0a;--nero2:#111;--nero3:#1a1a1a;--bordo:#2a2a2a;--bordo2:#333;--stella:#f5c842;--verde:#25d366;--bianco:#fff;--testo:#e0e0e0;--grigio:#777;--grigio2:#444}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--nero);font-family:'Inter',sans-serif;color:var(--testo);line-height:1.6}
+a{text-decoration:none;color:inherit}
+
+.topbar{background:var(--nero2);border-bottom:1px solid var(--bordo);padding:13px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10}
+.logo{font-size:15px;font-weight:900;color:var(--stella)}
+.topbar-bc{flex:1;font-size:11px;color:var(--grigio)}
+
+.wrap{max-width:820px;margin:0 auto;padding:0 16px 60px}
+
+/* HERO */
+.hero{padding:28px 0 20px;border-bottom:1px solid var(--bordo);margin-bottom:24px}
+.hero-label{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--grigio);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.hero-label a{color:var(--grigio)}
+.hero-label span{color:var(--bordo2)}
+h1{font-size:clamp(22px,5vw,34px);font-weight:900;color:var(--bianco);line-height:1.2;margin-bottom:8px}
+.hero-sub{font-size:14px;color:var(--grigio);line-height:1.6;max-width:540px}
+.hero-stats{display:flex;gap:16px;margin-top:16px;flex-wrap:wrap}
+.stat-pill{background:var(--nero3);border:1px solid var(--bordo);border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;color:var(--testo);display:flex;align-items:center;gap:6px}
+.stat-num{color:var(--stella);font-size:15px;font-weight:900}
+
+/* SECTION LABEL */
+.slabel{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--grigio);margin-bottom:12px;margin-top:24px;display:flex;align-items:center;gap:8px}
+.slabel-line{flex:1;height:1px;background:var(--bordo)}
+
+/* CITTÀ GRID */
+.citta-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:8px}
+.citta-card{
+  background:var(--nero2);border:1px solid var(--bordo);border-radius:12px;
+  padding:16px 14px;cursor:pointer;transition:border-color .15s,transform .1s;
+  display:block;
+}
+.citta-card:hover{border-color:var(--stella);transform:translateY(-1px)}
+.citta-nome{font-size:14px;font-weight:800;color:var(--bianco);margin-bottom:4px}
+.citta-count{font-size:11px;color:var(--grigio)}
+.citta-count strong{color:var(--stella)}
+.citta-arrow{font-size:12px;color:var(--grigio);margin-top:10px;display:flex;align-items:center;gap:4px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.06em}
+
+/* ARTIGIANI */
+.art-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.art-card{
+  background:var(--nero2);border:1px solid var(--bordo);border-radius:12px;
+  padding:14px;display:flex;gap:12px;align-items:flex-start;
+  transition:border-color .15s;
+}
+.art-card:hover{border-color:var(--bordo2)}
+.art-av{width:44px;height:44px;border-radius:50%;background:var(--nero3);border:1px solid var(--bordo2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.art-nome{font-size:13px;font-weight:800;color:var(--bianco);margin-bottom:2px}
+.art-loc{font-size:11px;color:var(--grigio);margin-bottom:5px}
+.art-rating{display:flex;align-items:center;gap:5px;font-size:11px}
+.art-stars{color:var(--stella)}
+.art-num{font-weight:800;color:var(--bianco)}
+.art-rec{color:var(--grigio)}
+.art-badge{display:inline-flex;align-items:center;gap:3px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);color:var(--verde);font-size:9px;font-weight:800;padding:2px 6px;border-radius:3px;margin-top:5px}
+
+/* LAVORI RECENTI */
+.jobs-list{display:flex;flex-direction:column;gap:8px}
+.job-card{
+  background:var(--nero2);border:1px solid var(--bordo);border-radius:10px;
+  padding:12px 14px;display:flex;gap:12px;align-items:center;
+  transition:border-color .15s;
+}
+.job-card:hover{border-color:var(--bordo2)}
+.job-left{flex:1;min-width:0}
+.job-titolo{font-size:13px;font-weight:700;color:var(--bianco);margin-bottom:3px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.job-meta{font-size:11px;color:var(--grigio);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.job-loc{display:flex;align-items:center;gap:3px}
+.job-right{flex-shrink:0;text-align:right}
+.job-stelle{color:var(--stella);font-size:11px;font-weight:800}
+.job-visite{font-size:10px;color:var(--grigio)}
+.job-art{font-size:11px;color:var(--grigio2);margin-top:2px}
+
+/* CTA BOTTOM */
+.cta-strip{background:linear-gradient(135deg,rgba(245,200,66,.06),rgba(245,200,66,.02));border:1px solid rgba(245,200,66,.15);border-radius:14px;padding:20px;text-align:center;margin-top:32px}
+.cta-title{font-size:16px;font-weight:900;color:var(--bianco);margin-bottom:6px}
+.cta-sub{font-size:12px;color:var(--grigio);margin-bottom:14px}
+.btn-cta{display:inline-flex;align-items:center;gap:8px;background:var(--stella);color:var(--nero);padding:12px 24px;border-radius:10px;font-size:14px;font-weight:900;font-family:'Inter',sans-serif}
+
+/* BREADCRUMB */
+.bc{font-size:11px;color:var(--grigio);padding:12px 0 0;display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.bc a{color:var(--grigio)}
+.bc a:hover{color:var(--stella)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="logo" href="/">★ StelleVere</a>
+  <div class="topbar-bc">· {{ cat.nome }}</div>
+</div>
+
+<div class="wrap">
+  <nav class="bc">
+    <a href="/">StelleVere</a>
+    <span>›</span>
+    <span style="color:var(--testo)">{{ cat.nome }}</span>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <h1>{{ cat.plurale }} verificati<br>vicino a te</h1>
+    <div class="hero-sub">Ogni lavoro è reale, ogni stella è guadagnata. "Stelle vere, non comprate."</div>
+    <div class="hero-stats">
+      <div class="stat-pill"><span class="stat-num">{{ jobs|length }}</span> lavori pubblicati</div>
+      <div class="stat-pill"><span class="stat-num">{{ artigiani|length }}</span> {{ cat.plurale|lower }} attivi</div>
+      <div class="stat-pill"><span class="stat-num">{{ citta_list|length }}</span> città coperte</div>
+    </div>
+  </div>
+
+  <!-- CITTÀ -->
+  <div class="slabel">Cerca per città <div class="slabel-line"></div></div>
+  <div class="citta-grid">
+    {% for citta, count in citta_list %}
+    <a class="citta-card" href="/{{ categoria_slug }}/{{ slugify(citta) }}">
+      <div class="citta-nome">{{ citta }}</div>
+      <div class="citta-count"><strong>{{ count }}</strong> lavori verificati</div>
+      <div class="citta-arrow">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        Vedi tutti
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+  <!-- ARTIGIANI -->
+  {% if artigiani %}
+  <div class="slabel">{{ cat.plurale }} attivi <div class="slabel-line"></div></div>
+  <div class="art-grid">
+    {% for art in artigiani %}
+    <a class="art-card" href="/scheda/{{ art.id }}">
+      <div class="art-av">🔧</div>
+      <div>
+        <div class="art-nome">{{ art.nome }}</div>
+        <div class="art-loc">📍 {{ art.citta }}</div>
+        <div class="art-rating">
+          <span class="art-stars">★★★★★</span>
+          <span class="art-num">{{ art.stelle }}</span>
+          <span class="art-rec">· {{ art.recensioni }} rec.</span>
+        </div>
+        <div class="art-badge">✓ Verificato</div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ULTIMI LAVORI -->
+  <div class="slabel">Ultimi lavori pubblicati <div class="slabel-line"></div></div>
+  <div class="jobs-list">
+    {% for j in jobs[:12] %}
+    <a class="job-card" href="/{{ categoria_slug }}/{{ slugify(j.titolo) }}/{{ slugify(j.citta) }}-{{ slugify(j.quartiere) }}">
+      <div class="job-left">
+        <div class="job-titolo">{{ j.titolo }}</div>
+        <div class="job-meta">
+          <span class="job-loc">📍 {{ j.quartiere }}, {{ j.citta }}</span>
+          <span style="color:var(--stella);font-weight:800;font-size:11px">★★★★★</span>
+        </div>
+        <div class="job-art">{{ j.artigiano.nome }}</div>
+      </div>
+      <div class="job-right">
+        <div class="job-stelle">★ {{ j.stelle }}.0</div>
+        <div class="job-visite">{{ j.visite }} visite</div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-strip">
+    <div class="cta-title">Sei un {{ cat.cat_tipo|lower }}?</div>
+    <div class="cta-sub">Pubblica i tuoi lavori su StelleVere — gratis. Ogni lavoro diventa una pagina indicizzata su Google.</div>
+    <a class="btn-cta" href="/scheda/fossati-antonio">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      Inizia ora — è gratis
+    </a>
+  </div>
+</div>
+
+</body>
+</html>
