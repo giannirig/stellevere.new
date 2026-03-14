@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ artigiano.nome }} · StelleVere</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#111111">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--nero:#0a0a0a;--nero2:#111;--nero3:#1a1a1a;--bordo:#2a2a2a;--bordo2:#333;--stella:#f5c842;--verde:#25d366;--bianco:#fff;--testo:#e0e0e0;--grigio:#777}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--nero);font-family:'Inter',sans-serif;color:var(--testo);min-height:100vh}
+.topbar{background:var(--nero2);border-bottom:1px solid var(--bordo);padding:13px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10}
+.logo{font-size:15px;font-weight:900;color:var(--stella)}
+.topbar a{margin-left:auto;font-size:12px;color:var(--grigio);text-decoration:none;background:var(--nero3);border:1px solid var(--bordo2);padding:6px 12px;border-radius:8px}
+.hero{background:var(--nero2);border-bottom:1px solid var(--bordo);padding:20px 16px}
+.hero-top{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.av{width:66px;height:66px;border-radius:50%;background:var(--nero3);border:2px solid var(--bordo2);display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0}
+.nome{font-size:22px;font-weight:900;color:var(--bianco);margin-bottom:4px}
+.cat{font-size:13px;color:var(--grigio);margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-size:10px;font-weight:700;padding:3px 9px;border-radius:4px}
+.chip-v{background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.25);color:var(--verde)}
+.chip-s{background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.2);color:var(--stella)}
+.chip-g{background:var(--nero3);border:1px solid var(--bordo2);color:var(--grigio)}
+.rating{background:var(--nero3);border:1px solid var(--bordo);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:14px}
+.rnum{font-size:32px;font-weight:900;color:var(--stella)}
+.rstars{font-size:16px;color:var(--stella);margin-bottom:3px}
+.rsub{font-size:10px;color:var(--grigio)}
+.rcnt{margin-left:auto;text-align:right}
+.rcnt strong{display:block;font-size:18px;font-weight:900;color:var(--testo)}
+.rcnt span{font-size:10px;color:var(--grigio)}
+.section{padding:16px 16px 4px}
+.slabel{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--grigio);margin-bottom:12px}
+.lgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px}
+.lcard{background:var(--nero2);border:1px solid var(--bordo);border-radius:11px;overflow:hidden;cursor:pointer}
+.limg{width:100%;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:28px}
+.l1 .limg{background:linear-gradient(135deg,#1a2a3a,#2d4a6a)}
+.l2 .limg{background:linear-gradient(135deg,#1a2a1a,#2a4a2a)}
+.l3 .limg{background:linear-gradient(135deg,#2a1a1a,#4a2a1a)}
+.l4 .limg{background:linear-gradient(135deg,#1a1a2a,#2a2a4a)}
+.lbody{padding:9px 10px 10px}
+.ltitle{font-size:11px;font-weight:700;color:var(--bianco);margin-bottom:3px}
+.lmeta{font-size:10px;color:var(--grigio)}
+.rec-box{background:var(--nero2);border:1px solid var(--bordo);border-top:2px solid var(--stella);border-radius:10px;padding:13px;margin-bottom:10px}
+.rec-stars{font-size:14px;color:var(--stella);margin-bottom:7px}
+.rec-text{font-style:italic;font-size:13px;color:var(--testo);line-height:1.5;margin-bottom:10px}
+.rec-author{display:flex;align-items:center;gap:8px}
+.rec-av{width:28px;height:28px;border-radius:50%;background:var(--nero3);border:1px solid var(--bordo2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--grigio)}
+.rec-name{font-size:12px;font-weight:700;color:var(--testo)}
+.rec-date{font-size:10px;color:var(--grigio)}
+.rec-wa{margin-left:auto;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);color:var(--verde);font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px}
+.btn-add{
+  position:fixed;bottom:20px;right:16px;
+  background:var(--stella);color:var(--nero);
+  border:none;border-radius:50px;padding:14px 20px;
+  font-size:14px;font-weight:900;cursor:pointer;
+  font-family:'Inter',sans-serif;box-shadow:0 4px 20px rgba(245,200,66,.3);
+  text-decoration:none;display:flex;align-items:center;gap:7px;
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo">★ StelleVere</div>
+  <a href="/">← Home</a>
+</div>
+<div class="hero">
+  <div class="hero-top">
+    <div class="av">{{ artigiano.emoji }}</div>
+    <div>
+      <div class="nome">{{ artigiano.nome }}</div>
+      <div class="cat">{{ artigiano.categoria }} · {{ artigiano.citta }}</div>
+      <div class="chips">
+        <span class="chip chip-v">✓ Verificato</span>
+        <span class="chip chip-s">★ {{ artigiano.stelle }}</span>
+        <span class="chip chip-g">📍 {{ artigiano.citta }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="rating">
+    <div class="rnum">{{ artigiano.stelle }}</div>
+    <div>
+      <div class="rstars">★★★★★</div>
+      <div class="rsub">Stelle vere, non comprate</div>
+    </div>
+    <div class="rcnt">
+      <strong>{{ artigiano.recensioni }}</strong>
+      <span>recensioni</span>
+    </div>
+  </div>
+</div>
+<div class="section">
+  <div class="slabel">Lavori certificati</div>
+  <div class="lgrid">
+    {% for lavoro in artigiano.lavori %}
+    <div class="lcard l{{ loop.index }}">
+      <div class="limg">{{ lavoro.emoji }}</div>
+      <div class="lbody">
+        <div class="ltitle">{{ lavoro.titolo }}</div>
+        <div class="lmeta">📍 {{ lavoro.quartiere }} · ★★★★★</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="slabel">Recensioni verificate via WhatsApp</div>
+  {% for lavoro in artigiano.lavori %}
+  <div class="rec-box">
+    <div class="rec-stars">★★★★★</div>
+    <div class="rec-text">"{{ lavoro.recensione }}"</div>
+    <div class="rec-author">
+      <div class="rec-av">{{ lavoro.cliente[0] }}{{ lavoro.cliente.split()[1][0] if lavoro.cliente.split()|length > 1 else '' }}</div>
+      <div>
+        <div class="rec-name">{{ lavoro.cliente }}</div>
+        <div class="rec-date">2024–2025</div>
+      </div>
+      <div class="rec-wa">via WhatsApp</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+<a class="btn-add" href="/artigiano/{{ artigiano.id }}/inserisci">➕ Aggiungi lavoro</a>
+</body>
+</html>

@@ -3,27 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stellevere</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <title>StelleVere – Directory Artigiani</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#f5c842">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#0a0a0a;font-family:'Inter',sans-serif;color:#e0e0e0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+    .logo{font-size:48px;margin-bottom:8px}
+    h1{font-size:28px;font-weight:900;color:#fff;margin-bottom:6px;letter-spacing:-.02em}
+    h1 span{color:#f5c842}
+    .sub{font-size:15px;color:#666;margin-bottom:40px;text-align:center}
+    .links{display:flex;flex-direction:column;gap:12px;width:100%;max-width:340px}
+    a.btn{
+        display:block;padding:16px 20px;border-radius:13px;
+        text-decoration:none;font-weight:800;font-size:15px;
+        text-align:center;transition:transform .1s,opacity .15s;
+    }
+    a.btn:active{transform:scale(.98);opacity:.9}
+    .btn-gold{background:#f5c842;color:#0a0a0a}
+    .btn-dark{background:#1a1a1a;color:#e0e0e0;border:1px solid #2a2a2a}
+    .badge{
+        display:inline-block;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.25);
+        color:#25d366;font-size:11px;font-weight:700;padding:3px 9px;border-radius:4px;margin-bottom:16px;
+    }
+    </style>
 </head>
 <body>
-    <header>
-        <nav>
-            <div class="logo">Stellevere</div>
-        </nav>
-    </header>
-
-    <main>
-        <section class="hero">
-            <h1>Benvenuti a Stellevere</h1>
-            <p>Sito in costruzione. Torneremo presto.</p>
-        </section>
-    </main>
-
-    <footer>
-        <p>&copy; 2026 Stellevere. Tutti i diritti riservati.</p>
-    </footer>
-
-    <script src="/static/js/main.js"></script>
+    <div style="text-align:center">
+        <div class="logo">⭐</div>
+        <h1>Stelle<span>Vere</span></h1>
+        <p class="sub">Directory artigiani verificati · Stelle vere, non comprate</p>
+        <div class="badge">✓ Demo interattiva</div>
+    </div>
+    <div class="links">
+        <a class="btn btn-gold" href="/artigiano/fossati-antonio/inserisci">
+            🔧 Prova: Inserisci un Lavoro
+        </a>
+        <a class="btn btn-dark" href="/scheda/fossati-antonio">
+            👤 Vedi Scheda Artigiano
+        </a>
+    </div>
 </body>
 </html>
