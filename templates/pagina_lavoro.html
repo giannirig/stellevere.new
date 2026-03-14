@@ -10,7 +10,7 @@
 <meta property="og:title" content="{{ titolo_seo }} a {{ loc_seo }} · {{ artigiano.nome }}">
 <meta property="og:description" content="{{ lavoro.descrizione[:200] if lavoro else '' }}">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://www.stellevere.it/{{ lavoro_slug }}/{{ loc_slug }}/{{ artigiano_slug }}">
+<meta property="og:url" content="https://www.stellevere.it/{{ categoria_slug }}/{{ titolo_slug }}/{{ loc_slug }}">
 <!-- Schema.org LocalBusiness JSON-LD -->
 <script type="application/ld+json">
 {
@@ -31,7 +31,7 @@
   "url": "https://www.stellevere.it/schede/{{ artigiano_slug }}"
 }
 </script>
-<link rel="canonical" href="https://www.stellevere.it/{{ lavoro_slug }}/{{ loc_slug }}/{{ artigiano_slug }}">
+<link rel="canonical" href="https://www.stellevere.it/{{ categoria_slug }}/{{ titolo_slug }}/{{ loc_slug }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -224,7 +224,7 @@ h1{font-size:clamp(20px,5vw,28px);font-weight:900;color:var(--bianco);line-heigh
   <div class="altri-grid">
     {% for l in artigiano.lavori %}
     {% if l.id != (lavoro.id if lavoro else -1) %}
-    <a class="alt-card" href="/{{ l.titolo.lower().replace(' ','-') }}/{{ artigiano.citta.lower() }}_{{ l.quartiere.lower().replace(' ','-') }}/{{ artigiano_slug }}">
+    <a class="alt-card" href="/{{ artigiano.categoria.lower() }}/{{ l.titolo.lower().replace(' ','-') }}/{{ artigiano.citta.lower() }}-{{ l.quartiere.lower().replace(' ','-') }}">
       <div class="alt-img bg{{ loop.index }}">{{ l.emoji }}</div>
       <div class="alt-body">
         <div class="alt-title">{{ l.titolo }}</div>

@@ -135,39 +135,54 @@ def salva_lavoro():
     return jsonify({'success': True, 'message': 'Lavoro salvato con successo'})
 
 
-@app.route('/<lavoro_slug>/<loc_slug>/<artigiano_slug>')
-def pagina_lavoro(lavoro_slug, loc_slug, artigiano_slug):
-    """Pagina pubblica indicizzabile da Google per ogni singolo lavoro."""
-    artigiano = ARTIGIANI.get(artigiano_slug)
-    if not artigiano:
-        return "Pagina non trovata", 404
+@app.route('/<categoria_slug>/<titolo_slug>/<loc_slug>')
+def pagina_lavoro(categoria_slug, titolo_slug, loc_slug):
+    """Pagina pubblica indicizzabile da Google.
+    Struttura: /categoria/titolo-lavoro/citta-quartiere
+    Esempio:   /idraulica/installazione-caldaia/milano-navigli
+    """
+    import re
+    import unicodedata
 
-    # Trova il lavoro corrispondente allo slug (confronto approssimativo)
+    def slugify(s):
+        s = unicodedata.normalize('NFD', s).encode('ascii', 'ignore').decode()
+        s = re.sub(r'[^a-z0-9\s-]', '', s.lower())
+        return re.sub(r'[\s-]+', '-', s).strip('-')
+
+    # Cerca tra tutti gli artigiani quello con lavori corrispondenti
+    artigiano_trovato = None
     lavoro_trovato = None
-    for l in artigiano['lavori']:
-        slug_titolo = l['titolo'].lower().replace(' ', '-')
-        import re
-        slug_clean = re.sub(r'[^a-z0-9-]', '', slug_titolo)
-        if lavoro_slug in slug_clean or slug_clean.startswith(lavoro_slug[:10]):
-            lavoro_trovato = l
+
+    for art in ARTIGIANI.values():
+        for l in art['lavori']:
+            if (slugify(l['titolo']).startswith(titolo_slug[:8]) or
+                    titolo_slug[:8] in slugify(l['titolo'])):
+                artigiano_trovato = art
+                lavoro_trovato = l
+                break
+        if artigiano_trovato:
             break
 
-    if not lavoro_trovato and artigiano['lavori']:
-        lavoro_trovato = artigiano['lavori'][0]
+    # Fallback: primo artigiano disponibile
+    if not artigiano_trovato:
+        artigiano_trovato = next(iter(ARTIGIANI.values()))
+        lavoro_trovato = artigiano_trovato['lavori'][0] if artigiano_trovato['lavori'] else None
 
-    # Costruisce titolo SEO dalla URL
-    titolo_seo = lavoro_slug.replace('-', ' ').title()
-    loc_seo = loc_slug.replace('_', ', ').replace('-', ' ').title()
+    titolo_seo   = titolo_slug.replace('-', ' ').title()
+    cat_seo      = categoria_slug.replace('-', ' ').title()
+    loc_seo      = loc_slug.replace('-', ' ').title()
 
     return render_template(
         'pagina_lavoro.html',
-        artigiano=artigiano,
+        artigiano=artigiano_trovato,
         lavoro=lavoro_trovato,
         titolo_seo=titolo_seo,
+        cat_seo=cat_seo,
         loc_seo=loc_seo,
-        lavoro_slug=lavoro_slug,
+        categoria_slug=categoria_slug,
+        titolo_slug=titolo_slug,
         loc_slug=loc_slug,
-        artigiano_slug=artigiano_slug
+        artigiano_slug=artigiano_trovato['id']
     )
 
 

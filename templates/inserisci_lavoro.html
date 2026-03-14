@@ -556,23 +556,23 @@ function aggiornaURL() {
   const titolo = document.getElementById('f-titolo').value.trim();
   const citta  = document.getElementById('f-citta').value.trim();
   const quart  = document.getElementById('f-quartiere').value.trim();
-  const artId  = artigiano.id;
 
   if (!titolo || !citta) {
     document.getElementById('url-preview').style.display = 'none';
     return;
   }
 
+  const slugCat    = slugify(stato.categoria);
   const slugTitolo = slugify(titolo);
   const slugLoc    = quart
-    ? slugify(citta) + '_' + slugify(quart)
+    ? slugify(citta) + '-' + slugify(quart)
     : slugify(citta);
 
-  const url = `www.stellevere.it/${slugTitolo}/${slugLoc}/${artId}`;
+  const url = `www.stellevere.it/${slugCat}/${slugTitolo}/${slugLoc}`;
   stato.urlGenerata = url;
 
   document.getElementById('url-preview-val').innerHTML =
-    `stellevere.it/<span>${slugTitolo}</span>/<span>${slugLoc}</span>/<span>${artId}</span>`;
+    `stellevere.it/<span>${slugCat}</span>/<span>${slugTitolo}</span>/<span>${slugLoc}</span>`;
   document.getElementById('url-preview').style.display = 'block';
 }
 
@@ -584,6 +584,7 @@ function selCat(el, nome, emoji) {
   stato.catEmoji  = emoji;
   document.getElementById('cat-label').textContent = nome;
   caricaEsempi(nome);
+  aggiornaURL();
   controllaForm();
 }
 
