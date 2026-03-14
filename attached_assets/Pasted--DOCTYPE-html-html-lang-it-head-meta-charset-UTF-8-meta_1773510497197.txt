@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>StelleVere – Flusso Completo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --nero:#0a0a0a; --nero2:#111; --nero3:#1a1a1a; --nero4:#222;
+  --bordo:#2a2a2a; --bordo2:#333;
+  --stella:#f5c842; --stella2:#e6b800;
+  --bianco:#fff; --testo:#e0e0e0; --grigio:#777; --grigio2:#444;
+  --verde:#25d366; --verde2:#1ebe5d; --verde-scuro:#128c3e;
+  --rosso:#ef4444;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#000;font-family:'Inter',sans-serif;color:var(--testo);overflow:hidden}
+
+/* ── SHELL ── */
+.shell{
+  width:100%;max-width:390px;height:100vh;max-height:844px;
+  margin:0 auto;background:var(--nero2);
+  display:flex;flex-direction:column;overflow:hidden;position:relative;
+}
+
+/* ── SCREEN SYSTEM ── */
+.screen{display:none;flex-direction:column;height:100%;position:absolute;inset:0;background:var(--nero2)}
+.screen.active{display:flex;z-index:10}
+.screen.slide-in{animation:slideIn .3s cubic-bezier(.25,.46,.45,.94)}
+.screen.slide-back{animation:slideBack .25s cubic-bezier(.25,.46,.45,.94)}
+@keyframes slideIn{from{transform:translateX(100%);opacity:.5}to{transform:translateX(0);opacity:1}}
+@keyframes slideBack{from{transform:translateX(-30%);opacity:.5}to{transform:translateX(0);opacity:1}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+
+/* ── TOPBAR ── */
+.topbar{
+  background:var(--nero);border-bottom:1px solid var(--bordo);
+  padding:13px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;z-index:10;
+}
+.topbar-logo{font-size:14px;font-weight:900;color:var(--stella);letter-spacing:-.01em}
+.topbar-url{flex:1;font-size:10px;color:var(--grigio);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topbar-back{width:32px;height:32px;background:var(--nero3);border:1px solid var(--bordo);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;flex-shrink:0;transition:background .15s}
+.topbar-back:active{background:var(--bordo2)}
+.scroll{flex:1;overflow-y:auto;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+.bottombar{padding:12px 14px;background:var(--nero);border-top:1px solid var(--bordo);flex-shrink:0}
+
+/* ── BOTTONI ── */
+.btn-wa{width:100%;background:var(--verde);color:#fff;border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:background .15s,transform .1s;font-family:'Inter',sans-serif}
+.btn-wa:active{background:var(--verde2);transform:scale(.98)}
+.btn-wa:disabled{background:var(--grigio2);color:var(--grigio);cursor:not-allowed;transform:none}
+.btn-stella{width:100%;background:var(--stella);color:var(--nero);border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:800;cursor:pointer;transition:background .15s,transform .1s;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Inter',sans-serif}
+.btn-stella:active{background:var(--stella2);transform:scale(.98)}
+.btn-stella:disabled{background:var(--grigio2);color:var(--grigio);cursor:not-allowed;transform:none}
+.btn-ghost{width:100%;background:var(--nero3);border:1.5px solid var(--bordo2);border-radius:12px;padding:13px;font-size:13px;font-weight:700;color:var(--grigio);cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Inter',sans-serif;transition:border-color .15s,color .15s}
+.btn-ghost:active{border-color:var(--stella);color:var(--testo)}
+
+/* ── CHIP ── */
+.chip{font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px}
+.chip-v{background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.25);color:var(--verde)}
+.chip-s{background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.2);color:var(--stella)}
+.chip-g{background:var(--nero3);border:1px solid var(--bordo2);color:var(--grigio)}
+
+/* ─────────────────────────────────────
+   SCREEN A: WHATSAPP CHAT
+───────────────────────────────────── */
+#scA{background:#0b1014}
+.wa-header{background:#1f2c34;padding:11px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.wa-av{width:36px;height:36px;border-radius:50%;background:#1a3a25;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.wa-hname{font-size:14px;font-weight:700;color:#e9edef}
+.wa-hsub{font-size:11px;color:#8696a0}
+.wa-hicons{margin-left:auto;font-size:17px;color:#8696a0;display:flex;gap:16px}
+.wa-chat{flex:1;overflow-y:auto;padding:12px;background:#0b1014;scrollbar-width:none}
+.wa-chat::-webkit-scrollbar{display:none}
+.wa-date{text-align:center;font-size:11px;color:#8696a0;background:rgba(0,0,0,.3);display:block;width:fit-content;margin:0 auto 12px;padding:3px 10px;border-radius:6px}
+.wa-msg{max-width:82%;background:#202c33;border-radius:4px 12px 12px 12px;padding:10px 12px;margin-bottom:8px;position:relative}
+.wa-msg::before{content:'';position:absolute;top:0;left:-7px;border:7px solid transparent;border-top-color:#202c33;border-right-color:#202c33}
+.wa-msender{font-size:11px;font-weight:700;color:#25d366;margin-bottom:5px}
+.wa-mtext{font-size:13px;color:#e9edef;line-height:1.5}
+.wa-mtime{font-size:10px;color:#8696a0;text-align:right;margin-top:4px;display:flex;align-items:center;justify-content:flex-end;gap:3px}
+.wa-link{background:#1a2530;border-left:3px solid #25d366;border-radius:0 6px 6px 0;padding:10px;margin-top:8px;cursor:pointer;transition:background .15s}
+.wa-link:active{background:#253040}
+.wa-ldomain{font-size:10px;color:#8696a0;margin-bottom:2px}
+.wa-ltitle{font-size:13px;font-weight:700;color:#e9edef;margin-bottom:2px}
+.wa-ldesc{font-size:11px;color:#8696a0}
+.wa-lthumb{background:#0d1b22;border-radius:4px;padding:10px;text-align:center;margin-top:8px;font-size:26px}
+.wa-inputbar{background:#1f2c34;padding:8px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.wa-input{flex:1;background:#2a3942;border:none;border-radius:20px;padding:10px 14px;font-size:13px;color:#e9edef;font-family:'Inter',sans-serif;outline:none}
+.wa-input::placeholder{color:#8696a0}
+.wa-sendbt{width:38px;height:38px;border-radius:50%;background:var(--verde);border:none;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0}
+
+/* ─────────────────────────────────────
+   SCREEN B: LANDING PAGE
+───────────────────────────────────── */
+.land-hero{background:var(--nero);padding:22px 16px 18px;border-bottom:1px solid var(--bordo);text-align:center;position:relative;overflow:hidden;flex-shrink:0}
+.land-hero::before{content:'';position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:260px;height:130px;background:radial-gradient(ellipse,rgba(245,200,66,.13) 0%,transparent 70%);pointer-events:none}
+.land-avatar{width:68px;height:68px;border-radius:50%;background:var(--nero3);border:2px solid var(--bordo2);display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 10px;position:relative;z-index:1}
+.land-name{font-size:19px;font-weight:900;color:var(--bianco);margin-bottom:3px}
+.land-cat{font-size:12px;color:var(--grigio);margin-bottom:10px}
+.land-chips{display:flex;justify-content:center;gap:6px;flex-wrap:wrap}
+.land-body{padding:20px 16px 4px}
+.land-title{font-size:18px;font-weight:800;color:var(--bianco);margin-bottom:8px;line-height:1.3}
+.land-desc{font-size:13px;color:var(--grigio);line-height:1.6;margin-bottom:18px}
+.how-list{display:flex;flex-direction:column;gap:10px;margin-bottom:4px}
+.how-item{display:flex;align-items:flex-start;gap:10px}
+.how-num{width:26px;height:26px;border-radius:50%;background:rgba(245,200,66,.12);border:1px solid rgba(245,200,66,.2);color:var(--stella);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.how-text{font-size:13px;color:var(--testo);line-height:1.5;padding-top:3px}
+.how-text strong{color:var(--bianco)}
+
+/* ─────────────────────────────────────
+   SCREEN C: OTP
+───────────────────────────────────── */
+.otp-intro{margin-bottom:22px}
+.otp-title{font-size:20px;font-weight:900;color:var(--bianco);margin-bottom:6px}
+.otp-sub{font-size:13px;color:var(--grigio);line-height:1.6}
+.otp-sub strong{color:var(--verde)}
+.wa-bubble{background:#1e3a2a;border:1px solid #2a4a35;border-radius:4px 12px 12px 12px;padding:12px 14px;margin-bottom:22px;position:relative;display:inline-block;max-width:88%}
+.wa-bubble::before{content:'';position:absolute;top:0;left:-7px;border:7px solid transparent;border-top-color:#2a4a35;border-right-color:#2a4a35}
+.wa-bsender{font-size:11px;font-weight:700;color:var(--verde);margin-bottom:4px}
+.wa-btext{font-size:13px;color:#d0e8d8;line-height:1.4}
+.wa-bcode{font-size:30px;font-weight:900;color:white;letter-spacing:.2em;margin:6px 0 2px}
+.otp-label{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--grigio);margin-bottom:10px}
+.otp-boxes{display:flex;gap:8px;margin-bottom:12px}
+.otp-box{flex:1;height:56px;background:var(--nero3);border:1.5px solid var(--bordo2);border-radius:12px;font-size:26px;font-weight:900;color:var(--bianco);text-align:center;outline:none;font-family:'Inter',sans-serif;transition:border-color .15s;-webkit-appearance:none;caret-color:var(--stella)}
+.otp-box:focus{border-color:var(--stella)}
+.otp-box.filled{border-color:var(--verde)}
+.otp-note{font-size:11px;color:var(--grigio);margin-bottom:6px}
+.otp-resend{font-size:12px;color:var(--grigio);text-align:center;margin-top:10px}
+.otp-resend-link{color:var(--verde);font-weight:700;cursor:pointer}
+.countdown{color:var(--grigio);font-weight:600}
+
+/* ─────────────────────────────────────
+   SCREEN D: SCHEDA + DASHBOARD
+───────────────────────────────────── */
+#scD{overflow:hidden}
+.owner-banner{background:linear-gradient(135deg,#1a2a1a,#0f1f0f);border-bottom:2px solid rgba(37,211,102,.3);padding:9px 14px;display:none;align-items:center;gap:10px;flex-shrink:0}
+.owner-banner.on{display:flex}
+.ob-dot{width:8px;height:8px;border-radius:50%;background:var(--verde);flex-shrink:0;animation:pulse 2s infinite}
+.ob-text{flex:1;font-size:12px;font-weight:700;color:#90d4a0}
+.ob-text span{color:white}
+.ob-cta{background:var(--verde);color:var(--nero);font-size:11px;font-weight:800;padding:5px 10px;border-radius:6px;border:none;cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif}
+.ob-cta:active{background:var(--verde2)}
+
+.hero{background:var(--nero);padding:18px 14px 14px;border-bottom:1px solid var(--bordo);flex-shrink:0}
+.hero-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
+.hero-av{width:60px;height:60px;border-radius:50%;background:var(--nero3);border:2px solid var(--bordo2);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;position:relative}
+.hero-vbadge{position:absolute;bottom:-2px;right:-2px;width:18px;height:18px;border-radius:50%;background:var(--verde);border:2px solid var(--nero);display:flex;align-items:center;justify-content:center;font-size:9px;color:white;font-weight:900}
+.hero-info{flex:1;min-width:0}
+.hero-name{font-size:19px;font-weight:900;color:var(--bianco);line-height:1.1;margin-bottom:3px}
+.hero-cat{font-size:12px;color:var(--grigio);margin-bottom:7px}
+.hero-chips{display:flex;flex-wrap:wrap;gap:5px}
+.rating-bar{background:var(--nero3);border:1px solid var(--bordo);border-radius:10px;padding:11px 13px;display:flex;align-items:center;gap:12px}
+.rnum{font-size:30px;font-weight:900;color:var(--stella);line-height:1}
+.rright{flex:1}
+.rstars{font-size:15px;color:var(--stella);letter-spacing:1px;margin-bottom:2px}
+.rsub{font-size:10px;color:var(--grigio)}
+.rcount{text-align:right}
+.rcount strong{display:block;font-size:17px;font-weight:900;color:var(--testo)}
+.rcount span{font-size:10px;color:var(--grigio)}
+
+.tabs{display:flex;background:var(--nero);border-bottom:1px solid var(--bordo);overflow-x:auto;scrollbar-width:none;flex-shrink:0}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;min-width:fit-content;padding:11px 10px 9px;font-size:11px;font-weight:700;color:var(--grigio);text-align:center;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;user-select:none;transition:color .15s,border-color .15s}
+.tab.active{color:var(--stella);border-bottom-color:var(--stella)}
+.tab.dash-tab{display:none;color:#4a9a5a}
+.tab.dash-tab.on{display:block}
+.tab.dash-tab.active{color:var(--verde);border-bottom-color:var(--verde)}
+
+.panel{display:none;padding:14px;overflow-y:auto;flex:1}
+.panel.active{display:block}
+.slabel{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--grigio);margin-bottom:10px;margin-top:2px}
+
+/* lavori grid */
+.lgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
+.lcard{background:var(--nero);border:1px solid var(--bordo);border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color .15s,transform .12s}
+.lcard:active{transform:scale(.97)}
+.limg{width:100%;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:28px;position:relative}
+.l1 .limg{background:linear-gradient(135deg,#1a2a3a,#2d4a6a)}
+.l2 .limg{background:linear-gradient(135deg,#1a2a1a,#2a4a2a)}
+.l3 .limg{background:linear-gradient(135deg,#2a1a1a,#4a2a1a)}
+.l4 .limg{background:linear-gradient(135deg,#1a1a2a,#2a2a4a)}
+.ltag{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.7);border:1px solid var(--bordo2);color:var(--grigio);font-size:8px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 5px;border-radius:3px}
+.lbody{padding:8px 9px 9px}
+.ltitle{font-size:11px;font-weight:700;color:var(--bianco);margin-bottom:3px;line-height:1.3}
+.lmeta{font-size:10px;color:var(--grigio)}
+.lstars{font-size:10px;color:var(--stella)}
+
+/* recensioni */
+.rec-box{background:var(--nero);border:1px solid var(--bordo);border-top:2px solid var(--stella2);border-radius:10px;padding:12px;margin-bottom:10px}
+.rec-stars{font-size:14px;color:var(--stella);margin-bottom:6px}
+.rec-text{font-style:italic;font-size:13px;color:var(--testo);line-height:1.5;margin-bottom:10px}
+.rec-author{display:flex;align-items:center;gap:8px}
+.rec-av{width:26px;height:26px;border-radius:50%;background:var(--nero3);border:1px solid var(--bordo2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--grigio);flex-shrink:0}
+.rec-name{font-size:12px;font-weight:700;color:var(--testo)}
+.rec-date{font-size:10px;color:var(--grigio)}
+.rec-wa{margin-left:auto;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);color:var(--verde);font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px}
+
+/* info grid */
+.igrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.itile{background:var(--nero);border:1px solid var(--bordo);border-radius:10px;padding:12px}
+.itile.full{grid-column:1/-1}
+.ilbl{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--grigio);margin-bottom:4px}
+.ival{font-size:13px;font-weight:700;color:var(--bianco)}
+.ival.big{font-size:22px;font-weight:900;color:var(--stella)}
+
+/* dashboard */
+.dstats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
+.dtile{background:var(--nero);border:1px solid var(--bordo);border-radius:10px;padding:11px;text-align:center}
+.dnum{font-size:22px;font-weight:900;color:var(--stella)}
+.dlbl{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--grigio);margin-top:2px}
+.dtrend{font-size:10px;color:var(--verde);margin-top:2px}
+.dadd{background:var(--stella);border-radius:12px;padding:15px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:16px;transition:background .15s}
+.dadd:active{background:var(--stella2)}
+.dadd-t{font-size:14px;font-weight:800;color:var(--nero)}
+.dadd-s{font-size:11px;color:rgba(0,0,0,.5);margin-top:2px}
+.dadd-i{font-size:26px}
+.drow{background:var(--nero);border:1px solid var(--bordo);border-radius:10px;padding:11px;display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.drow-img{width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.dl1 .drow-img{background:linear-gradient(135deg,#1a2a3a,#2d4a6a)}
+.dl2 .drow-img{background:linear-gradient(135deg,#1a2a1a,#2a4a2a)}
+.dl3 .drow-img{background:linear-gradient(135deg,#2a1a1a,#4a2a1a)}
+.drow-info{flex:1;min-width:0}
+.drow-title{font-size:12px;font-weight:700;color:var(--bianco);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drow-meta{font-size:10px;color:var(--grigio);margin-top:2px}
+.drow-acts{display:flex;gap:5px;flex-shrink:0}
+.dact{width:28px;height:28px;border-radius:7px;background:var(--nero3);border:1px solid var(--bordo2);display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer}
+.dact:active{background:var(--bordo2)}
+
+.seo-box{background:rgba(245,200,66,.06);border:1px solid rgba(245,200,66,.2);border-radius:10px;padding:12px 13px;margin-bottom:12px}
+.seo-title{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stella);margin-bottom:8px}
+.seo-kw{background:var(--nero);border:1px solid rgba(245,200,66,.15);border-radius:6px;padding:7px 10px;font-size:11px;color:#c8a830;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between}
+.seo-pos{font-size:10px;color:var(--verde);font-weight:700}
+.prog-wrap{height:4px;background:var(--bordo2);border-radius:2px;margin:2px 0 4px}
+.prog-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--stella2),var(--stella))}
+
+/* bottom cta */
+.btmcta{position:sticky;bottom:0;background:var(--nero);border-top:1px solid var(--bordo);padding:11px 14px;flex-shrink:0}
+
+/* ─────────────────────────────────────
+   SCREEN E: WIZARD INSERIMENTO LAVORO
+───────────────────────────────────── */
+.wiz-progress{padding:10px 14px;background:var(--nero);border-bottom:1px solid var(--bordo);flex-shrink:0}
+.wiz-dots{display:flex;gap:4px;margin-bottom:6px}
+.wiz-dot{flex:1;height:3px;border-radius:2px;background:var(--bordo2);transition:background .3s}
+.wiz-dot.done{background:var(--stella2)}
+.wiz-dot.cur{background:var(--stella)}
+.wiz-labels{display:flex;justify-content:space-between}
+.wiz-lbl{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--grigio);transition:color .3s}
+.wiz-lbl.cur{color:var(--stella)}
+
+.wstep{display:none}
+.wstep.active{display:block;animation:fadeUp .22s ease}
+.flabel{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--grigio);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.freq{color:var(--stella)}
+.fgroup{margin-bottom:16px}
+
+/* categoria */
+.catgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.cattile{background:var(--nero3);border:1.5px solid var(--bordo);border-radius:12px;padding:14px 10px;cursor:pointer;text-align:center;transition:border-color .15s,background .15s;user-select:none}
+.cattile:active{transform:scale(.97)}
+.cattile.sel{border-color:var(--stella);background:rgba(245,200,66,.06)}
+.cat-icon{font-size:26px;margin-bottom:5px}
+.cat-name{font-size:11px;font-weight:700;color:var(--testo)}
+
+input[type=text],input[type=date],textarea,select{width:100%;background:var(--nero3);border:1px solid var(--bordo2);border-radius:10px;padding:12px 13px;font-size:14px;font-family:'Inter',sans-serif;color:var(--bianco);outline:none;transition:border-color .15s;-webkit-appearance:none}
+input[type=text]:focus,input[type=date]:focus,textarea:focus,select:focus{border-color:var(--stella)}
+input[type=text]::placeholder,textarea::placeholder{color:var(--grigio2)}
+textarea{resize:none;min-height:88px;line-height:1.5}
+.ccount{text-align:right;font-size:10px;color:var(--grigio);margin-top:3px}
+
+/* foto */
+.foto-zone{background:var(--nero3);border:2px dashed var(--bordo2);border-radius:12px;padding:28px 14px;text-align:center;cursor:pointer;margin-bottom:10px;transition:border-color .15s;position:relative}
+.foto-zone:active{border-color:var(--stella)}
+.foto-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;padding:0;border:none;background:none}
+.foto-zone-icon{font-size:36px;margin-bottom:8px}
+.foto-zone-t{font-size:14px;font-weight:700;color:var(--bianco);margin-bottom:3px}
+.foto-zone-s{font-size:12px;color:var(--grigio)}
+.foto-prev{display:none;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.fthumb{aspect-ratio:1;border-radius:8px;background:var(--nero3);border:1px solid var(--bordo);display:flex;align-items:center;justify-content:center;font-size:22px;position:relative;overflow:hidden;cursor:pointer}
+.fthumb img{width:100%;height:100%;object-fit:cover}
+.fthumb-del{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.7);color:white;font-size:10px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.fadd{aspect-ratio:1;border-radius:8px;background:var(--nero3);border:1.5px dashed var(--bordo2);display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;color:var(--grigio);position:relative}
+.fadd input[type=file]{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;padding:0;border:none;background:none}
+.ftip{background:rgba(245,200,66,.07);border:1px solid rgba(245,200,66,.2);border-radius:8px;padding:9px 12px;font-size:11px;color:#c8a830;line-height:1.4}
+
+/* stelle picker */
+.stelle-row{display:flex;gap:8px;margin-bottom:6px}
+.stella-b{font-size:28px;cursor:pointer;filter:grayscale(1) opacity(.3);transition:transform .1s;user-select:none}
+.stella-b.on{filter:none}
+.stella-b:active{transform:scale(1.2)}
+
+/* mappa */
+.map-ph{background:var(--nero3);border:1px solid var(--bordo);border-radius:12px;aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;margin-bottom:10px;position:relative;overflow:hidden}
+.map-grid{position:absolute;inset:0;background-image:linear-gradient(var(--bordo) 1px,transparent 1px),linear-gradient(90deg,var(--bordo) 1px,transparent 1px);background-size:26px 26px;opacity:.4}
+.map-pin{font-size:32px;position:relative;z-index:2}
+.map-lbl{font-size:12px;font-weight:700;color:var(--bianco);position:relative;z-index:2}
+.map-sub{font-size:11px;color:var(--grigio);position:relative;z-index:2}
+.gps-btn{width:100%;background:var(--nero3);border:1.5px solid var(--bordo2);border-radius:10px;padding:13px;font-size:13px;font-weight:700;color:var(--testo);cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Inter',sans-serif;transition:border-color .15s}
+.gps-btn:active{border-color:var(--stella)}
+.gps-btn.ok{border-color:var(--verde);color:var(--verde)}
+
+/* anteprima */
+.prev-card{background:var(--nero);border:1px solid var(--bordo2);border-radius:12px;overflow:hidden;margin-bottom:14px}
+.prev-img{width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,#1a2a3a,#2d4a6a);display:flex;align-items:center;justify-content:center;font-size:44px}
+.prev-body{padding:13px}
+.prev-badge{display:inline-flex;align-items:center;gap:3px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);color:var(--verde);font-size:10px;font-weight:700;padding:3px 7px;border-radius:4px;margin-bottom:9px}
+.prev-title{font-size:16px;font-weight:900;color:var(--bianco);margin-bottom:5px}
+.prev-stars{font-size:16px;color:var(--stella);margin-bottom:5px}
+.prev-meta{font-size:12px;color:var(--grigio);margin-bottom:9px;line-height:1.5}
+.prev-desc{font-size:13px;color:#aaa;line-height:1.55;margin-bottom:12px;display:none}
+.prev-tags{display:flex;flex-wrap:wrap;gap:5px}
+.prev-tag{background:var(--nero3);border:1px solid var(--bordo2);color:var(--grigio);font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px}
+.seobox{background:rgba(245,200,66,.06);border:1px solid rgba(245,200,66,.2);border-radius:10px;padding:12px 13px;margin-bottom:13px}
+.seobox-t{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stella);margin-bottom:5px}
+.seobox p{font-size:12px;color:#c8a830;line-height:1.5}
+
+/* successo */
+.succ{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:380px;padding:20px}
+.succ-icon{font-size:68px;margin-bottom:14px;animation:popIn .4s cubic-bezier(.175,.885,.32,1.275)}
+.succ-title{font-size:24px;font-weight:900;color:var(--bianco);margin-bottom:6px;line-height:1.1}
+.succ-sub{font-size:13px;color:var(--grigio);line-height:1.6;max-width:270px;margin-bottom:22px}
+.succ-url{background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.2);border-radius:10px;padding:12px 14px;margin-bottom:20px;width:100%}
+.succ-url-lbl{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--grigio);margin-bottom:4px}
+.succ-url-val{font-size:11px;color:var(--stella);font-weight:600;word-break:break-all}
+.succ-actions{display:flex;flex-direction:column;gap:8px;width:100%}
+
+/* ── OVERLAY DETTAGLIO LAVORO ── */
+.overlay{position:absolute;inset:0;background:var(--nero2);z-index:50;display:none;flex-direction:column}
+.overlay.open{display:flex;animation:slideIn .25s ease}
+.ov-topbar{background:var(--nero);border-bottom:1px solid var(--bordo);padding:13px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.ov-back{width:30px;height:30px;background:var(--nero3);border:1px solid var(--bordo);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer}
+.ov-back:active{background:var(--bordo2)}
+.ov-title{font-size:13px;font-weight:700;color:var(--bianco);flex:1}
+.ov-scroll{flex:1;overflow-y:auto;scrollbar-width:none}
+.ov-scroll::-webkit-scrollbar{display:none}
+.ov-img{width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,#1a2a3a,#2d4a6a);display:flex;align-items:center;justify-content:center;font-size:48px}
+.ov-thumbs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px}
+.ov-th{aspect-ratio:4/3}
+.ov-th:nth-child(1){background:linear-gradient(135deg,#1a2a1a,#2a3a1a);opacity:.7}
+.ov-th:nth-child(2){background:linear-gradient(135deg,#2a1a0a,#3a2a0a);opacity:.7}
+.ov-th:nth-child(3){background:linear-gradient(135deg,#1a1a2a,#2a1a3a);opacity:.7}
+.ov-body{padding:14px}
+.ov-title2{font-size:17px;font-weight:900;color:var(--bianco);margin-bottom:4px;line-height:1.2}
+.ov-loc{font-size:12px;color:var(--grigio);margin-bottom:12px}
+.ov-desc{font-size:13px;color:#aaa;line-height:1.6;margin-bottom:13px;padding-top:12px;border-top:1px solid var(--bordo)}
+.ov-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
+.ov-tag{background:var(--nero3);border:1px solid var(--bordo2);color:var(--grigio);font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px}
+
+/* ── BARRA NAVIGAZIONE FLUSSO (debug/demo) ── */
+.flow-bar{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:390px;
+  background:rgba(0,0,0,.92);border-top:1px solid var(--bordo);
+  padding:6px 10px;display:flex;align-items:center;gap:4px;
+  z-index:999;backdrop-filter:blur(10px);
+}
+.flow-step{
+  flex:1;padding:5px 2px;text-align:center;
+  font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--grigio);border-radius:6px;cursor:pointer;
+  transition:background .15s,color .15s;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.flow-step.cur{background:rgba(245,200,66,.15);color:var(--stella)}
+.flow-step:active{background:var(--bordo2)}
+.flow-sep{color:var(--bordo2);font-size:10px;flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="shell" id="shell">
+
+<!-- ══════════════════════════════
+     SCREEN A — WHATSAPP
+══════════════════════════════ -->
+<div class="screen active" id="scA">
+  <div class="wa-header">
+    <div class="wa-av">⭐</div>
+    <div>
+      <div class="wa-hname">StelleVere.it</div>
+      <div class="wa-hsub">Directory artigiani verificati</div>
+    </div>
+    <div class="wa-hicons">📞 ⋮</div>
+  </div>
+  <div class="wa-chat">
+    <div class="wa-date">Oggi, 09:14</div>
+    <div class="wa-msg">
+      <div class="wa-msender">StelleVere.it</div>
+      <div class="wa-mtext">
+        Ciao <strong style="color:#e9edef">Antonio</strong> 👋<br><br>
+        La tua scheda su StelleVere.it è pronta.<br>
+        Aggiungi i tuoi lavori: ogni lavoro diventa una pagina su Google che porta clienti nella tua zona!<br><br>
+        Tocca il link per entrare — niente password, niente app da scaricare:
+      </div>
+      <div class="wa-link" onclick="go('B')">
+        <div class="wa-ldomain">🔒 stellevere.it</div>
+        <div class="wa-ltitle">⭐ Entra nella tua scheda</div>
+        <div class="wa-ldesc">Fossati Antonio · Idraulico · Milano</div>
+        <div class="wa-lthumb">🔧</div>
+      </div>
+      <div class="wa-mtime">adesso <span style="color:var(--verde)">✓✓</span></div>
+    </div>
+  </div>
+  <div class="wa-inputbar">
+    <div class="wa-input" style="color:#8696a0">Scrivi un messaggio</div>
+    <div class="wa-sendbt">➤</div>
+  </div>
+  <div class="bottombar">
+    <button class="btn-wa" onclick="go('B')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.134.558 4.137 1.535 5.874L.057 23.404a.5.5 0 0 0 .61.61l5.488-1.467A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.944 9.944 0 0 1-5.193-1.453l-.37-.22-3.844 1.028 1.044-3.806-.242-.382A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+      Tocca il link per entrare →
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     SCREEN B — LANDING PAGE
+══════════════════════════════ -->
+<div class="screen" id="scB">
+  <div class="topbar">
+    <div class="topbar-logo">★ StelleVere.it</div>
+    <div style="font-size:10px;color:var(--grigio)">🔒 link sicuro</div>
+  </div>
+  <div class="scroll">
+    <div class="land-hero">
+      <div class="land-avatar">🔧</div>
+      <div class="land-name">Fossati Antonio</div>
+      <div class="land-cat">Idraulico · Milano</div>
+      <div class="land-chips">
+        <span class="chip chip-v">✓ Scheda trovata</span>
+        <span class="chip chip-s">★ 5.0 · 23 rec.</span>
+      </div>
+    </div>
+    <div class="land-body">
+      <div class="land-title">La tua scheda ti aspetta</div>
+      <div class="land-desc">Ogni lavoro che aggiungi diventa una pagina su Google per la tua zona. Gratis, in 2 minuti dal telefono.</div>
+      <div class="how-list">
+        <div class="how-item"><div class="how-num">1</div><div class="how-text"><strong>Verifica il numero</strong> — codice gratuito su WhatsApp</div></div>
+        <div class="how-item"><div class="how-num">2</div><div class="how-text"><strong>Aggiungi foto e descrizione</strong> del lavoro fatto</div></div>
+        <div class="how-item"><div class="how-num">3</div><div class="how-text"><strong>Pubblica</strong> — appare su Google in 24 ore</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="bottombar">
+    <button class="btn-wa" onclick="go('C')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.134.558 4.137 1.535 5.874L.057 23.404a.5.5 0 0 0 .61.61l5.488-1.467A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.944 9.944 0 0 1-5.193-1.453l-.37-.22-3.844 1.028 1.044-3.806-.242-.382A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+      Accedi con WhatsApp
+    </button>
+    <div style="font-size:11px;color:var(--grigio2);text-align:center;margin-top:8px">Codice gratuito sul tuo WhatsApp · Nessuna password</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     SCREEN C — OTP
+══════════════════════════════ -->
+<div class="screen" id="scC">
+  <div class="topbar">
+    <div class="topbar-back" onclick="go('B')">←</div>
+    <div class="topbar-logo">★ StelleVere.it</div>
+  </div>
+  <div class="scroll" style="padding:20px 16px">
+    <div class="otp-intro">
+      <div class="otp-title">Controlla WhatsApp</div>
+      <div class="otp-sub">Abbiamo inviato un codice a<br><strong>+39 333 123 4567</strong></div>
+    </div>
+    <div class="wa-bubble">
+      <div class="wa-bsender">StelleVere.it</div>
+      <div class="wa-btext">Il tuo codice di accesso:</div>
+      <div class="wa-bcode">4 7 2 9</div>
+      <div style="font-size:11px;color:#6aaa7a">Valido 10 min · Non condividere</div>
+    </div>
+    <div class="otp-label">Inserisci il codice</div>
+    <div class="otp-boxes">
+      <input class="otp-box" type="tel" maxlength="1" inputmode="numeric" oninput="oi(this,0)" onkeydown="ok(event,0)">
+      <input class="otp-box" type="tel" maxlength="1" inputmode="numeric" oninput="oi(this,1)" onkeydown="ok(event,1)">
+      <input class="otp-box" type="tel" maxlength="1" inputmode="numeric" oninput="oi(this,2)" onkeydown="ok(event,2)">
+      <input class="otp-box" type="tel" maxlength="1" inputmode="numeric" oninput="oi(this,3)" onkeydown="ok(event,3)">
+    </div>
+    <div class="otp-note">Qualsiasi 4 cifre funziona in questa demo</div>
+    <div class="otp-resend">Non ricevuto? <span class="otp-resend-link" onclick="startCd()">Invia di nuovo</span> <span class="countdown" id="cdWrap" style="display:none">tra <span id="cdSec">30</span>s</span></div>
+  </div>
+  <div class="bottombar">
+    <button class="btn-stella" id="btnOtp" onclick="go('D')" disabled>Verifica e accedi</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     SCREEN D — SCHEDA + DASHBOARD
+══════════════════════════════ -->
+<div class="screen" id="scD">
+  <!-- banner owner -->
+  <div class="owner-banner on" id="obanner">
+    <div class="ob-dot"></div>
+    <div class="ob-text">Sei su <span>la tua scheda</span></div>
+    <button class="ob-cta" onclick="switchTab('dashboard')">Gestisci →</button>
+  </div>
+  <!-- topbar -->
+  <div class="topbar" style="position:relative;z-index:10">
+    <div class="topbar-logo">★ StelleVere.it</div>
+    <div class="topbar-url">schede/fossati-antonio</div>
+    <div style="font-size:11px;color:var(--verde);font-weight:700">✓ Loggato</div>
+  </div>
+  <!-- hero -->
+  <div class="hero">
+    <div class="hero-top">
+      <div class="hero-av">🔧<div class="hero-vbadge">✓</div></div>
+      <div class="hero-info">
+        <div class="hero-name">Fossati Antonio</div>
+        <div class="hero-cat">Idraulico · Milano</div>
+        <div class="hero-chips">
+          <span class="chip chip-v">✓ Verificato</span>
+          <span class="chip chip-s">★ 5.0</span>
+          <span class="chip chip-g">📍 Milano</span>
+        </div>
+      </div>
+    </div>
+    <div class="rating-bar">
+      <div class="rnum">5.0</div>
+      <div class="rright">
+        <div class="rstars">★★★★★</div>
+        <div class="rsub">Stelle vere, non comprate</div>
+      </div>
+      <div class="rcount"><strong>23</strong><span>recensioni</span></div>
+    </div>
+  </div>
+  <!-- tabs -->
+  <div class="tabs">
+    <div class="tab" id="tl" onclick="switchTab('lavori')">Lavori (8)</div>
+    <div class="tab" id="tr" onclick="switchTab('recensioni')">Recensioni</div>
+    <div class="tab" id="ti" onclick="switchTab('info')">Info</div>
+    <div class="tab dash-tab on active" id="td" onclick="switchTab('dashboard')">⚙ Dashboard</div>
+  </div>
+  <!-- panels -->
+  <div class="panel" id="pl" style="overflow-y:auto">
+    <div class="slabel">Lavori certificati</div>
+    <div class="lgrid">
+      <div class="lcard l1" onclick="openOv(0)"><div class="limg">🔧<div class="ltag">Caldaia</div></div><div class="lbody"><div class="ltitle">Sostituzione Caldaia Condominiale</div><div class="lmeta">📍 Porta Venezia · <span class="lstars">★★★★★</span></div></div></div>
+      <div class="lcard l2" onclick="openOv(1)"><div class="limg">🚿<div class="ltag">Bagno</div></div><div class="lbody"><div class="ltitle">Rifacimento Bagno Completo</div><div class="lmeta">📍 Navigli · <span class="lstars">★★★★★</span></div></div></div>
+      <div class="lcard l3" onclick="openOv(2)"><div class="limg">💧<div class="ltag">Urgenza</div></div><div class="lbody"><div class="ltitle">Perdita Urgente H24</div><div class="lmeta">📍 Città Studi · <span class="lstars">★★★★★</span></div></div></div>
+      <div class="lcard l4" onclick="openOv(3)"><div class="limg">🌡️<div class="ltag">Impianto</div></div><div class="lbody"><div class="ltitle">Impianto Termosifoni</div><div class="lmeta">📍 Brera · <span class="lstars">★★★★★</span></div></div></div>
+    </div>
+    <a href="#" style="display:block;text-align:center;font-size:12px;font-weight:700;color:var(--stella);padding:4px 0 10px">Vedi tutti gli 8 lavori →</a>
+  </div>
+  <div class="panel" id="prec" style="overflow-y:auto">
+    <div class="slabel">Recensioni verificate via WhatsApp</div>
+    <div class="rec-box"><div class="rec-stars">★★★★★</div><div class="rec-text">"Caldaia sostituita in 2 giorni. Preciso, pulito, puntuale. Altamente raccomandato."</div><div class="rec-author"><div class="rec-av">LC</div><div><div class="rec-name">Luca C.</div><div class="rec-date">mar 2025</div></div><div class="rec-wa">via WhatsApp</div></div></div>
+    <div class="rec-box"><div class="rec-stars">★★★★★</div><div class="rec-text">"Bagno rifatto in una settimana, tutto perfetto. Prezzo onesto."</div><div class="rec-author"><div class="rec-av">MR</div><div><div class="rec-name">Maria R.</div><div class="rec-date">dic 2024</div></div><div class="rec-wa">via WhatsApp</div></div></div>
+    <div class="rec-box"><div class="rec-stars">★★★★★</div><div class="rec-text">"Perdita di notte risolta in un'ora. Disponibile H24, professionista vero."</div><div class="rec-author"><div class="rec-av">GP</div><div><div class="rec-name">Giorgio P.</div><div class="rec-date">nov 2024</div></div><div class="rec-wa">via WhatsApp</div></div></div>
+  </div>
+  <div class="panel" id="pinf" style="overflow-y:auto">
+    <div class="slabel">Informazioni</div>
+    <div class="igrid">
+      <div class="itile full"><div class="ilbl">Attività</div><div class="ival">Fossati Antonio</div></div>
+      <div class="itile"><div class="ilbl">Zona</div><div class="ival" style="font-size:12px">Milano e prov.</div></div>
+      <div class="itile"><div class="ilbl">Categoria</div><div class="ival" style="font-size:12px">Idraulico</div></div>
+      <div class="itile"><div class="ilbl">Lavori</div><div class="ival big">8</div></div>
+      <div class="itile"><div class="ilbl">Media stelle</div><div class="ival big">5.0</div></div>
+    </div>
+  </div>
+  <div class="panel active" id="pdash" style="overflow-y:auto">
+    <div class="slabel">La tua scheda</div>
+    <div class="dstats">
+      <div class="dtile"><div class="dnum">8</div><div class="dlbl">Lavori</div><div class="dtrend">+2 mese</div></div>
+      <div class="dtile"><div class="dnum">142</div><div class="dlbl">Visite</div><div class="dtrend">+18 oggi</div></div>
+      <div class="dtile"><div class="dnum">23</div><div class="dlbl">Stelle</div><div class="dtrend">↑ 5.0</div></div>
+    </div>
+    <div class="dadd" onclick="go('E')">
+      <div><div class="dadd-t">➕ Aggiungi lavoro</div><div class="dadd-s">Diventa una nuova pagina Google</div></div>
+      <div class="dadd-i">→</div>
+    </div>
+    <div class="slabel">I tuoi lavori</div>
+    <div class="drow dl1"><div class="drow-img">🔧</div><div class="drow-info"><div class="drow-title">Sostituzione Caldaia Condominiale</div><div class="drow-meta">📍 Porta Venezia · ★★★★★ · 38 visite</div></div><div class="drow-acts"><div class="dact">✏️</div><div class="dact">📤</div></div></div>
+    <div class="drow dl2"><div class="drow-img">🚿</div><div class="drow-info"><div class="drow-title">Rifacimento Bagno Completo</div><div class="drow-meta">📍 Navigli · ★★★★★ · 52 visite</div></div><div class="drow-acts"><div class="dact">✏️</div><div class="dact">📤</div></div></div>
+    <div class="drow dl3"><div class="drow-img">💧</div><div class="drow-info"><div class="drow-title">Perdita Urgente H24</div><div class="drow-meta">📍 Città Studi · ★★★★★ · 29 visite</div></div><div class="drow-acts"><div class="dact">✏️</div><div class="dact">📤</div></div></div>
+    <div class="slabel" style="margin-top:14px">Visibilità Google</div>
+    <div class="seo-box">
+      <div class="seo-title">🔍 Keyword presidiate</div>
+      <div class="seo-kw">"idraulico Milano" <span class="seo-pos">↑ pos. 4</span></div>
+      <div class="seo-kw">"caldaista Porta Venezia" <span class="seo-pos">↑ pos. 2</span></div>
+      <div class="seo-kw">"bagno Navigli Milano" <span class="seo-pos">↑ pos. 6</span></div>
+      <div style="margin-top:10px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px"><span style="font-size:11px;color:var(--testo)">Completezza scheda</span><span style="font-size:12px;font-weight:700;color:var(--stella)">73%</span></div><div class="prog-wrap"><div class="prog-fill" style="width:73%"></div></div><div style="font-size:11px;color:var(--grigio);margin-top:6px">💡 Aggiungi 4 lavori per raggiungere il 100%</div></div>
+    </div>
+    <div style="background:var(--nero);border:1px solid var(--bordo);border-radius:10px;padding:11px;display:flex;align-items:center;gap:10px;margin-bottom:60px">
+      <div style="flex:1;font-size:11px;color:var(--stella);word-break:break-all">stellevere.it/schede/fossati-antonio</div>
+      <div style="background:var(--nero3);border:1px solid var(--bordo2);border-radius:7px;padding:5px 9px;font-size:11px;font-weight:700;color:var(--grigio);cursor:pointer" onclick="this.textContent='✓ Copiato';setTimeout(()=>this.textContent='Copia 📋',1800)">Copia 📋</div>
+    </div>
+  </div>
+  <!-- overlay dettaglio -->
+  <div class="overlay" id="ov">
+    <div class="ov-topbar">
+      <div class="ov-back" onclick="closeOv()">←</div>
+      <div class="ov-title" id="ov-title">Lavoro</div>
+      <span class="chip chip-v" style="font-size:10px">✓ Cert.</span>
+    </div>
+    <div class="ov-scroll">
+      <div class="ov-img" id="ov-icon">🔧</div>
+      <div class="ov-thumbs"><div class="ov-th"></div><div class="ov-th"></div><div class="ov-th"></div></div>
+      <div class="ov-body">
+        <div class="ov-title2" id="ov-h1">—</div>
+        <div class="ov-loc" id="ov-loc">—</div>
+        <div class="ov-desc" id="ov-desc">—</div>
+        <div class="ov-tags" id="ov-tags"></div>
+        <div class="rec-box">
+          <div class="rec-stars">★★★★★</div>
+          <div class="rec-text" id="ov-rec">—</div>
+          <div class="rec-author">
+            <div class="rec-av" id="ov-rav">—</div>
+            <div><div class="rec-name" id="ov-rname">—</div><div class="rec-date" id="ov-rdate">—</div></div>
+            <div class="rec-wa">via WhatsApp</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     SCREEN E — WIZARD INSERIMENTO
+══════════════════════════════ -->
+<div class="screen" id="scE">
+  <div class="topbar">
+    <div class="topbar-back" onclick="wizBack()">←</div>
+    <div style="flex:1;font-size:14px;font-weight:800;color:var(--bianco)" id="wizTitle">Tipo di lavoro</div>
+    <div style="font-size:11px;font-weight:600;color:var(--grigio);background:var(--nero3);border:1px solid var(--bordo);padding:3px 9px;border-radius:20px" id="wizIndicator">1 di 5</div>
+  </div>
+  <div class="wiz-progress">
+    <div class="wiz-dots">
+      <div class="wiz-dot cur" id="wd0"></div>
+      <div class="wiz-dot" id="wd1"></div>
+      <div class="wiz-dot" id="wd2"></div>
+      <div class="wiz-dot" id="wd3"></div>
+      <div class="wiz-dot" id="wd4"></div>
+    </div>
+    <div class="wiz-labels">
+      <span class="wiz-lbl cur" id="wl0">Tipo</span>
+      <span class="wiz-lbl" id="wl1">Foto</span>
+      <span class="wiz-lbl" id="wl2">Dettagli</span>
+      <span class="wiz-lbl" id="wl3">Dove</span>
+      <span class="wiz-lbl" id="wl4">Pubblica</span>
+    </div>
+  </div>
+  <div class="scroll" id="wizScroll" style="padding:18px 14px">
+
+    <!-- Step 1 -->
+    <div class="wstep active" id="ws1">
+      <div class="fgroup">
+        <div class="flabel">Che lavoro hai fatto? <span class="freq">*</span></div>
+        <div class="catgrid">
+          <div class="cattile" onclick="selCat(this,'Idraulica','🔧')"><div class="cat-icon">🔧</div><div class="cat-name">Idraulica</div></div>
+          <div class="cattile" onclick="selCat(this,'Elettricista','⚡')"><div class="cat-icon">⚡</div><div class="cat-name">Elettricista</div></div>
+          <div class="cattile" onclick="selCat(this,'Imbianchino','🖌️')"><div class="cat-icon">🖌️</div><div class="cat-name">Imbianchino</div></div>
+          <div class="cattile" onclick="selCat(this,'Muratore','🧱')"><div class="cat-icon">🧱</div><div class="cat-name">Muratore</div></div>
+          <div class="cattile" onclick="selCat(this,'Falegname','🪚')"><div class="cat-icon">🪚</div><div class="cat-name">Falegname</div></div>
+          <div class="cattile" onclick="selCat(this,'Altro','🔩')"><div class="cat-icon">🔩</div><div class="cat-name">Altro</div></div>
+        </div>
+      </div>
+      <div class="fgroup">
+        <div class="flabel">Titolo del lavoro <span class="freq">*</span></div>
+        <input type="text" id="f-titolo" placeholder="Es: Sostituzione caldaia condominiale" oninput="chk1()" maxlength="60">
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="wstep" id="ws2">
+      <div class="fgroup">
+        <div class="flabel">Foto del lavoro <span class="freq">*</span></div>
+        <div class="foto-zone" id="fzone">
+          <div class="foto-zone-icon">📷</div>
+          <div class="foto-zone-t">Aggiungi foto</div>
+          <div class="foto-zone-s">Dalla fotocamera o dalla galleria</div>
+          <input type="file" accept="image/*" multiple capture="environment" onchange="handleFoto(event)">
+        </div>
+        <div class="foto-prev" id="fprev"></div>
+        <div class="ftip">★ Schede con 3+ foto ricevono <strong>4× più visite</strong></div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="wstep" id="ws3">
+      <div class="fgroup">
+        <div class="flabel">Descrizione</div>
+        <textarea id="f-desc" placeholder="Cosa hai fatto? Aiuta i clienti a capire il lavoro..." maxlength="300" oninput="st.desc=this.value;document.getElementById('cc').textContent=this.value.length"></textarea>
+        <div class="ccount"><span id="cc">0</span>/300</div>
+      </div>
+      <div class="fgroup">
+        <div class="flabel">Data del lavoro</div>
+        <input type="date" id="f-data">
+      </div>
+      <div class="fgroup">
+        <div class="flabel">Valutazione cliente <span class="freq">*</span></div>
+        <div class="stelle-row">
+          <span class="stella-b" onclick="setSt(1)">★</span>
+          <span class="stella-b" onclick="setSt(2)">★</span>
+          <span class="stella-b" onclick="setSt(3)">★</span>
+          <span class="stella-b" onclick="setSt(4)">★</span>
+          <span class="stella-b" onclick="setSt(5)">★</span>
+        </div>
+      </div>
+      <div class="fgroup">
+        <div class="flabel">Commento cliente</div>
+        <textarea id="f-rec" placeholder="Cosa ha detto il cliente? (opzionale)" rows="3" maxlength="200"></textarea>
+        <div style="font-size:11px;color:var(--grigio2);margin-top:5px">💬 Il cliente riceverà un SMS per confermare</div>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="wstep" id="ws4">
+      <div class="fgroup">
+        <div class="map-ph">
+          <div class="map-grid"></div>
+          <div class="map-pin" id="mpin">📍</div>
+          <div class="map-lbl" id="mlbl">Nessuna posizione</div>
+          <div class="map-sub" id="msub">Premi il pulsante qui sotto</div>
+        </div>
+        <button class="gps-btn" id="gpsbtn" onclick="useGPS()">📡 Usa la mia posizione</button>
+        <div class="flabel">Oppure scrivi il luogo</div>
+        <input type="text" id="f-citta" placeholder="Es: Milano, Porta Venezia" oninput="st.citta=this.value;document.getElementById('mlbl').textContent=this.value||'Nessuna posizione';chkStep()">
+      </div>
+    </div>
+
+    <!-- Step 5: Anteprima -->
+    <div class="wstep" id="ws5">
+      <div class="prev-card">
+        <div class="prev-img" id="pv-icon">🔧</div>
+        <div class="prev-body">
+          <div class="prev-badge">✓ Lavoro certificato</div>
+          <div class="prev-title" id="pv-title">—</div>
+          <div class="prev-stars" id="pv-stars">★★★★★</div>
+          <div class="prev-meta" id="pv-meta">—</div>
+          <div class="prev-desc" id="pv-desc"></div>
+          <div class="prev-tags" id="pv-tags"></div>
+        </div>
+      </div>
+      <div class="seobox">
+        <div class="seobox-t">🔍 Impatto SEO</div>
+        <p>Questa scheda creerà una pagina indicizzata da Google per <strong id="seoKw">"idraulico Milano"</strong>. I clienti locali potranno trovarti.</p>
+      </div>
+    </div>
+
+    <!-- Step 6: Successo -->
+    <div class="wstep" id="ws6">
+      <div class="succ">
+        <div class="succ-icon">⭐</div>
+        <div class="succ-title">Stella pubblicata!</div>
+        <div class="succ-sub">Il tuo lavoro è online e indicizzato da Google. I clienti nella tua zona possono già trovarlo.</div>
+        <div class="succ-url">
+          <div class="succ-url-lbl">Scheda pubblica su</div>
+          <div class="succ-url-val">stellevere.it/schede/fossati-antonio</div>
+        </div>
+        <div class="succ-actions">
+          <button class="btn-stella" onclick="condividi()">📤 Condividi il lavoro</button>
+          <button class="btn-ghost" onclick="go('D');switchTab('dashboard')">← Torna alla dashboard</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="bottombar" id="wizBottom">
+    <button class="btn-stella" id="btnWiz" onclick="wizNext()" disabled>Continua →</button>
+  </div>
+</div>
+
+</div><!-- /shell -->
+
+<!-- ══ BARRA NAVIGAZIONE FLUSSO ══ -->
+<div class="flow-bar">
+  <div class="flow-step cur" id="fb-A" onclick="go('A')">WhatsApp</div>
+  <div class="flow-sep">›</div>
+  <div class="flow-step" id="fb-B" onclick="go('B')">Link</div>
+  <div class="flow-sep">›</div>
+  <div class="flow-step" id="fb-C" onclick="go('C')">OTP</div>
+  <div class="flow-sep">›</div>
+  <div class="flow-step" id="fb-D" onclick="go('D')">Scheda</div>
+  <div class="flow-sep">›</div>
+  <div class="flow-step" id="fb-E" onclick="go('E')">Nuovo lavoro</div>
+</div>
+
+<script>
+// ── NAVIGAZIONE SCHERMATE ──
+let curScreen = 'A';
+function go(id, back=false) {
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.remove('active','slide-in','slide-back');
+  });
+  const el = document.getElementById('sc'+id);
+  el.classList.add('active', back ? 'slide-back' : 'slide-in');
+  curScreen = id;
+  // aggiorna barra navigazione
+  ['A','B','C','D','E'].forEach(s => {
+    document.getElementById('fb-'+s).classList.toggle('cur', s===id);
+  });
+  // wizard: reset se si entra in E
+  if(id==='E') { wizStep=1; renderWiz(); chkStep(); }
+}
+
+// ── OTP ──
+function oi(el,i) {
+  el.value = el.value.replace(/\D/,'');
+  el.classList.toggle('filled', el.value.length===1);
+  if(el.value && i<3) document.querySelectorAll('.otp-box')[i+1].focus();
+  const all = Array.from(document.querySelectorAll('.otp-box')).map(b=>b.value).join('');
+  document.getElementById('btnOtp').disabled = all.length<4;
+}
+function ok(e,i) {
+  if(e.key==='Backspace') {
+    const bx = document.querySelectorAll('.otp-box');
+    if(!bx[i].value && i>0) { bx[i-1].focus(); bx[i-1].value=''; bx[i-1].classList.remove('filled'); }
+    const all = Array.from(bx).map(b=>b.value).join('');
+    document.getElementById('btnOtp').disabled = all.length<4;
+  }
+}
+let cdTimer;
+function startCd() {
+  let s=30; document.getElementById('cdWrap').style.display='';
+  clearInterval(cdTimer);
+  cdTimer = setInterval(()=>{ s--; document.getElementById('cdSec').textContent=s; if(s<=0){clearInterval(cdTimer);document.getElementById('cdWrap').style.display='none';}},1000);
+}
+
+// ── TABS SCHEDA ──
+function switchTab(id) {
+  const map={lavori:'pl',recensioni:'prec',info:'pinf',dashboard:'pdash'};
+  const tabMap={lavori:'tl',recensioni:'tr',info:'ti',dashboard:'td'};
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(map[id]).classList.add('active');
+  document.getElementById(tabMap[id]).classList.add('active');
+}
+
+// ── OVERLAY LAVORO ──
+const lavori=[
+  {icon:'🔧',title:'Sostituzione Caldaia Condominiale',loc:'📍 Milano, Porta Venezia · Feb 2025',desc:'Sostituzione caldaia condominiale da 80 kW con modello a condensazione. Completato in 2 giorni, incluso smaltimento e collaudo.',tags:['Caldaia','Condensazione','Condominio'],rec:'"Rapidissimo, caldaia sostituita in 2 giorni. Preciso, pulito. Ottimo!"',rav:'LC',rname:'Luca C.',rdate:'mar 2025'},
+  {icon:'🚿',title:'Rifacimento Bagno Completo',loc:'📍 Milano, Navigli · Nov 2024',desc:'Rifacimento completo bagno 6mq. Demolizione, impianto idraulico, piastrelle, sanitari. Realizzato in 6 giorni.',tags:['Bagno','Impianto','Navigli'],rec:'"Bagno rifatto in una settimana, tutto perfetto. Prezzo onesto."',rav:'MR',rname:'Maria R.',rdate:'dic 2024'},
+  {icon:'💧',title:'Riparazione Perdita Urgente',loc:'📍 Milano, Città Studi · Ott 2024',desc:'Intervento notturno su perdita sotto pavimento. Localizzazione con termocamera, riparazione in meno di 2 ore.',tags:['Urgenza','H24','Termocamera'],rec:'"Perdita di notte risolta in un\'ora. Disponibile H24, bravissimo."',rav:'GP',rname:'Giorgio P.',rdate:'nov 2024'},
+  {icon:'🌡️',title:'Impianto Termosifoni Completo',loc:'📍 Milano, Brera · Set 2024',desc:'Installazione impianto termosifoni in 90mq. 8 elementi, 2 bagni. Completato in 3 giorni con certificazione.',tags:['Termosifoni','Brera','Certificato'],rec:'"Lavoro impeccabile, puliti e precisi. Consigliato!"',rav:'AF',rname:'Anna F.',rdate:'ott 2024'},
+];
+function openOv(i) {
+  const l=lavori[i];
+  document.getElementById('ov-title').textContent=l.title;
+  document.getElementById('ov-icon').textContent=l.icon;
+  document.getElementById('ov-h1').textContent=l.title;
+  document.getElementById('ov-loc').textContent=l.loc;
+  document.getElementById('ov-desc').textContent=l.desc;
+  document.getElementById('ov-tags').innerHTML=l.tags.map(t=>`<span class="ov-tag">${t}</span>`).join('');
+  document.getElementById('ov-rec').textContent=l.rec;
+  document.getElementById('ov-rav').textContent=l.rav;
+  document.getElementById('ov-rname').textContent=l.rname;
+  document.getElementById('ov-rdate').textContent=l.rdate;
+  document.getElementById('ov').classList.add('open');
+}
+function closeOv() { document.getElementById('ov').classList.remove('open'); }
+
+// ── WIZARD ──
+let wizStep=1;
+const WTOTAL=5;
+const wizTitles=['Tipo di lavoro','Le tue foto','Dettagli','Dove hai lavorato','Anteprima',''];
+const st={cat:null,catIcon:null,titolo:'',foto:[],desc:'',stelle:0,citta:''};
+
+function renderWiz() {
+  document.querySelectorAll('.wstep').forEach((s,i)=>s.classList.toggle('active',i+1===wizStep));
+  document.getElementById('wizTitle').textContent=wizTitles[wizStep-1]||'StelleVere';
+  document.getElementById('wizIndicator').textContent=wizStep<=WTOTAL?`${wizStep} di ${WTOTAL}`:'';
+  document.getElementById('wizBottom').style.display=wizStep>WTOTAL?'none':'';
+  const btn=document.getElementById('btnWiz');
+  btn.textContent=wizStep===WTOTAL?'⭐ Pubblica il lavoro':'Continua →';
+  for(let i=0;i<WTOTAL;i++){
+    document.getElementById('wd'+i).className='wiz-dot'+(i+1<wizStep?' done':i+1===wizStep?' cur':'');
+    document.getElementById('wl'+i).className='wiz-lbl'+(i+1===wizStep?' cur':'');
+  }
+  document.getElementById('wizScroll').scrollTop=0;
+}
+function chkStep() {
+  const btn=document.getElementById('btnWiz');
+  let ok=false;
+  if(wizStep===1) ok=!!st.cat && (document.getElementById('f-titolo')||{value:''}).value.trim().length>3;
+  else if(wizStep===2) ok=st.foto.length>0;
+  else if(wizStep===3) ok=st.stelle>0;
+  else if(wizStep===4) ok=(document.getElementById('f-citta')||{value:''}).value.trim().length>2||st.citta.length>2;
+  else if(wizStep===5) ok=true;
+  btn.disabled=!ok;
+}
+function chk1(){ st.titolo=(document.getElementById('f-titolo')||{value:''}).value; chkStep(); }
+function selCat(el,n,ic){
+  document.querySelectorAll('.cattile').forEach(t=>t.classList.remove('sel'));
+  el.classList.add('sel'); st.cat=n; st.catIcon=ic; chkStep();
+}
+function handleFoto(e){
+  Array.from(e.target.files).forEach(f=>st.foto.push({url:URL.createObjectURL(f)}));
+  renderFoto(); chkStep();
+}
+function renderFoto(){
+  const prev=document.getElementById('fprev'), zone=document.getElementById('fzone');
+  if(!st.foto.length){prev.style.display='none';zone.style.display='';return;}
+  zone.style.display='none'; prev.style.display='grid';
+  prev.innerHTML=st.foto.map((f,i)=>`<div class="fthumb" onclick="delFoto(${i})"><img src="${f.url}"><div class="fthumb-del">✕</div></div>`).join('')
+    +(st.foto.length<6?`<div class="fadd">+<input type="file" accept="image/*" multiple onchange="handleFoto(event)"></div>`:'');
+}
+function delFoto(i){st.foto.splice(i,1);renderFoto();chkStep();}
+function setSt(n){
+  st.stelle=n;
+  document.querySelectorAll('.stella-b').forEach((s,i)=>s.classList.toggle('on',i<n));
+  chkStep();
+}
+function useGPS(){
+  const btn=document.getElementById('gpsbtn');
+  btn.textContent='⏳ Rilevamento...';
+  setTimeout(()=>{
+    st.citta='Milano, Porta Venezia';
+    document.getElementById('f-citta').value=st.citta;
+    document.getElementById('mlbl').textContent=st.citta;
+    document.getElementById('msub').textContent='Posizione rilevata ✓';
+    btn.textContent='✓ Posizione acquisita'; btn.classList.add('ok');
+    chkStep();
+  },1000);
+}
+function buildPreview(){
+  const t=(document.getElementById('f-titolo')||{value:st.titolo}).value||st.titolo;
+  const d=(document.getElementById('f-desc')||{value:''}).value;
+  const c=(document.getElementById('f-citta')||{value:st.citta}).value||st.citta;
+  document.getElementById('pv-icon').textContent=st.catIcon||'🔧';
+  document.getElementById('pv-title').textContent=t;
+  document.getElementById('pv-stars').textContent='★'.repeat(st.stelle)+'☆'.repeat(5-st.stelle);
+  document.getElementById('pv-meta').textContent=[st.cat,c].filter(Boolean).join(' · ');
+  const de=document.getElementById('pv-desc');
+  if(d){de.style.display='block';de.textContent=d;}else{de.style.display='none';}
+  document.getElementById('pv-tags').innerHTML=[st.cat,c.split(',')[0]].filter(Boolean).map(t=>`<span class="prev-tag">${t}</span>`).join('');
+  document.getElementById('seoKw').textContent=`"${(st.cat||'artigiano').toLowerCase()} ${c.split(',')[0]||'Milano'}"`;
+}
+function wizNext(){
+  if(wizStep===WTOTAL){buildPreview();wizStep++;renderWiz();return;}
+  if(wizStep===4){st.citta=(document.getElementById('f-citta')||{value:''}).value;}
+  if(wizStep===WTOTAL-1) buildPreview();
+  wizStep++; renderWiz(); chkStep();
+}
+function wizBack(){
+  if(wizStep<=1){go('D','back');return;}
+  wizStep--; renderWiz(); chkStep();
+}
+function condividi(){
+  if(navigator.share) navigator.share({title:'Il mio lavoro su StelleVere',url:'https://stellevere.it/schede/fossati-antonio'});
+  else alert('Link copiato: stellevere.it/schede/fossati-antonio');
+}
+</script>
+</body>
+</html>
