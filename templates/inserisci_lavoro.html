@@ -63,13 +63,14 @@ html,body{
 .catgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .cattile{
   background:var(--nero3);border:1.5px solid var(--bordo);
-  border-radius:11px;padding:12px 8px;cursor:pointer;
+  border-radius:11px;padding:11px 6px;cursor:pointer;
   text-align:center;transition:border-color .15s,background .15s,transform .1s;
   user-select:none;
 }
 .cattile:active{transform:scale(.96)}
 .cattile.sel{border-color:var(--stella);background:rgba(245,200,66,.07)}
-.cat-icon{font-size:22px;margin-bottom:4px}
+.cattile.sel .cat-svg{stroke:var(--stella)}
+.cat-svg{display:block;margin:0 auto 5px;stroke:var(--grigio);transition:stroke .15s}
 .cat-name{font-size:10px;font-weight:700;color:var(--testo)}
 
 /* ── ESEMPI SIMILI ── */
@@ -85,40 +86,38 @@ html,body{
 .esempi-hint{font-size:9px;font-weight:600;color:var(--grigio2)}
 
 .esempi-scroll{
-  display:flex;gap:10px;overflow-x:auto;
-  padding:10px 14px 14px;scrollbar-width:none;
-  margin:0 -0px;
+  display:flex;gap:8px;overflow-x:auto;
+  padding:8px 14px 12px;scrollbar-width:none;
 }
 .esempi-scroll::-webkit-scrollbar{display:none}
 .esempio-card{
-  flex-shrink:0;width:185px;
+  flex-shrink:0;width:148px;
   background:var(--nero2);border:1px solid var(--bordo);
-  border-radius:12px;overflow:hidden;cursor:pointer;
+  border-radius:10px;overflow:hidden;cursor:pointer;
   transition:border-color .15s,transform .1s;
 }
 .esempio-card:active{transform:scale(.97);border-color:var(--stella)}
-.esempio-img{
-  width:100%;height:85px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:30px;position:relative;
+.esempio-strip{
+  width:100%;height:4px;
 }
-.esempio-img.bg1{background:linear-gradient(135deg,#1a2a3a,#2d4a6a)}
-.esempio-img.bg2{background:linear-gradient(135deg,#1a2a1a,#2a4a2a)}
-.esempio-img.bg3{background:linear-gradient(135deg,#2a1a1a,#4a2a1a)}
-.esempio-img.bg4{background:linear-gradient(135deg,#1a1a2a,#2a2a4a)}
-.esempio-body{padding:9px 10px 10px}
-.esempio-titolo{font-size:12px;font-weight:700;color:var(--bianco);margin-bottom:3px;line-height:1.3}
-.esempio-desc{font-size:10px;color:var(--grigio);line-height:1.4;margin-bottom:8px;
+.esempio-strip.c1{background:linear-gradient(90deg,#2d6a9f,#5ba3d9)}
+.esempio-strip.c2{background:linear-gradient(90deg,#2a7a4a,#5ab87a)}
+.esempio-strip.c3{background:linear-gradient(90deg,#9f4a2d,#d97a5b)}
+.esempio-strip.c4{background:linear-gradient(90deg,#6a2d9f,#a35bd9)}
+.esempio-strip.c5{background:linear-gradient(90deg,#9f8a2d,#d9c25b)}
+.esempio-strip.c6{background:linear-gradient(90deg,#2d7a9f,#5bc4d9)}
+.esempio-body{padding:8px 9px 9px}
+.esempio-titolo{font-size:11px;font-weight:700;color:var(--bianco);margin-bottom:3px;line-height:1.35;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .btn-copia{
-  width:100%;background:rgba(245,200,66,.1);
-  border:1px solid rgba(245,200,66,.25);
-  border-radius:7px;padding:7px;
-  font-size:11px;font-weight:800;color:var(--stella);
+  width:100%;background:rgba(245,200,66,.08);
+  border:1px solid rgba(245,200,66,.2);
+  border-radius:6px;padding:6px;margin-top:7px;
+  font-size:10px;font-weight:800;color:var(--stella);
   cursor:pointer;font-family:'Inter',sans-serif;
-  transition:background .15s;
+  transition:background .15s;display:flex;align-items:center;justify-content:center;gap:4px;
 }
-.btn-copia:active{background:rgba(245,200,66,.22)}
+.btn-copia:active{background:rgba(245,200,66,.2)}
 
 /* ── SEPARATORE ── */
 .sep{height:1px;background:var(--bordo);margin:4px 14px 0}
@@ -341,12 +340,57 @@ textarea{resize:none;line-height:1.55}
 <div class="section">
   <div class="section-title">1 · Che lavoro hai fatto? <span class="freq" style="color:var(--stella)">*</span></div>
   <div class="catgrid" id="catgrid">
-    <div class="cattile sel" onclick="selCat(this,'Idraulica','🔧')"><div class="cat-icon">🔧</div><div class="cat-name">Idraulica</div></div>
-    <div class="cattile" onclick="selCat(this,'Elettricista','⚡')"><div class="cat-icon">⚡</div><div class="cat-name">Elettricista</div></div>
-    <div class="cattile" onclick="selCat(this,'Imbianchino','🖌️')"><div class="cat-icon">🖌️</div><div class="cat-name">Imbianchino</div></div>
-    <div class="cattile" onclick="selCat(this,'Muratore','🧱')"><div class="cat-icon">🧱</div><div class="cat-name">Muratore</div></div>
-    <div class="cattile" onclick="selCat(this,'Falegname','🪚')"><div class="cat-icon">🪚</div><div class="cat-name">Falegname</div></div>
-    <div class="cattile" onclick="selCat(this,'Altro','🔩')"><div class="cat-icon">🔩</div><div class="cat-name">Altro</div></div>
+    <!-- Idraulica -->
+    <div class="cattile sel" onclick="selCat(this,'Idraulica','💧')">
+      <svg class="cat-svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2C6 9 4 13 4 16a8 8 0 0 0 16 0c0-3-2-7-8-14z"/>
+        <path d="M8 17a4 4 0 0 0 7.8-1"/>
+      </svg>
+      <div class="cat-name">Idraulica</div>
+    </div>
+    <!-- Elettricista -->
+    <div class="cattile" onclick="selCat(this,'Elettricista','⚡')">
+      <svg class="cat-svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </svg>
+      <div class="cat-name">Elettricista</div>
+    </div>
+    <!-- Imbianchino -->
+    <div class="cattile" onclick="selCat(this,'Imbianchino','🎨')">
+      <svg class="cat-svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 3H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/>
+        <path d="M3 9v6a2 2 0 0 0 2 2h3"/>
+        <path d="M8 17v2a2 2 0 1 0 4 0v-3"/>
+      </svg>
+      <div class="cat-name">Imbianchino</div>
+    </div>
+    <!-- Muratore -->
+    <div class="cattile" onclick="selCat(this,'Muratore','🏗️')">
+      <svg class="cat-svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="14" width="8" height="4" rx="1"/>
+        <rect x="14" y="14" width="8" height="4" rx="1"/>
+        <rect x="6" y="8" width="8" height="4" rx="1"/>
+        <line x1="2" y1="22" x2="22" y2="22"/>
+      </svg>
+      <div class="cat-name">Muratore</div>
+    </div>
+    <!-- Falegname -->
+    <div class="cattile" onclick="selCat(this,'Falegname','🪵')">
+      <svg class="cat-svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 7h18"/>
+        <path d="M3 12h18"/>
+        <path d="M3 17h18"/>
+        <path d="M7 3v18"/>
+      </svg>
+      <div class="cat-name">Falegname</div>
+    </div>
+    <!-- Altro -->
+    <div class="cattile" onclick="selCat(this,'Altro','🔧')">
+      <svg class="cat-svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+      </svg>
+      <div class="cat-name">Altro</div>
+    </div>
   </div>
 </div>
 
@@ -605,7 +649,7 @@ async function caricaEsempi(categoria) {
     window._esempiCorrente = esempiDB;
 
     cont.innerHTML = '';
-    const bgs = ['bg1','bg2','bg3','bg4'];
+    const strips = ['c1','c2','c3','c4','c5','c6'];
 
     // Prima: lavori già fatti dall'artigiano
     if (lavoriEsistenti.length > 0) {
@@ -613,14 +657,17 @@ async function caricaEsempi(categoria) {
         const card = document.createElement('div');
         card.className = 'esempio-card';
         card.innerHTML = `
-          <div class="esempio-img ${bgs[i%4]}" style="position:relative">
-            ${l.emoji}
-            <div style="position:absolute;top:6px;left:6px;background:rgba(37,211,102,.9);color:#000;font-size:8px;font-weight:800;padding:2px 6px;border-radius:3px">✓ TUO</div>
+          <div class="esempio-strip ${strips[i%6]}" style="position:relative">
+            <div style="position:absolute;right:6px;top:0;bottom:0;display:flex;align-items:center">
+              <span style="background:rgba(37,211,102,.9);color:#000;font-size:7px;font-weight:900;padding:1px 5px;border-radius:2px;letter-spacing:.04em">✓ TUO</span>
+            </div>
           </div>
           <div class="esempio-body">
             <div class="esempio-titolo">${l.titolo}</div>
-            <div class="esempio-desc">${l.descrizione}</div>
-            <button class="btn-copia" onclick="event.stopPropagation();copiaTuoLavoro(${i})">📋 Copia e modifica</button>
+            <button class="btn-copia" onclick="event.stopPropagation();copiaTuoLavoro(${i})">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copia e modifica
+            </button>
           </div>`;
         card.onclick = () => copiaTuoLavoro(i);
         cont.appendChild(card);
@@ -632,11 +679,13 @@ async function caricaEsempi(categoria) {
       const card = document.createElement('div');
       card.className = 'esempio-card';
       card.innerHTML = `
-        <div class="esempio-img ${bgs[(lavoriEsistenti.length+i)%4]}">${stato.catEmoji}</div>
+        <div class="esempio-strip ${strips[(lavoriEsistenti.length+i)%6]}"></div>
         <div class="esempio-body">
           <div class="esempio-titolo">${e.titolo}</div>
-          <div class="esempio-desc">${e.descrizione}</div>
-          <button class="btn-copia" onclick="event.stopPropagation();copiaEsempio(${i})">📋 Copia e modifica</button>
+          <button class="btn-copia" onclick="event.stopPropagation();copiaEsempio(${i})">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copia e modifica
+          </button>
         </div>`;
       card.onclick = () => copiaEsempio(i);
       cont.appendChild(card);
