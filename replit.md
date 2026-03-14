@@ -1,15 +1,18 @@
-# Stellevere
+# StelleVere
 
-Sito web per stellevere.it, importato da GitHub (`giannirig/stellevere.it`).
+Directory di artigiani italiani verificati — "Stelle vere, non comprate".
 
 ## Struttura del Progetto
 
-- `main.py` — Punto di ingresso dell'applicazione Flask
-- `templates/` — Template HTML con Jinja2
-- `static/` — Risorse statiche (CSS, JS, immagini)
-  - `static/css/style.css` — Foglio di stile principale
-  - `static/js/main.js` — JavaScript principale
-- `pyproject.toml` — Configurazione del progetto Python e dipendenze
+- `main.py` — Applicazione Flask con tutte le route
+- `templates/`
+  - `index.html` — Homepage con link demo
+  - `scheda.html` — Scheda pubblica dell'artigiano (per clienti, desktop + mobile)
+  - `inserisci_lavoro.html` — Inserimento lavori per l'artigiano (ottimizzato smartphone)
+- `static/`
+  - `css/style.css` — Stile base
+  - `js/main.js` — JavaScript base
+  - `icons/` — Icone PWA per installazione su smartphone
 
 ## Stack Tecnologico
 
@@ -17,6 +20,26 @@ Sito web per stellevere.it, importato da GitHub (`giannirig/stellevere.it`).
 - **Framework:** Flask
 - **Server di produzione:** Gunicorn
 - **Porta:** 5000
+- **Stile:** Dark theme, Inter font, oro #f5c842
+
+## Route principali
+
+- `/` — Homepage
+- `/scheda/<artigiano_id>` — Scheda pubblica artigiano
+- `/artigiano/<artigiano_id>/inserisci` — Inserimento lavoro (artigiano da smartphone)
+- `/api/esempi/<categoria>` — JSON esempi per categoria
+- `/api/lavoro/salva` — Salvataggio lavoro (POST)
+- `/manifest.json` — Manifest PWA
+
+## Funzionalità Inserimento Lavori
+
+- Esempi simili copiabili con un tap
+- Categoria lavoro (6 tipi)
+- Titolo + descrizione con contatore caratteri
+- 3 foto dalla fotocamera
+- Localizzazione: città + quartiere + GPS automatico con mappa
+- Richiesta recensione WhatsApp al cliente con un tap
+- Installabile come PWA (icona su smartphone)
 
 ## Avviare l'Applicazione
 
@@ -29,9 +52,3 @@ Produzione:
 ```bash
 gunicorn --bind=0.0.0.0:5000 --reuse-port main:app
 ```
-
-## Note
-
-- Il repository GitHub originale conteneva solo un file `test` al momento dell'importazione.
-- È stato creato un sito Flask di base come punto di partenza.
-- Il contenuto del sito (`templates/index.html`) va aggiornato con il contenuto reale.
