@@ -426,7 +426,7 @@ def _render_pagina_lavoro(categoria_slug, titolo_slug, loc_slug,
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', categorie=CATEGORIE, sottocategorie=SOTTOCATEGORIE)
 
 
 @app.route('/scheda/<artigiano_id>')
