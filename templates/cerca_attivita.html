@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cerca Artigiani – StelleVere</title>
+  <meta name="description" content="Trova artigiani verificati per categoria e città.">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#f5c842">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+  :root {
+    --nero: #0a0a0a;
+    --bg2: #111;
+    --bg3: #1a1a1a;
+    --bordo: #222;
+    --testo: #e0e0e0;
+    --muted: #666;
+    --stella: #f5c842;
+    --verde: #25d366;
+  }
+  body { background: var(--nero); font-family: 'Inter', sans-serif; color: var(--testo); min-height: 100vh }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 20px; border-bottom: 1px solid var(--bordo);
+    position: sticky; top: 0; background: rgba(10,10,10,.95);
+    backdrop-filter: blur(8px); z-index: 50;
+  }
+  .topbar-logo { font-size: 20px; font-weight: 900; color: #fff; text-decoration: none; letter-spacing: -.02em }
+  .topbar-logo span { color: var(--stella) }
+  .topbar-sub { font-size: 13px; color: var(--muted) }
+
+  /* ── HERO MINI ── */
+  .hero-mini {
+    padding: 36px 20px 28px;
+    text-align: center;
+  }
+  .hero-mini h1 { font-size: 24px; font-weight: 900; color: #fff; letter-spacing: -.02em; margin-bottom: 6px }
+  .hero-mini p { font-size: 14px; color: var(--muted) }
+
+  /* ── FILTRI ── */
+  .filtri {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    padding: 0 16px 20px; max-width: 700px; margin: 0 auto;
+  }
+  .filtri input, .filtri select {
+    flex: 1; min-width: 140px;
+    background: var(--bg2); border: 1px solid var(--bordo);
+    color: var(--testo); font-family: inherit; font-size: 14px;
+    padding: 11px 14px; border-radius: 10px; outline: none;
+    transition: border-color .2s;
+  }
+  .filtri input:focus, .filtri select:focus { border-color: #444 }
+  .filtri input::placeholder { color: var(--muted) }
+  .filtri select option { background: #1a1a1a }
+
+  /* ── LISTA ── */
+  .lista {
+    display: flex; flex-direction: column; gap: 12px;
+    padding: 0 16px 60px; max-width: 700px; margin: 0 auto;
+  }
+  .card {
+    background: var(--bg2); border: 1px solid var(--bordo); border-radius: 14px;
+    padding: 16px 18px;
+    display: flex; align-items: center; gap: 14px;
+    text-decoration: none; color: inherit;
+    transition: border-color .18s, background .15s;
+  }
+  .card:hover { border-color: #333; background: var(--bg3) }
+  .card-av {
+    width: 46px; height: 46px; flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--bg3); border: 1px solid var(--bordo);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .card-info { flex: 1; min-width: 0 }
+  .card-nome { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 3px }
+  .card-meta { font-size: 12px; color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap }
+  .tag {
+    background: var(--bg3); border: 1px solid var(--bordo);
+    padding: 2px 8px; border-radius: 5px; font-size: 11px; color: var(--muted);
+  }
+  .badge-ver {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(37,211,102,.1); border: 1px solid rgba(37,211,102,.2);
+    color: var(--verde); font-size: 11px; font-weight: 600;
+    padding: 2px 7px; border-radius: 5px;
+  }
+  .card-stelle { font-size: 13px; font-weight: 700; color: var(--stella); white-space: nowrap }
+  .card-arrow { color: var(--muted); font-size: 18px; flex-shrink: 0 }
+
+  .nessuno {
+    text-align: center; padding: 48px 20px;
+    color: var(--muted); font-size: 14px; display: none;
+  }
+  .nessuno.visible { display: block }
+
+  .contatore {
+    text-align: center; font-size: 13px; color: var(--muted);
+    padding: 0 0 16px; max-width: 700px; margin: 0 auto;
+  }
+  </style>
+</head>
+<body>
+
+<nav class="topbar">
+  <a class="topbar-logo" href="/">Stelle<span>Vere</span></a>
+  <span class="topbar-sub">· Cerca attività</span>
+</nav>
+
+<div class="hero-mini">
+  <h1>Trova il tuo artigiano</h1>
+  <p>{{ artigiani|length }} professionisti verificati su StelleVere</p>
+</div>
+
+<!-- Filtri -->
+<div class="filtri">
+  <input id="f-nome" type="text" placeholder="🔍 Cerca per nome…" oninput="filtra()" autocomplete="off">
+  <select id="f-cat" onchange="filtra()">
+    <option value="">Tutte le categorie</option>
+    {% for slug, cat in categorie.items() %}
+    <option value="{{ slug }}">{{ cat.nome }}</option>
+    {% endfor %}
+  </select>
+  <input id="f-cit" type="text" placeholder="📍 Città…" oninput="filtra()" autocomplete="off">
+</div>
+
+<p class="contatore" id="contatore"></p>
+
+<!-- Lista artigiani -->
+<div class="lista" id="lista">
+  {% set emoji_map = {'drop':'💧','zap':'⚡','paint':'🎨','wall':'🧱','wood':'🪵','tool':'🔧'} %}
+  {% for a in artigiani %}
+  {% set emoji = emoji_map.get(categorie.get(a.cat_slug, {}).get('icona',''), '🔧') %}
+  <a class="card" href="/scheda/{{ a.id }}"
+     data-nome="{{ a.nome | lower }}"
+     data-cat="{{ a.cat_slug }}"
+     data-cit="{{ a.citta | lower }}">
+    <div class="card-av">{{ a.get('emoji', emoji) }}</div>
+    <div class="card-info">
+      <div class="card-nome">{{ a.nome }}</div>
+      <div class="card-meta">
+        <span class="tag">{{ categorie.get(a.cat_slug, {}).get('nome', a.cat_slug) }}</span>
+        <span class="tag">📍 {{ a.citta }}</span>
+        {% if a.lavori %}
+        <span class="tag">{{ a.lavori|length }} lavori</span>
+        {% endif %}
+        <span class="badge-ver">✓ Verificato</span>
+      </div>
+    </div>
+    {% if a.stelle %}
+    <div class="card-stelle">★ {{ "%.1f"|format(a.stelle) }}</div>
+    {% endif %}
+    <div class="card-arrow">›</div>
+  </a>
+  {% endfor %}
+</div>
+
+<p class="nessuno" id="nessuno">Nessun artigiano trovato con questi filtri.</p>
+
+<script>
+function filtra() {
+  const nome = document.getElementById('f-nome').value.toLowerCase().trim();
+  const cat  = document.getElementById('f-cat').value;
+  const cit  = document.getElementById('f-cit').value.toLowerCase().trim();
+
+  const cards = document.querySelectorAll('.card');
+  let visibili = 0;
+  cards.forEach(c => {
+    const ok =
+      (!nome || c.dataset.nome.includes(nome)) &&
+      (!cat  || c.dataset.cat === cat) &&
+      (!cit  || c.dataset.cit.includes(cit));
+    c.style.display = ok ? '' : 'none';
+    if (ok) visibili++;
+  });
+
+  document.getElementById('contatore').textContent =
+    visibili === cards.length
+      ? `${visibili} professionisti`
+      : `${visibili} di ${cards.length} professionisti`;
+  document.getElementById('nessuno').classList.toggle('visible', visibili === 0);
+}
+
+filtra(); // init contatore
+</script>
+</body>
+</html>
