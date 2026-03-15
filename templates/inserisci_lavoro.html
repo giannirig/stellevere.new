@@ -61,6 +61,17 @@ html,body{
 
 /* ── CATEGORIE ── */
 .catgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+/* ── SOTTOCATEGORIA PILLS ── */
+.subcat-section{padding:0 14px 0}
+.subcat-pills{display:flex;flex-wrap:wrap;gap:8px;padding-bottom:4px}
+.subcat-pill{
+  padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;
+  background:var(--nero3);border:1px solid var(--bordo2);color:var(--testo);
+  cursor:pointer;transition:all .15s;user-select:none;
+}
+.subcat-pill:hover{border-color:var(--stella);color:var(--bianco)}
+.subcat-pill.sel{background:rgba(245,200,66,.15);border-color:var(--stella);color:var(--stella)}
+
 .cattile{
   background:var(--nero3);border:1.5px solid var(--bordo);
   border-radius:11px;padding:11px 6px;cursor:pointer;
@@ -414,6 +425,14 @@ textarea{resize:none;line-height:1.55}
   </div>
 </div>
 
+<!-- ── STEP 1b: SOTTOCATEGORIA ── -->
+<div class="subcat-section" id="subcat-section" style="display:none">
+  <div style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--grigio);margin-bottom:10px;margin-top:14px">
+    1b · Specializzazione <span style="color:var(--grigio);font-weight:400;text-transform:none;letter-spacing:0">(opzionale)</span>
+  </div>
+  <div class="subcat-pills" id="subcat-pills"></div>
+</div>
+
 <!-- ── STEP 2: ESEMPI DA COPIARE ── -->
 <div class="esempi-header">
   <div class="esempi-label">2 · Simili · <span id="cat-label">Idraulica</span></div>
@@ -606,10 +625,13 @@ const artigiano = {
   id: "{{ artigiano.id }}"
 };
 const lavoriEsistenti = {{ artigiano.lavori | tojson }};
+const SOTTOCATEGORIE = {{ sottocategorie_json | safe }};
 
 let stato = {
   categoria: 'Idraulica',
   catEmoji: '🔧',
+  sottocategoria: '',
+  sottocategoria_slug: '',
   titolo: '',
   descrizione: '',
   foto: [null, null, null],
@@ -653,15 +675,19 @@ function aggiornaURL() {
 
   const slugCat    = slugify(stato.categoria);
   const slugTitolo = slugify(titolo);
-  const slugLoc    = quart
-    ? slugify(citta) + '-' + slugify(quart)
-    : slugify(citta);
+  const slugLoc    = quart ? slugify(citta) + '-' + slugify(quart) : slugify(citta);
+  const slugSubcat = stato.sottocategoria_slug;
 
-  const url = `www.stellevere.it/${slugCat}/${slugTitolo}/${slugLoc}`;
+  let url, html;
+  if (slugSubcat) {
+    url  = `www.stellevere.it/${slugCat}/${slugSubcat}/${slugTitolo}/${slugLoc}`;
+    html = `stellevere.it/<span>${slugCat}</span>/<span style="color:#a78bfa">${slugSubcat}</span>/<span>${slugTitolo}</span>/<span>${slugLoc}</span>`;
+  } else {
+    url  = `www.stellevere.it/${slugCat}/${slugTitolo}/${slugLoc}`;
+    html = `stellevere.it/<span>${slugCat}</span>/<span>${slugTitolo}</span>/<span>${slugLoc}</span>`;
+  }
   stato.urlGenerata = url;
-
-  document.getElementById('url-preview-val').innerHTML =
-    `stellevere.it/<span>${slugCat}</span>/<span>${slugTitolo}</span>/<span>${slugLoc}</span>`;
+  document.getElementById('url-preview-val').innerHTML = html;
   document.getElementById('url-preview').style.display = 'block';
 }
 
@@ -671,10 +697,49 @@ function selCat(el, nome, emoji) {
   el.classList.add('sel');
   stato.categoria = nome;
   stato.catEmoji  = emoji;
+  stato.sottocategoria = '';
+  stato.sottocategoria_slug = '';
   document.getElementById('cat-label').textContent = nome;
   caricaEsempi(nome);
   aggiornaURL();
   controllaForm();
+  caricaSottocategorie(nome);
+}
+
+// ── SOTTOCATEGORIE ──
+function caricaSottocategorie(nomeCategoria) {
+  const catSlug = slugify(nomeCategoria);
+  const subcats = SOTTOCATEGORIE[catSlug] || {};
+  const sectionEl = document.getElementById('subcat-section');
+  const pillsEl   = document.getElementById('subcat-pills');
+  pillsEl.innerHTML = '';
+  if (Object.keys(subcats).length === 0) {
+    sectionEl.style.display = 'none';
+    return;
+  }
+  sectionEl.style.display = 'block';
+  for (const [slug, info] of Object.entries(subcats)) {
+    const pill = document.createElement('div');
+    pill.className = 'subcat-pill';
+    pill.textContent = info.nome;
+    pill.dataset.slug = slug;
+    pill.addEventListener('click', () => selSubcat(pill, slug, info.nome));
+    pillsEl.appendChild(pill);
+  }
+}
+
+function selSubcat(el, slug, nome) {
+  if (stato.sottocategoria_slug === slug) {
+    el.classList.remove('sel');
+    stato.sottocategoria_slug = '';
+    stato.sottocategoria = '';
+  } else {
+    document.querySelectorAll('.subcat-pill').forEach(p => p.classList.remove('sel'));
+    el.classList.add('sel');
+    stato.sottocategoria_slug = slug;
+    stato.sottocategoria = nome;
+  }
+  aggiornaURL();
 }
 
 // ── ESEMPI ──
@@ -958,6 +1023,8 @@ async function pubblicaLavoro() {
   const quart   = document.getElementById('f-quartiere').value.trim();
   const payload = {
     artigianoId: artigiano.id, categoria: stato.categoria,
+    sottocategoria_slug: stato.sottocategoria_slug,
+    sottocategoria: stato.sottocategoria,
     titolo, descrizione: desc, citta, quartiere: quart,
     gps: stato.gps,
     foto_data:  stato.foto,
@@ -1015,6 +1082,7 @@ function aggiornaContatore() {
 // ── INIT ──
 document.addEventListener('DOMContentLoaded', () => {
   caricaEsempi('Idraulica');
+  caricaSottocategorie('Idraulica');
   controllaForm();
   document.getElementById('f-citta').addEventListener('input', () => { if(stato.gps) { const c=document.getElementById('f-citta').value; const q=document.getElementById('f-quartiere').value; document.getElementById('mappa-label').textContent=q?`${q}, ${c}`:c; } });
   document.getElementById('f-quartiere').addEventListener('input', () => { if(stato.gps) { const c=document.getElementById('f-citta').value; const q=document.getElementById('f-quartiere').value; document.getElementById('mappa-label').textContent=q?`${q}, ${c}`:c; } });
