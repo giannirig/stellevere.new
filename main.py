@@ -429,6 +429,19 @@ def index():
     return render_template('index.html', categorie=CATEGORIE, sottocategorie=SOTTOCATEGORIE)
 
 
+@app.route('/cerca_attivita.php')
+def cerca_attivita_php():
+    from flask import redirect
+    return redirect('/cerca_attivita', code=301)
+
+@app.route('/cerca_attivita')
+def cerca_attivita():
+    artigiani_list = list(ARTIGIANI.values())
+    return render_template('cerca_attivita.html',
+                           artigiani=artigiani_list,
+                           categorie=CATEGORIE)
+
+
 @app.route('/scheda/<artigiano_id>')
 def scheda(artigiano_id):
     artigiano = ARTIGIANI.get(artigiano_id)
