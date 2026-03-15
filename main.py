@@ -14,6 +14,53 @@ def slugify(s):
     return re.sub(r'[\s-]+', '-', s).strip('-')
 
 
+# Sottocategorie per ogni categoria principale
+SOTTOCATEGORIE = {
+    'idraulica': {
+        'caldaie':   {'nome': 'Caldaie',    'desc': 'Installazione e sostituzione caldaie a condensazione'},
+        'bagni':     {'nome': 'Bagni',      'desc': 'Rifacimento e ristrutturazione bagni chiavi in mano'},
+        'urgenze':   {'nome': 'Urgenze H24','desc': 'Interventi urgenti perdite e rotture 24/7'},
+        'impianti':  {'nome': 'Impianti',   'desc': 'Impianti idrici, termici e di riscaldamento'},
+        'scarichi':  {'nome': 'Scarichi',   'desc': 'Disintasamento colonne e riparazione scarichi'},
+        'rubinetti': {'nome': 'Rubinetti',  'desc': 'Sostituzione rubinetteria e sanitari'},
+    },
+    'elettricista': {
+        'impianti-elettrici': {'nome': 'Impianti Elettrici', 'desc': 'Rifacimento e messa a norma CEI 64-8'},
+        'fotovoltaico':       {'nome': 'Fotovoltaico',       'desc': 'Installazione pannelli solari e accumulo'},
+        'climatizzatori':     {'nome': 'Climatizzatori',     'desc': 'Installazione e manutenzione split inverter'},
+        'domotica':           {'nome': 'Domotica',           'desc': 'Sistemi smart home, luci e tapparelle automatiche'},
+        'illuminazione':      {'nome': 'Illuminazione',      'desc': 'Impianti LED design interno ed esterno'},
+        'urgenze':            {'nome': 'Urgenze H24',        'desc': 'Guasti elettrici, cortocircuiti, blackout'},
+    },
+    'imbianchino': {
+        'interni':      {'nome': 'Interni',        'desc': 'Tinteggiatura appartamenti, uffici e interni'},
+        'esterni':      {'nome': 'Esterni',        'desc': 'Facciate esterne, intonaci e pittura silossanica'},
+        'stucchi':      {'nome': 'Stucchi',        'desc': 'Stucco veneziano, decorativi e rasature al civile'},
+        'isolamento':   {'nome': 'Isolamento',     'desc': 'Cappotto termico e isolamento acustico esterno'},
+        'carta-parati': {'nome': 'Carta da Parati','desc': 'Posa carta da parati, murals e carte speciali'},
+    },
+    'muratore': {
+        'pavimenti':         {'nome': 'Pavimenti',         'desc': 'Posa gres, piastrelle, parquet e massetti'},
+        'demolizioni':       {'nome': 'Demolizioni',       'desc': 'Abbattimento pareti, rimozione pavimenti'},
+        'ristrutturazioni':  {'nome': 'Ristrutturazioni',  'desc': 'Ristrutturazioni complete chiavi in mano'},
+        'intonaci':          {'nome': 'Intonaci',          'desc': 'Intonaco tradizionale, rasature e stucco'},
+        'impermeabilizzazioni': {'nome': 'Impermeabilizzazioni', 'desc': 'Terrazzi, box, piscine e fondamenta'},
+    },
+    'falegname': {
+        'cucine':  {'nome': 'Cucine',  'desc': 'Cucine su misura in legno massello e moderno'},
+        'armadi':  {'nome': 'Armadi', 'desc': 'Armadi a muro, cabine armadio e guardaroba'},
+        'porte':   {'nome': 'Porte',  'desc': 'Porte interne, infissi e serramenti in legno'},
+        'parquet': {'nome': 'Parquet','desc': 'Posa, levigatura e restauro parquet'},
+        'mobili':  {'nome': 'Mobili', 'desc': 'Mobili su misura, restauro e antiquariato'},
+    },
+    'altro': {
+        'traslochi':    {'nome': 'Traslochi',    'desc': 'Trasloco appartamenti e uffici con furgone'},
+        'condizionatori':{'nome': 'Condizionatori','desc': 'Installazione e manutenzione condizionatori'},
+        'giardini':     {'nome': 'Giardini',     'desc': 'Giardinaggio, potatura e cura verde'},
+        'montaggio':    {'nome': 'Montaggio',    'desc': 'Montaggio mobili e assemblaggio'},
+    },
+}
+
 # Mappa categoria → slug e viceversa
 CATEGORIE = {
     'idraulica':    {'nome': 'Idraulica',    'cat_tipo': 'Idraulico',    'plurale': 'Idraulici',    'icona': 'drop'},
@@ -36,7 +83,7 @@ ARTIGIANI = {
         'recensioni': 23,
         'telefono': '+39 333 123 4567',
         'lavori': [
-            {'id': 1, 'titolo': 'Sostituzione Caldaia Condominiale',
+            {'id': 1, 'titolo': 'Sostituzione Caldaia Condominiale', 'sottocategoria_slug': 'caldaie',
              'descrizione': 'Sostituzione completa caldaia condominiale da 80kW con modello ad alta efficienza. Lavoro eseguito in 2 giorni, compreso smaltimento vecchia caldaia e collaudo impianto.',
              'citta': 'Milano', 'quartiere': 'Porta Venezia', 'stelle': 5, 'visite': 38,
              'recensione': 'Caldaia sostituita in 2 giorni. Preciso, pulito, puntuale.', 'cliente': 'Luca C.',
@@ -51,7 +98,7 @@ ARTIGIANI = {
                   'alt': 'Risultato finale – impianto caldaia condominiale Milano Porta Venezia collaudato',
                   'caption': 'Impianto ultimato, collaudato e certificato', 'posizione': 'Risultato'},
              ]},
-            {'id': 2, 'titolo': 'Rifacimento Bagno Completo',
+            {'id': 2, 'titolo': 'Rifacimento Bagno Completo', 'sottocategoria_slug': 'bagni',
              'descrizione': 'Rifacimento completo del bagno: demolizione pavimento e rivestimenti, nuova posa piastrelle, installazione sanitari e rubinetteria.',
              'citta': 'Milano', 'quartiere': 'Navigli', 'stelle': 5, 'visite': 52,
              'recensione': 'Bagno rifatto in una settimana, tutto perfetto. Prezzo onesto.', 'cliente': 'Maria R.',
@@ -63,7 +110,7 @@ ARTIGIANI = {
                   'alt': 'Dettaglio posa piastrelle grande formato bagno Navigli Milano',
                   'caption': 'Piastrelle 60×120 posate a filo', 'posizione': 'Dettaglio'},
              ]},
-            {'id': 3, 'titolo': 'Perdita Urgente H24',
+            {'id': 3, 'titolo': 'Perdita Urgente H24', 'sottocategoria_slug': 'urgenze',
              'descrizione': 'Intervento di emergenza per perdita d\'acqua notturna. Riparazione tubazione rotta sotto pavimento.',
              'citta': 'Milano', 'quartiere': 'Città Studi', 'stelle': 5, 'visite': 29,
              'recensione': 'Perdita di notte risolta in un\'ora. Disponibile H24, professionista vero.', 'cliente': 'Giorgio P.',
@@ -72,7 +119,7 @@ ARTIGIANI = {
                   'alt': 'Riparazione perdita urgente – tubazione rotta riparata in notturna Città Studi Milano',
                   'caption': 'Tubazione riparata con giunto a pressione', 'posizione': 'Principale'},
              ]},
-            {'id': 4, 'titolo': 'Impianto Termosifoni',
+            {'id': 4, 'titolo': 'Impianto Termosifoni', 'sottocategoria_slug': 'impianti',
              'descrizione': 'Installazione nuovo impianto di riscaldamento con termosifoni in alluminio. Progettazione, fornitura e posa completa.',
              'citta': 'Milano', 'quartiere': 'Brera', 'stelle': 5, 'visite': 41,
              'recensione': 'Impianto realizzato a regola d\'arte. Consigliatissimo!', 'cliente': 'Sara M.',
@@ -96,11 +143,11 @@ ARTIGIANI = {
         'recensioni': 17,
         'telefono': '+39 348 765 4321',
         'lavori': [
-            {'id': 5, 'titolo': 'Installazione Scalda Acqua',
+            {'id': 5, 'titolo': 'Installazione Scalda Acqua', 'sottocategoria_slug': 'impianti',
              'descrizione': 'Installazione boiler elettrico 80L con valvola di sicurezza. Smaltimento vecchio e collaudo.',
              'citta': 'Milano', 'quartiere': 'San Siro', 'stelle': 5, 'visite': 22,
              'recensione': 'Lavoro fatto bene, in tempi rapidi. Lo richiamerei.', 'cliente': 'Paolo F.'},
-            {'id': 6, 'titolo': 'Sostituzione Rubinetteria Cucina',
+            {'id': 6, 'titolo': 'Sostituzione Rubinetteria Cucina', 'sottocategoria_slug': 'rubinetti',
              'descrizione': 'Sostituzione rubinetto cucina e sifone. Intervento pulito e veloce.',
              'citta': 'Milano', 'quartiere': 'Isola', 'stelle': 5, 'visite': 18,
              'recensione': 'Puntuale e professionale. Ottimo lavoro.', 'cliente': 'Giulia T.'},
@@ -116,11 +163,11 @@ ARTIGIANI = {
         'recensioni': 31,
         'telefono': '+39 366 222 3344',
         'lavori': [
-            {'id': 7, 'titolo': 'Impianto Elettrico Appartamento',
+            {'id': 7, 'titolo': 'Impianto Elettrico Appartamento', 'sottocategoria_slug': 'impianti-elettrici',
              'descrizione': 'Rifacimento completo impianto elettrico con quadro moderno differenziali a norma CEI 64-8.',
              'citta': 'Milano', 'quartiere': 'Navigli', 'stelle': 5, 'visite': 67,
              'recensione': 'Lavoro impeccabile, impianto a norma. Professionale e puntuale.', 'cliente': 'Roberto A.'},
-            {'id': 8, 'titolo': 'Installazione Climatizzatore',
+            {'id': 8, 'titolo': 'Installazione Climatizzatore', 'sottocategoria_slug': 'climatizzatori',
              'descrizione': 'Installazione split dual inverter con gas R32, foratura muro e collaudo.',
              'citta': 'Milano', 'quartiere': 'Porta Romana', 'stelle': 5, 'visite': 44,
              'recensione': 'Ottimo lavoro, veloce e preciso. Molto soddisfatto.', 'cliente': 'Francesca B.'},
@@ -136,11 +183,11 @@ ARTIGIANI = {
         'recensioni': 14,
         'telefono': '+39 347 888 9900',
         'lavori': [
-            {'id': 9, 'titolo': 'Sostituzione Quadro Elettrico',
+            {'id': 9, 'titolo': 'Sostituzione Quadro Elettrico', 'sottocategoria_slug': 'impianti-elettrici',
              'descrizione': 'Sostituzione quadro obsoleto con nuovo centralino con differenziali separati per zona.',
              'citta': 'Roma', 'quartiere': 'Prati', 'stelle': 5, 'visite': 33,
              'recensione': 'Preciso e affidabile. Impianto perfetto.', 'cliente': 'Matteo G.'},
-            {'id': 10, 'titolo': 'Punti Luce e Prese Aggiuntivi',
+            {'id': 10, 'titolo': 'Punti Luce e Prese Aggiuntivi', 'sottocategoria_slug': 'illuminazione',
              'descrizione': 'Aggiunta punti presa e luce in soggiorno. Passaggio cavi sotto traccia.',
              'citta': 'Roma', 'quartiere': 'Trastevere', 'stelle': 5, 'visite': 28,
              'recensione': 'Lavoro ben fatto, zona rimasta pulita.', 'cliente': 'Anna V.'},
@@ -156,11 +203,11 @@ ARTIGIANI = {
         'recensioni': 28,
         'telefono': '+39 339 111 2233',
         'lavori': [
-            {'id': 11, 'titolo': 'Tinteggiatura Appartamento 90mq',
+            {'id': 11, 'titolo': 'Tinteggiatura Appartamento 90mq', 'sottocategoria_slug': 'interni',
              'descrizione': 'Tinteggiatura completa 90mq: preparazione pareti, stucco, primer e due mani pittura lavabile.',
              'citta': 'Roma', 'quartiere': 'Parioli', 'stelle': 5, 'visite': 55,
              'recensione': 'Lavoro perfetto, casa come nuova. Consigliatissimo!', 'cliente': 'Claudia M.'},
-            {'id': 12, 'titolo': 'Stucco Veneziano Camera da Letto',
+            {'id': 12, 'titolo': 'Stucco Veneziano Camera da Letto', 'sottocategoria_slug': 'stucchi',
              'descrizione': 'Applicazione stucco veneziano a due strati con finitura a cera e lucidatura.',
              'citta': 'Roma', 'quartiere': 'Testaccio', 'stelle': 5, 'visite': 38,
              'recensione': 'Risultato bellissimo, artigiano vero.', 'cliente': 'Lorenzo P.'},
@@ -176,11 +223,11 @@ ARTIGIANI = {
         'recensioni': 19,
         'telefono': '+39 340 555 6677',
         'lavori': [
-            {'id': 13, 'titolo': 'Posa Pavimento Gres 60x60',
+            {'id': 13, 'titolo': 'Posa Pavimento Gres 60x60', 'sottocategoria_slug': 'pavimenti',
              'descrizione': 'Posa 55mq gres porcellanato su massetto autolivellante. Fughe con stuccatura epossidica.',
              'citta': 'Milano', 'quartiere': 'Niguarda', 'stelle': 5, 'visite': 31,
              'recensione': 'Posa perfetta, pavimento bellissimo.', 'cliente': 'Elena C.'},
-            {'id': 14, 'titolo': 'Demolizione Parete e Cartongesso',
+            {'id': 14, 'titolo': 'Demolizione Parete e Cartongesso', 'sottocategoria_slug': 'demolizioni',
              'descrizione': 'Abbattimento parete non portante, nuova parete in cartongesso con isolamento acustico.',
              'citta': 'Milano', 'quartiere': 'Bicocca', 'stelle': 5, 'visite': 25,
              'recensione': 'Lavoro pulito e veloce. Molto professionale.', 'cliente': 'Marco L.'},
@@ -196,11 +243,11 @@ ARTIGIANI = {
         'recensioni': 21,
         'telefono': '+39 333 444 5566',
         'lavori': [
-            {'id': 15, 'titolo': 'Rifacimento Impianto Idrico',
+            {'id': 15, 'titolo': 'Rifacimento Impianto Idrico', 'sottocategoria_slug': 'impianti',
              'descrizione': 'Rifacimento completo impianto idrico appartamento 70mq. Tubi in multistrato, collaudo incluso.',
              'citta': 'Roma', 'quartiere': 'Prati', 'stelle': 5, 'visite': 43,
              'recensione': 'Lavoro eccellente, nessun problema. Molto raccomandato.', 'cliente': 'Simone D.'},
-            {'id': 16, 'titolo': 'Sostituzione Caldaia Murale',
+            {'id': 16, 'titolo': 'Sostituzione Caldaia Murale', 'sottocategoria_slug': 'caldaie',
              'descrizione': 'Sostituzione caldaia murale con modello a condensazione classe A+ con cronotermostato Wi-Fi.',
              'citta': 'Roma', 'quartiere': 'Flaminio', 'stelle': 5, 'visite': 37,
              'recensione': 'Veloce, preciso, prezzi onesti. Lo riconfermerò.', 'cliente': 'Valentina R.'},
@@ -299,6 +346,71 @@ def jobs_by_category_city(jobs, cat_slug=None, citta_slug=None, quart_slug=None)
     return result
 
 
+def jobs_by_subcat(tutti_jobs, cat_slug, subcat_slug, citta_slug=None):
+    """Filtra lavori per categoria + sottocategoria (+ opzionalmente città)."""
+    result = []
+    for j in tutti_jobs:
+        if j['artigiano'].get('cat_slug') != cat_slug:
+            continue
+        if j.get('sottocategoria_slug') != subcat_slug:
+            continue
+        if citta_slug and slugify(j.get('citta', '')) != citta_slug:
+            continue
+        result.append(j)
+    return result
+
+
+def build_job_url(cat_slug, job):
+    """Genera l'URL canonico per un lavoro (3 o 4 livelli)."""
+    ts = slugify(job['titolo'])
+    cs = slugify(job.get('citta', '')) + '-' + slugify(job.get('quartiere', ''))
+    subcat = job.get('sottocategoria_slug')
+    if subcat:
+        return f'/{cat_slug}/{subcat}/{ts}/{cs}'
+    return f'/{cat_slug}/{ts}/{cs}'
+
+
+def _render_pagina_lavoro(categoria_slug, titolo_slug, loc_slug,
+                           subcat_slug=None, subcat=None):
+    """Cerca il lavoro e renderizza la pagina pubblica (3 o 4 livelli)."""
+    artigiano_trovato = None
+    lavoro_trovato = None
+
+    for art in ARTIGIANI.values():
+        for l in art['lavori']:
+            ts = slugify(l['titolo'])
+            if ts == titolo_slug or ts[:8] == titolo_slug[:8]:
+                artigiano_trovato = art
+                lavoro_trovato = l
+                break
+        if artigiano_trovato:
+            break
+
+    if not artigiano_trovato:
+        artigiano_trovato = next(iter(ARTIGIANI.values()))
+        lavoro_trovato = artigiano_trovato['lavori'][0] if artigiano_trovato['lavori'] else None
+
+    titolo_seo = titolo_slug.replace('-', ' ').title()
+    cat_seo    = categoria_slug.replace('-', ' ').title()
+    loc_seo    = loc_slug.replace('-', ' ').title()
+
+    return render_template(
+        'pagina_lavoro.html',
+        artigiano=artigiano_trovato,
+        lavoro=lavoro_trovato,
+        titolo_seo=titolo_seo,
+        cat_seo=cat_seo,
+        loc_seo=loc_seo,
+        categoria_slug=categoria_slug,
+        titolo_slug=titolo_slug,
+        loc_slug=loc_slug,
+        artigiano_slug=artigiano_trovato['id'],
+        subcat_slug=subcat_slug,
+        subcat=subcat,
+        slugify=slugify,
+    )
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -317,7 +429,11 @@ def inserisci_lavoro(artigiano_id):
     artigiano = ARTIGIANI.get(artigiano_id)
     if not artigiano:
         return "Artigiano non trovato", 404
-    return render_template('inserisci_lavoro.html', artigiano=artigiano)
+    import json as _json
+    sottocategorie_json = _json.dumps(SOTTOCATEGORIE)
+    return render_template('inserisci_lavoro.html',
+                           artigiano=artigiano,
+                           sottocategorie_json=sottocategorie_json)
 
 
 @app.route('/api/esempi/<categoria>')
@@ -383,10 +499,12 @@ def pagina_categoria(categoria_slug):
     # Artigiani distinti
     artigiani_cat = [a for a in ARTIGIANI.values() if a.get('cat_slug') == categoria_slug]
 
+    sottocategorie = SOTTOCATEGORIE.get(categoria_slug, {})
     return render_template('pagina_categoria.html',
         cat=cat, categoria_slug=categoria_slug,
         jobs=jobs, citta_list=citta_list,
-        artigiani=artigiani_cat, slugify=slugify)
+        artigiani=artigiani_cat, slugify=slugify,
+        sottocategorie=sottocategorie)
 
 
 @app.route('/sitemap.xml')
@@ -406,6 +524,20 @@ def sitemap():
     for cat_slug in CATEGORIE:
         lines.append(f'  <url><loc>{base}/{cat_slug}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>')
 
+    # Pagine sottocategoria + sottocategoria+città
+    subcat_citta = defaultdict(set)
+    for art in ARTIGIANI.values():
+        cs_cat = art.get('cat_slug', '')
+        for l in art['lavori']:
+            sc = l.get('sottocategoria_slug')
+            if sc:
+                subcat_citta[(cs_cat, sc)].add(slugify(l.get('citta', '')))
+    for cat_slug in SOTTOCATEGORIE:
+        for subcat_slug in SOTTOCATEGORIE[cat_slug]:
+            lines.append(f'  <url><loc>{base}/{cat_slug}/{subcat_slug}</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>')
+            for cs in subcat_citta.get((cat_slug, subcat_slug), set()):
+                lines.append(f'  <url><loc>{base}/{cat_slug}/{subcat_slug}/{cs}</loc><changefreq>weekly</changefreq><priority>0.65</priority></url>')
+
     # Pagine città + gallerie
     citta_per_cat = defaultdict(set)
     for art in ARTIGIANI.values():
@@ -416,13 +548,14 @@ def sitemap():
             lines.append(f'  <url><loc>{base}/{cat_slug}/{cs}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>')
             lines.append(f'  <url><loc>{base}/{cat_slug}/{cs}/foto-lavori</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>')
 
-    # Pagine singolo lavoro + immagini
+    # Pagine singolo lavoro + immagini (URL 4-seg se ha sottocategoria, 3-seg altrimenti)
     for art in ARTIGIANI.values():
         cat_slug = art.get('cat_slug', 'altro')
         for l in art['lavori']:
             ts = slugify(l['titolo'])
             cs = slugify(l['citta']) + '-' + slugify(l.get('quartiere', ''))
-            url = f'{base}/{cat_slug}/{ts}/{cs}'
+            sc = l.get('sottocategoria_slug')
+            url = f'{base}/{cat_slug}/{sc}/{ts}/{cs}' if sc else f'{base}/{cat_slug}/{ts}/{cs}'
             immagini = l.get('immagini', [])
             if immagini:
                 lines.append(f'  <url>')
@@ -466,79 +599,111 @@ def galleria_foto(categoria_slug, citta_slug):
         foto=foto, n_lavori=len(jobs), slugify=slugify)
 
 
-@app.route('/<categoria_slug>/<citta_slug>')
-def pagina_citta(categoria_slug, citta_slug):
-    """Directory per città: /idraulica/milano, /elettricista/roma …"""
+@app.route('/<categoria_slug>/<seg2>')
+def pagina_citta_o_subcat(categoria_slug, seg2):
+    """Disambiguazione: /idraulica/caldaie → subcat  |  /idraulica/milano → città"""
     cat = CATEGORIE.get(categoria_slug)
     if not cat:
         return "Categoria non trovata", 404
 
-    tutti_jobs = build_jobs_index()
-    jobs = jobs_by_category_city(tutti_jobs, cat_slug=categoria_slug, citta_slug=citta_slug)
+    subcat_map = SOTTOCATEGORIE.get(categoria_slug, {})
 
-    # Aggrega per quartiere
-    quart_count = defaultdict(int)
-    for j in jobs:
-        if j.get('quartiere'):
-            quart_count[j['quartiere']] += 1
-    quart_list = sorted(quart_count.items(), key=lambda x: -x[1])
+    if seg2 in subcat_map:
+        subcat_slug = seg2
+        subcat = subcat_map[subcat_slug]
+        tutti_jobs = build_jobs_index()
+        jobs = jobs_by_subcat(tutti_jobs, categoria_slug, subcat_slug)
 
-    # Nome città leggibile dallo slug
-    citta_nome = citta_slug.replace('-', ' ').title()
+        citta_count = defaultdict(int)
+        for j in jobs:
+            citta_count[slugify(j.get('citta', ''))] += 1
+        citta_list = sorted(citta_count.items(), key=lambda x: -x[1])
 
-    artigiani_citta = [a for a in ARTIGIANI.values()
-                       if a.get('cat_slug') == categoria_slug
-                       and slugify(a.get('citta', '')) == citta_slug]
+        return render_template('pagina_sottocategoria.html',
+            cat=cat, categoria_slug=categoria_slug,
+            subcat=subcat, subcat_slug=subcat_slug,
+            citta_slug=None, citta_nome=None,
+            jobs=jobs, citta_list=citta_list,
+            quart_list=[], slugify=slugify,
+            SOTTOCATEGORIE=SOTTOCATEGORIE)
+    else:
+        citta_slug = seg2
+        tutti_jobs = build_jobs_index()
+        jobs = jobs_by_category_city(tutti_jobs, cat_slug=categoria_slug, citta_slug=citta_slug)
 
-    return render_template('pagina_citta.html',
-        cat=cat, categoria_slug=categoria_slug,
-        citta_slug=citta_slug, citta_nome=citta_nome,
-        jobs=jobs, quart_list=quart_list,
-        artigiani=artigiani_citta, slugify=slugify)
+        quart_count = defaultdict(int)
+        for j in jobs:
+            if j.get('quartiere'):
+                quart_count[j['quartiere']] += 1
+        quart_list = sorted(quart_count.items(), key=lambda x: -x[1])
+
+        citta_nome = citta_slug.replace('-', ' ').title()
+        artigiani_citta = [a for a in ARTIGIANI.values()
+                           if a.get('cat_slug') == categoria_slug
+                           and slugify(a.get('citta', '')) == citta_slug]
+
+        return render_template('pagina_citta.html',
+            cat=cat, categoria_slug=categoria_slug,
+            citta_slug=citta_slug, citta_nome=citta_nome,
+            jobs=jobs, quart_list=quart_list,
+            artigiani=artigiani_citta, slugify=slugify)
 
 
-@app.route('/<categoria_slug>/<titolo_slug>/<loc_slug>')
-def pagina_lavoro(categoria_slug, titolo_slug, loc_slug):
-    """Pagina pubblica indicizzabile da Google.
-    Struttura: /categoria/titolo-lavoro/citta-quartiere
-    Esempio:   /idraulica/installazione-caldaia/milano-navigli
-    """
-    # Cerca tra tutti gli artigiani quello con lavori corrispondenti
-    artigiano_trovato = None
-    lavoro_trovato = None
+@app.route('/<categoria_slug>/<seg2>/<seg3>')
+def pagina_lavoro_o_subcat_citta(categoria_slug, seg2, seg3):
+    """Disambiguazione: /idraulica/caldaie/milano → subcat+city  |  /idraulica/titolo/loc → lavoro 3-seg"""
+    cat = CATEGORIE.get(categoria_slug)
+    if not cat:
+        return "Categoria non trovata", 404
 
-    for art in ARTIGIANI.values():
-        for l in art['lavori']:
-            if (slugify(l['titolo']).startswith(titolo_slug[:8]) or
-                    titolo_slug[:8] in slugify(l['titolo'])):
-                artigiano_trovato = art
-                lavoro_trovato = l
-                break
-        if artigiano_trovato:
-            break
+    subcat_map = SOTTOCATEGORIE.get(categoria_slug, {})
 
-    # Fallback: primo artigiano disponibile
-    if not artigiano_trovato:
-        artigiano_trovato = next(iter(ARTIGIANI.values()))
-        lavoro_trovato = artigiano_trovato['lavori'][0] if artigiano_trovato['lavori'] else None
+    if seg2 in subcat_map:
+        subcat_slug = seg2
+        citta_slug  = seg3
+        subcat = subcat_map[subcat_slug]
+        tutti_jobs = build_jobs_index()
+        jobs = jobs_by_subcat(tutti_jobs, categoria_slug, subcat_slug, citta_slug)
 
-    titolo_seo   = titolo_slug.replace('-', ' ').title()
-    cat_seo      = categoria_slug.replace('-', ' ').title()
-    loc_seo      = loc_slug.replace('-', ' ').title()
+        citta_nome = citta_slug.replace('-', ' ').title()
+        quart_count = defaultdict(int)
+        for j in jobs:
+            if j.get('quartiere'):
+                quart_count[j['quartiere']] += 1
+        quart_list = sorted(quart_count.items(), key=lambda x: -x[1])
 
-    return render_template(
-        'pagina_lavoro.html',
-        artigiano=artigiano_trovato,
-        lavoro=lavoro_trovato,
-        titolo_seo=titolo_seo,
-        cat_seo=cat_seo,
-        loc_seo=loc_seo,
-        categoria_slug=categoria_slug,
-        titolo_slug=titolo_slug,
-        loc_slug=loc_slug,
-        artigiano_slug=artigiano_trovato['id'],
-        slugify=slugify,
-    )
+        citta_count = defaultdict(int)
+        for j in build_jobs_index():
+            if (j['artigiano'].get('cat_slug') == categoria_slug
+                    and j.get('sottocategoria_slug') == subcat_slug):
+                citta_count[slugify(j.get('citta', ''))] += 1
+        citta_list = sorted(citta_count.items(), key=lambda x: -x[1])
+
+        return render_template('pagina_sottocategoria.html',
+            cat=cat, categoria_slug=categoria_slug,
+            subcat=subcat, subcat_slug=subcat_slug,
+            citta_slug=citta_slug, citta_nome=citta_nome,
+            jobs=jobs, citta_list=citta_list,
+            quart_list=quart_list, slugify=slugify,
+            SOTTOCATEGORIE=SOTTOCATEGORIE)
+    else:
+        return _render_pagina_lavoro(categoria_slug, seg2, seg3)
+
+
+@app.route('/<categoria_slug>/<subcat_slug>/<titolo_slug>/<loc_slug>')
+def pagina_lavoro_4seg(categoria_slug, subcat_slug, titolo_slug, loc_slug):
+    """Pagina lavoro a 4 livelli: /idraulica/caldaie/installazione-caldaia/milano-navigli"""
+    cat = CATEGORIE.get(categoria_slug)
+    if not cat:
+        return "Categoria non trovata", 404
+
+    subcat_map = SOTTOCATEGORIE.get(categoria_slug, {})
+    if subcat_slug not in subcat_map:
+        return "Sottocategoria non trovata", 404
+
+    subcat = subcat_map[subcat_slug]
+    return _render_pagina_lavoro(categoria_slug, titolo_slug, loc_slug,
+                                  subcat_slug=subcat_slug, subcat=subcat)
 
 
 @app.route('/manifest.json')

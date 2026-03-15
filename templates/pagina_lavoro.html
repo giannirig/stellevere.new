@@ -181,7 +181,11 @@ h1{font-size:clamp(20px,5vw,28px);font-weight:900;color:var(--bianco);line-heigh
   <nav class="breadcrumb" aria-label="Percorso">
     <a href="/">StelleVere</a>
     <span>›</span>
-    <a href="/scheda/{{ artigiano_slug }}">{{ artigiano.nome }}</a>
+    <a href="/{{ categoria_slug }}">{{ cat_seo }}</a>
+    {% if subcat_slug %}
+    <span>›</span>
+    <a href="/{{ categoria_slug }}/{{ subcat_slug }}">{{ subcat.nome if subcat else subcat_slug }}</a>
+    {% endif %}
     <span>›</span>
     <span style="color:var(--testo)">{{ titolo_seo }}</span>
   </nav>

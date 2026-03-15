@@ -39,6 +39,14 @@ h1{font-size:clamp(22px,5vw,34px);font-weight:900;color:var(--bianco);line-heigh
 .slabel{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--grigio);margin-bottom:12px;margin-top:24px;display:flex;align-items:center;gap:8px}
 .slabel-line{flex:1;height:1px;background:var(--bordo)}
 
+/* SOTTOCATEGORIE GRID */
+.subcat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:8px}
+.subcat-card{background:var(--nero2);border:1px solid var(--bordo);border-radius:12px;padding:16px 14px;transition:border-color .15s,transform .1s;display:block}
+.subcat-card:hover{border-color:var(--stella);transform:translateY(-1px)}
+.subcat-nome{font-size:14px;font-weight:800;color:var(--bianco);margin-bottom:4px}
+.subcat-desc{font-size:11px;color:var(--grigio);line-height:1.5;margin-bottom:8px}
+.subcat-arrow{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--stella)}
+
 /* CITTÀ GRID */
 .citta-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:8px}
 .citta-card{
@@ -71,6 +79,7 @@ h1{font-size:clamp(22px,5vw,34px);font-weight:900;color:var(--bianco);line-heigh
 
 /* LAVORI RECENTI */
 .jobs-list{display:flex;flex-direction:column;gap:8px}
+.job-subcat{background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.2);color:var(--stella);font-size:9px;font-weight:800;padding:2px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:.04em}
 .job-card{
   background:var(--nero2);border:1px solid var(--bordo);border-radius:10px;
   padding:12px 14px;display:flex;gap:12px;align-items:center;
@@ -124,6 +133,20 @@ h1{font-size:clamp(22px,5vw,34px);font-weight:900;color:var(--bianco);line-heigh
     </div>
   </div>
 
+  <!-- SOTTOCATEGORIE -->
+  {% if sottocategorie %}
+  <div class="slabel">Specializzazioni <div class="slabel-line"></div></div>
+  <div class="subcat-grid">
+    {% for sc_slug, sc in sottocategorie.items() %}
+    <a class="subcat-card" href="/{{ categoria_slug }}/{{ sc_slug }}">
+      <div class="subcat-nome">{{ sc.nome }}</div>
+      <div class="subcat-desc">{{ sc.desc }}</div>
+      <div class="subcat-arrow">Vedi lavori →</div>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
   <!-- CITTÀ -->
   <div class="slabel">Cerca per città <div class="slabel-line"></div></div>
   <div class="citta-grid">
@@ -165,11 +188,14 @@ h1{font-size:clamp(22px,5vw,34px);font-weight:900;color:var(--bianco);line-heigh
   <div class="slabel">Ultimi lavori pubblicati <div class="slabel-line"></div></div>
   <div class="jobs-list">
     {% for j in jobs[:12] %}
-    <a class="job-card" href="/{{ categoria_slug }}/{{ slugify(j.titolo) }}/{{ slugify(j.citta) }}-{{ slugify(j.quartiere) }}">
+    {% set sc = j.sottocategoria_slug %}
+    {% set job_url = '/' + categoria_slug + '/' + sc + '/' + slugify(j.titolo) + '/' + slugify(j.citta) + '-' + slugify(j.quartiere) if sc else '/' + categoria_slug + '/' + slugify(j.titolo) + '/' + slugify(j.citta) + '-' + slugify(j.quartiere) %}
+    <a class="job-card" href="{{ job_url }}">
       <div class="job-left">
         <div class="job-titolo">{{ j.titolo }}</div>
         <div class="job-meta">
           <span class="job-loc">📍 {{ j.quartiere }}, {{ j.citta }}</span>
+          {% if sc %}<span class="job-subcat">{{ sottocategorie[sc].nome if sc in sottocategorie else sc }}</span>{% endif %}
           <span style="color:var(--stella);font-weight:800;font-size:11px">★★★★★</span>
         </div>
         <div class="job-art">{{ j.artigiano.nome }}</div>
