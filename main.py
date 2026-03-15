@@ -253,6 +253,19 @@ ARTIGIANI = {
              'recensione': 'Veloce, preciso, prezzi onesti. Lo riconfermerò.', 'cliente': 'Valentina R.'},
         ]
     },
+
+    'idratest': {
+        'id': 'idratest',
+        'nome': 'Idratest',
+        'emoji': '🔧',
+        'categoria': 'Idraulico',
+        'cat_slug': 'idraulica',
+        'citta': 'Milano',
+        'stelle': 5.0,
+        'recensioni': 0,
+        'telefono': '+39 391 156 6400',
+        'lavori': [],
+    },
 }
 
 # Esempi di lavori per categoria (per suggerimenti al momento dell'inserimento)
