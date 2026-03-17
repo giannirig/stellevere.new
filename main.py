@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_from_directory, jsonify, request
+from flask import Flask, render_template, send_from_directory, jsonify, request, make_response
 import re
 import unicodedata
 import os
@@ -433,12 +433,33 @@ def index():
 @app.route('/cerca_attivita')
 @app.route('/cerca_attivita.php')
 def cerca_attivita():
-    q = request.args.get('q', '')
-    artigiani_list = list(ARTIGIANI.values())
-    return render_template('cerca_attivita.html',
-                           artigiani=artigiani_list,
+    q = request.args.get('q', '').strip()
+    cat_filter = request.args.get('cat', '').strip()
+    cit_filter = request.args.get('cit', '').strip()
+    tutti = list(ARTIGIANI.values())
+    # Pre-filtro lato server
+    if q or cat_filter or cit_filter:
+        q_low = q.lower()
+        cat_low = cat_filter.lower()
+        cit_low = cit_filter.lower()
+        filtrati = [
+            a for a in tutti
+            if (not q_low or q_low in a.get('nome','').lower() or q_low in a.get('id','').lower())
+            and (not cat_low or cat_low == a.get('cat_slug','').lower())
+            and (not cit_low or cit_low in a.get('citta','').lower())
+        ]
+    else:
+        filtrati = tutti
+    resp = make_response(render_template('cerca_attivita.html',
+                           artigiani=tutti,
+                           artigiani_filtrati=filtrati,
                            categorie=CATEGORIE,
-                           q_iniziale=q)
+                           q_iniziale=q,
+                           cat_iniziale=cat_filter,
+                           cit_iniziale=cit_filter))
+    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    resp.headers['Pragma'] = 'no-cache'
+    return resp
 
 
 @app.route('/scheda/<artigiano_id>')

@@ -124,10 +124,10 @@
   <select id="f-cat" onchange="filtra()">
     <option value="">Tutte le categorie</option>
     {% for slug, cat in categorie.items() %}
-    <option value="{{ slug }}">{{ cat.nome }}</option>
+    <option value="{{ slug }}"{% if cat_iniziale == slug %} selected{% endif %}>{{ cat.nome }}</option>
     {% endfor %}
   </select>
-  <input id="f-cit" type="text" placeholder="📍 Città…" oninput="filtra()" autocomplete="off">
+  <input id="f-cit" type="text" placeholder="📍 Città…" oninput="filtra()" autocomplete="off" value="{{ cit_iniziale }}">
 </div>
 
 <p class="contatore" id="contatore"></p>
@@ -135,13 +135,15 @@
 <!-- Lista artigiani -->
 <div class="lista" id="lista">
   {% set emoji_map = {'drop':'💧','zap':'⚡','paint':'🎨','wall':'🧱','wood':'🪵','tool':'🔧'} %}
+  {% set filtrati_ids = artigiani_filtrati | map(attribute='id') | list %}
   {% for a in artigiani %}
   {% set emoji = emoji_map.get(categorie.get(a.cat_slug, {}).get('icona',''), '🔧') %}
   <a class="card" href="/scheda/{{ a.id }}"
      data-nome="{{ a.nome | lower }}"
      data-id="{{ a.id | lower }}"
      data-cat="{{ a.cat_slug }}"
-     data-cit="{{ a.citta | lower }}">
+     data-cit="{{ a.citta | lower }}"
+     {% if a.id not in filtrati_ids %}style="display:none"{% endif %}>
     <div class="card-av">{{ a.get('emoji', emoji) }}</div>
     <div class="card-info">
       <div class="card-nome">{{ a.nome }}</div>
