@@ -432,15 +432,19 @@ def index():
 
 @app.route('/cerca_attivita.php')
 def cerca_attivita_php():
-    from flask import redirect
-    return redirect('/cerca_attivita', code=301)
+    from flask import redirect, request as req
+    q = req.args.get('q', '')
+    dest = f'/cerca_attivita?q={q}' if q else '/cerca_attivita'
+    return redirect(dest, code=301)
 
 @app.route('/cerca_attivita')
 def cerca_attivita():
+    q = request.args.get('q', '')
     artigiani_list = list(ARTIGIANI.values())
     return render_template('cerca_attivita.html',
                            artigiani=artigiani_list,
-                           categorie=CATEGORIE)
+                           categorie=CATEGORIE,
+                           q_iniziale=q)
 
 
 @app.route('/scheda/<artigiano_id>')

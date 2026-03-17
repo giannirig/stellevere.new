@@ -120,7 +120,7 @@
 
 <!-- Filtri -->
 <div class="filtri">
-  <input id="f-nome" type="text" placeholder="🔍 Cerca per nome…" oninput="filtra()" autocomplete="off">
+  <input id="f-nome" type="text" placeholder="🔍 Cerca per nome o ID…" oninput="filtra()" autocomplete="off" value="{{ q_iniziale }}">
   <select id="f-cat" onchange="filtra()">
     <option value="">Tutte le categorie</option>
     {% for slug, cat in categorie.items() %}
@@ -139,6 +139,7 @@
   {% set emoji = emoji_map.get(categorie.get(a.cat_slug, {}).get('icona',''), '🔧') %}
   <a class="card" href="/scheda/{{ a.id }}"
      data-nome="{{ a.nome | lower }}"
+     data-id="{{ a.id | lower }}"
      data-cat="{{ a.cat_slug }}"
      data-cit="{{ a.citta | lower }}">
     <div class="card-av">{{ a.get('emoji', emoji) }}</div>
@@ -173,7 +174,7 @@ function filtra() {
   let visibili = 0;
   cards.forEach(c => {
     const ok =
-      (!nome || c.dataset.nome.includes(nome)) &&
+      (!nome || c.dataset.nome.includes(nome) || c.dataset.id.includes(nome)) &&
       (!cat  || c.dataset.cat === cat) &&
       (!cit  || c.dataset.cit.includes(cit));
     c.style.display = ok ? '' : 'none';
