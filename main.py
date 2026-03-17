@@ -376,7 +376,9 @@ def jobs_by_subcat(tutti_jobs, cat_slug, subcat_slug, citta_slug=None):
 def build_job_url(cat_slug, job):
     """Genera l'URL canonico per un lavoro (3 o 4 livelli)."""
     ts = slugify(job['titolo'])
-    cs = slugify(job.get('citta', '')) + '-' + slugify(job.get('quartiere', ''))
+    citta = slugify(job.get('citta', ''))
+    quart = slugify(job.get('quartiere', ''))
+    cs = f'{citta}-{quart}' if quart else citta
     subcat = job.get('sottocategoria_slug')
     if subcat:
         return f'/{cat_slug}/{subcat}/{ts}/{cs}'
@@ -400,8 +402,7 @@ def _render_pagina_lavoro(categoria_slug, titolo_slug, loc_slug,
             break
 
     if not artigiano_trovato:
-        artigiano_trovato = next(iter(ARTIGIANI.values()))
-        lavoro_trovato = artigiano_trovato['lavori'][0] if artigiano_trovato['lavori'] else None
+        return "Pagina lavoro non trovata", 404
 
     titolo_seo = titolo_slug.replace('-', ' ').title()
     cat_seo    = categoria_slug.replace('-', ' ').title()
@@ -471,9 +472,11 @@ def esempi_categoria(categoria):
 @app.route('/api/lavoro/salva', methods=['POST'])
 def salva_lavoro():
     import base64 as _b64
+    from datetime import date
     data = request.get_json() or {}
     os.makedirs('static/uploads', exist_ok=True)
 
+    # ── Salva foto ──────────────────────────────────────────────────────────
     foto_data  = data.get('foto_data', [None, None, None])
     nomi_file  = data.get('nomi_file', [None, None, None])
     alt_texts  = data.get('alt_text',  [None, None, None])
@@ -499,10 +502,47 @@ def salva_lavoro():
         except Exception:
             pass
 
+    # ── Salva lavoro nella struttura dati ────────────────────────────────────
+    artigiano_id     = data.get('artigianoId', '')
+    titolo           = data.get('titolo', '').strip()
+    descrizione      = data.get('descrizione', '').strip()
+    citta            = data.get('citta', '').strip()
+    quartiere        = data.get('quartiere', '').strip()
+    sottocategoria_slug = data.get('sottocategoria_slug', '').strip()
+    sottocategoria   = data.get('sottocategoria', '').strip()
+
+    art = ARTIGIANI.get(artigiano_id)
+    if art and titolo and citta:
+        # ID progressivo basato sulla lunghezza lista
+        nuovo_id = max((l.get('id', 0) for l in art['lavori']), default=0) + 1
+
+        nuovo_lavoro = {
+            'id':                 nuovo_id,
+            'titolo':             titolo,
+            'descrizione':        descrizione,
+            'citta':              citta,
+            'quartiere':          quartiere,
+            'sottocategoria_slug': sottocategoria_slug,
+            'sottocategoria':     sottocategoria,
+            'stelle':             5,
+            'visite':             0,
+            'recensione':         '',
+            'cliente':            '',
+            'data':               date.today().isoformat(),
+            'immagini':           immagini_salvate,
+        }
+        art['lavori'].append(nuovo_lavoro)
+
+        # Costruisce l'URL canonico del lavoro appena salvato
+        url_lavoro = build_job_url(art['cat_slug'], nuovo_lavoro)
+    else:
+        url_lavoro = data.get('url', '')
+
     return jsonify({
-        'success': True,
-        'message': 'Lavoro salvato con successo',
-        'immagini': immagini_salvate,
+        'success':   True,
+        'message':   'Lavoro salvato con successo',
+        'immagini':  immagini_salvate,
+        'url_lavoro': url_lavoro,
     })
 
 

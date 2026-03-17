@@ -1040,7 +1040,11 @@ async function pubblicaLavoro() {
     });
     const res = await r.json();
     if (res.success) {
-      document.getElementById('succ-url-val').textContent = stato.urlGenerata || `stellevere.it/schede/${artigiano.id}`;
+      const urlMostrata = res.url_lavoro
+        ? 'stellevere.it' + res.url_lavoro
+        : (stato.urlGenerata || `stellevere.it/scheda/${artigiano.id}`);
+      document.getElementById('succ-url-val').textContent = urlMostrata;
+      stato.urlGenerata = urlMostrata;
       document.getElementById('succ-overlay').classList.add('show');
     }
   } catch(e) {
