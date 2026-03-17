@@ -178,6 +178,10 @@
     </div>
     <div class="ac-drop" id="acDrop"></div>
   </div>
+  <p style="margin-top:14px;font-size:13px;color:#555">
+    Cerchi un artigiano per nome?
+    <a id="link-per-nome" href="/cerca_attivita" style="color:#888;text-decoration:underline;cursor:pointer">Sfoglia tutti gli artigiani →</a>
+  </p>
 </section>
 
 <!-- CATEGORIE -->
@@ -304,16 +308,27 @@ function eseguiRicerca() {
   if (url) {
     window.location.href = url;
   } else {
-    const el = document.getElementById('inp-srv');
-    el.classList.add('err');
-    shake();
-    setTimeout(() => el.classList.remove('err'), 800);
-    el.focus(); el.select();
+    // Nessuna categoria trovata → cerca per nome artigiano
+    const q = encodeURIComponent(srv);
+    window.location.href = '/cerca_attivita?q=' + q;
   }
 }
 
 document.getElementById('btnCerca').addEventListener('click', eseguiRicerca);
 document.getElementById('inp-cit').addEventListener('keydown', e => { if(e.key==='Enter') eseguiRicerca(); });
+
+// Aggiorna link "sfoglia per nome" con il termine digitato
+document.getElementById('inp-srv').addEventListener('input', function() {
+  const v = this.value.trim();
+  const lnk = document.getElementById('link-per-nome');
+  if (v) {
+    lnk.href = '/cerca_attivita?q=' + encodeURIComponent(v);
+    lnk.textContent = 'Cerca "' + v + '" tra gli artigiani →';
+  } else {
+    lnk.href = '/cerca_attivita';
+    lnk.textContent = 'Sfoglia tutti gli artigiani →';
+  }
+});
 
 // Autocomplete
 const acDrop = document.getElementById('acDrop');
