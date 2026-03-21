@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lascia una recensione per <%= lavoro.titolo %> · StelleVere</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--nero:#0a0a0a;--nero2:#111;--nero3:#1a1a1a;--bordo:#2a2a2a;--stella:#f5c842;--verde:#25d366;--rosso:#ef4444;--bianco:#fff;--testo:#e0e0e0;--grigio:#777}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:linear-gradient(180deg,#0a0a0a,#111);color:var(--testo);font-family:'Inter',sans-serif;min-height:100vh;padding:24px 16px}
+.wrap{max-width:560px;margin:0 auto}
+.card{background:var(--nero2);border:1px solid var(--bordo);border-radius:18px;padding:22px}
+.logo{color:var(--stella);font-weight:900;font-size:18px;margin-bottom:18px}
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--grigio);margin-bottom:10px}
+h1{font-size:28px;line-height:1.15;color:var(--bianco);margin-bottom:10px}
+.sub{font-size:14px;line-height:1.6;color:var(--grigio);margin-bottom:18px}
+.job-box{background:var(--nero3);border:1px solid var(--bordo);border-radius:14px;padding:14px;margin-bottom:18px}
+.job-title{font-size:16px;font-weight:800;color:var(--bianco);margin-bottom:4px}
+.job-meta{font-size:13px;color:var(--grigio)}
+.alert{border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.5;margin-bottom:16px}
+.alert-ok{background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.3);color:#b7f3ca}
+.alert-err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#fecaca}
+form{display:grid;gap:14px}
+label{display:grid;gap:7px;font-size:12px;font-weight:700;color:var(--bianco)}
+input,textarea,select{width:100%;background:var(--nero3);border:1px solid var(--bordo);border-radius:12px;padding:13px 14px;color:var(--bianco);font:inherit}
+textarea{min-height:140px;resize:vertical;line-height:1.6}
+.hint{font-size:12px;color:var(--grigio)}
+.btn{background:var(--stella);color:#111;border:none;border-radius:12px;padding:15px 16px;font:inherit;font-weight:900;cursor:pointer}
+.footer{margin-top:14px;font-size:12px;color:var(--grigio);line-height:1.6}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="logo">★ StelleVere</div>
+      <div class="eyebrow">Recensione verificata</div>
+      <h1>Lascia la tua recensione per questo lavoro</h1>
+      <div class="sub">La recensione che invii verrà associata direttamente a questo lavoro di <%= artigiano.nome %>, non al profilo in generale.</div>
+
+      <div class="job-box">
+        <div class="job-title"><%= lavoro.titolo %></div>
+        <div class="job-meta"><%= lavoro.quartiere %><% if (lavoro.quartiere && lavoro.citta) { %>, <% } %><%= lavoro.citta %> · <%= artigiano.categoria %></div>
+      </div>
+
+      <% if (successo) { %>
+      <div class="alert alert-ok">Recensione inviata con successo. È stata collegata a questo lavoro specifico.</div>
+      <% } %>
+
+      <% if (errore) { %>
+      <div class="alert alert-err"><%= errore %></div>
+      <% } %>
+
+      <form method="post" action="/recensione/<%= artigiano.id %>/<%= lavoro.id %>">
+        <label>
+          Il tuo nome
+          <input type="text" name="cliente" value="<%= valori.cliente %>" placeholder="Es. Luca C." maxlength="60" required>
+        </label>
+
+        <label>
+          Valutazione
+          <select name="stelle">
+            <% for (let i = 5; i >= 1; i--) { %>
+            <option value="<%= i %>" <%= String(valori.stelle) === String(i) ? 'selected' : '' %>><%= i %> stelle</option>
+            <% } %>
+          </select>
+        </label>
+
+        <label>
+          La tua recensione
+          <textarea name="recensione" placeholder="Racconta com'è andato questo lavoro..." maxlength="500" required><%= valori.recensione %></textarea>
+        </label>
+
+        <div class="hint">Questa recensione sarà mostrata nella pagina del lavoro e contribuirà alle stelle dell’artigiano.</div>
+        <button class="btn" type="submit">Invia recensione</button>
+      </form>
+
+      <div class="footer">Stai recensendo solo il lavoro "<%= lavoro.titolo %>". Se l’artigiano esegue altri lavori, avranno recensioni separate.</div>
+    </div>
+  </div>
+</body>
+</html>

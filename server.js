@@ -9,6 +9,7 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use('/static', express.static(path.join(__dirname, 'static')));
 app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true }));
 
 // ── Helpers ──
 function slugify(s) {
@@ -58,6 +59,102 @@ function buildJobUrl(catSlug, job) {
   const subcat = job.sottocategoria_slug;
   if (subcat) return `/${catSlug}/${subcat}/${ts}/${cs}`;
   return `/${catSlug}/${ts}/${cs}`;
+}
+
+const DATA_DIR = path.join(__dirname, 'data');
+const PERSISTED_JOBS_PATH = path.join(DATA_DIR, 'persisted-jobs.json');
+
+function loadPersistedJobsState() {
+  try {
+    return JSON.parse(fs.readFileSync(PERSISTED_JOBS_PATH, 'utf8'));
+  } catch (_) {
+    return { addedJobs: {}, updatedJobs: {} };
+  }
+}
+
+function savePersistedJobsState() {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.writeFileSync(PERSISTED_JOBS_PATH, JSON.stringify(PERSISTED_JOBS_STATE, null, 2));
+}
+
+const AREA_COORDS = {
+  'milano|porta-venezia': { lat: 45.4781, lng: 9.2082 },
+  'milano|navigli': { lat: 45.4519, lng: 9.1772 },
+  'milano|citta-studi': { lat: 45.4787, lng: 9.2304 },
+  'milano|brera': { lat: 45.4718, lng: 9.1886 },
+  'milano|san-siro': { lat: 45.4765, lng: 9.1239 },
+  'milano|isola': { lat: 45.4868, lng: 9.1907 },
+  'milano|porta-romana': { lat: 45.4559, lng: 9.2021 },
+  'milano|niguarda': { lat: 45.5182, lng: 9.1894 },
+  'milano|bicocca': { lat: 45.5148, lng: 9.2128 },
+  'roma|prati': { lat: 41.9097, lng: 12.4663 },
+  'roma|trastevere': { lat: 41.8894, lng: 12.4694 },
+  'roma|parioli': { lat: 41.9249, lng: 12.4881 },
+  'roma|testaccio': { lat: 41.8757, lng: 12.4788 },
+  'roma|flaminio': { lat: 41.9142, lng: 12.4761 },
+  'roma|salario': { lat: 41.9222, lng: 12.5025 },
+};
+
+function resolveJobGps(job) {
+  if (job && job.gps && Number.isFinite(Number(job.gps.lat)) && Number.isFinite(Number(job.gps.lng))) {
+    return { lat: Number(job.gps.lat), lng: Number(job.gps.lng), source: 'saved' };
+  }
+  const key = `${slugify(job.citta || '')}|${slugify(job.quartiere || '')}`;
+  if (AREA_COORDS[key]) return { ...AREA_COORDS[key], source: 'area-fallback' };
+  return null;
+}
+
+function matchSearchText(job, query) {
+  const q = slugify(query || '').trim();
+  if (!q) return true;
+  const haystack = [
+    job.titolo,
+    job.descrizione,
+    job.citta,
+    job.quartiere,
+    job.artigiano.nome,
+    job.artigiano.categoria,
+    job.sottocategoria || '',
+    job.sottocategoria_slug || '',
+  ].map(slugify).join(' ');
+  return q.split('-').every(token => haystack.includes(token));
+}
+
+function parseLocationFilter(raw, jobs) {
+  const source = slugify(raw || '');
+  if (!source) return { cittaSlug: '', quartiereSlug: '' };
+  let cittaSlug = '';
+  let quartiereSlug = '';
+
+  const citySlugs = [...new Set(jobs.map(j => slugify(j.citta || '')).filter(Boolean))];
+  const quartSlugs = [...new Set(jobs.map(j => slugify(j.quartiere || '')).filter(Boolean))];
+
+  cittaSlug = citySlugs.find(slug => source.includes(slug)) || '';
+  quartiereSlug = quartSlugs.find(slug => source.includes(slug)) || '';
+
+  return { cittaSlug, quartiereSlug };
+}
+
+function buildMapResults(rawQuery, rawLocation, catSlug, subcatSlug) {
+  let jobs = buildJobsIndex()
+    .map(job => ({ ...job, gps_resolved: resolveJobGps(job) }))
+    .filter(job => !!job.gps_resolved);
+
+  if (catSlug) jobs = jobs.filter(job => job.artigiano.cat_slug === catSlug);
+  if (subcatSlug) jobs = jobs.filter(job => job.sottocategoria_slug === subcatSlug);
+
+  const locationFilter = parseLocationFilter(rawLocation, jobs);
+  if (locationFilter.cittaSlug) {
+    jobs = jobs.filter(job => slugify(job.citta || '') === locationFilter.cittaSlug);
+  }
+  if (locationFilter.quartiereSlug) {
+    jobs = jobs.filter(job => slugify(job.quartiere || '') === locationFilter.quartiereSlug);
+  }
+  if (rawQuery) {
+    jobs = jobs.filter(job => matchSearchText(job, rawQuery));
+  }
+
+  return { jobs, locationFilter };
 }
 
 // Make helpers available in all templates
@@ -344,6 +441,70 @@ app.locals.CATEGORIE = CATEGORIE;
 app.locals.SOTTOCATEGORIE = SOTTOCATEGORIE;
 app.locals.ARTIGIANI = ARTIGIANI;
 
+function trovaLavoro(artigianoId, lavoroId) {
+  const artigiano = ARTIGIANI[artigianoId];
+  if (!artigiano) return { artigiano: null, lavoro: null };
+  const lavoro = artigiano.lavori.find(l => String(l.id) === String(lavoroId)) || null;
+  return { artigiano, lavoro };
+}
+
+function aggiornaRatingArtigiano(artigiano) {
+  const lavoriRecensiti = artigiano.lavori.filter(l => l.recensione && l.cliente);
+  artigiano.recensioni = lavoriRecensiti.length;
+  if (!lavoriRecensiti.length) {
+    artigiano.stelle = 5.0;
+    return;
+  }
+
+  const totale = lavoriRecensiti.reduce((sum, l) => sum + (Number(l.stelle) || 5), 0);
+  artigiano.stelle = Math.round((totale / lavoriRecensiti.length) * 10) / 10;
+}
+
+const PERSISTED_JOBS_STATE = loadPersistedJobsState();
+
+function persistAddedJob(artigianoId, lavoro) {
+  if (!PERSISTED_JOBS_STATE.addedJobs[artigianoId]) {
+    PERSISTED_JOBS_STATE.addedJobs[artigianoId] = [];
+  }
+  const jobs = PERSISTED_JOBS_STATE.addedJobs[artigianoId];
+  const idx = jobs.findIndex(j => String(j.id) === String(lavoro.id));
+  if (idx >= 0) jobs[idx] = lavoro;
+  else jobs.push(lavoro);
+  savePersistedJobsState();
+}
+
+function persistUpdatedJob(artigianoId, lavoro) {
+  if (!PERSISTED_JOBS_STATE.updatedJobs[artigianoId]) {
+    PERSISTED_JOBS_STATE.updatedJobs[artigianoId] = {};
+  }
+  PERSISTED_JOBS_STATE.updatedJobs[artigianoId][String(lavoro.id)] = lavoro;
+  savePersistedJobsState();
+}
+
+function applyPersistedJobsState() {
+  for (const [artigianoId, jobs] of Object.entries(PERSISTED_JOBS_STATE.addedJobs || {})) {
+    const artigiano = ARTIGIANI[artigianoId];
+    if (!artigiano || !Array.isArray(jobs)) continue;
+    for (const job of jobs) {
+      if (!artigiano.lavori.some(existing => String(existing.id) === String(job.id))) {
+        artigiano.lavori.push(job);
+      }
+    }
+  }
+
+  for (const [artigianoId, updates] of Object.entries(PERSISTED_JOBS_STATE.updatedJobs || {})) {
+    const artigiano = ARTIGIANI[artigianoId];
+    if (!artigiano || !updates) continue;
+    for (const [jobId, snapshot] of Object.entries(updates)) {
+      const index = artigiano.lavori.findIndex(job => String(job.id) === String(jobId));
+      if (index >= 0) artigiano.lavori[index] = { ...artigiano.lavori[index], ...snapshot };
+    }
+    aggiornaRatingArtigiano(artigiano);
+  }
+}
+
+applyPersistedJobsState();
+
 // ── Shared render helper for job pages ──
 function renderPaginaLavoro(res, categoriaSlug, titoloSlug, locSlug, subcatSlug, subcat) {
   let artigianoTrovato = null;
@@ -388,6 +549,62 @@ function renderPaginaLavoro(res, categoriaSlug, titoloSlug, locSlug, subcatSlug,
 
 app.get('/', (req, res) => {
   res.render('index', { categorie: CATEGORIE, sottocategorie: SOTTOCATEGORIE });
+});
+
+app.get('/mappa-lavori', (req, res) => {
+  const q = String(req.query.q || '').trim();
+  const dove = String(req.query.dove || '').trim();
+  const categoriaSlug = String(req.query.cat || '').trim();
+  const subcatSlug = String(req.query.subcat || '').trim();
+
+  const { jobs, locationFilter } = buildMapResults(q, dove, categoriaSlug, subcatSlug);
+  const pins = jobs.map(job => ({
+    id: job.id,
+    titolo: job.titolo,
+    artigiano: job.artigiano.nome,
+    categoria: job.artigiano.categoria,
+    categoria_slug: job.artigiano.cat_slug,
+    sottocategoria: job.sottocategoria || ((SOTTOCATEGORIE[job.artigiano.cat_slug] || {})[job.sottocategoria_slug] || {}).nome || '',
+    citta: job.citta,
+    quartiere: job.quartiere,
+    stelle: job.stelle,
+    recensione: job.recensione || '',
+    cliente: job.cliente || '',
+    url: buildJobUrl(job.artigiano.cat_slug, job),
+    lat: job.gps_resolved.lat,
+    lng: job.gps_resolved.lng,
+    image: job.immagini && job.immagini.length ? `/static/uploads/${job.immagini[0].file}` : '',
+    image_alt: job.immagini && job.immagini.length ? (job.immagini[0].alt || job.titolo) : job.titolo,
+    source: job.gps_resolved.source,
+  }));
+
+  const center = pins.length
+    ? {
+        lat: pins.reduce((sum, pin) => sum + pin.lat, 0) / pins.length,
+        lng: pins.reduce((sum, pin) => sum + pin.lng, 0) / pins.length,
+      }
+    : { lat: 41.9028, lng: 12.4964 };
+
+  const cittaList = [...new Set(buildJobsIndex().map(j => j.citta).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'it'));
+  const quartiereList = [...new Set(buildJobsIndex()
+    .filter(j => !locationFilter.cittaSlug || slugify(j.citta || '') === locationFilter.cittaSlug)
+    .map(j => j.quartiere).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'it'));
+
+  res.render('mappa_lavori', {
+    q,
+    dove,
+    categoria_slug: categoriaSlug,
+    subcat_slug: subcatSlug,
+    categorie: CATEGORIE,
+    sottocategorie: SOTTOCATEGORIE,
+    pins_json: JSON.stringify(pins),
+    jobs: pins,
+    center,
+    citta_list: cittaList,
+    quartiere_list: quartiereList,
+    active_city_slug: locationFilter.cittaSlug,
+    active_quartiere_slug: locationFilter.quartiereSlug,
+  });
 });
 
 app.get('/cerca_attivita', (req, res) => {
@@ -483,10 +700,41 @@ app.post('/api/lavoro/salva', (req, res) => {
   const quartiere = (data.quartiere || '').trim();
   const sottocategoriaSlug = (data.sottocategoria_slug || '').trim();
   const sottocategoria = (data.sottocategoria || '').trim();
+  const gps = data.gps && Number.isFinite(Number(data.gps.lat)) && Number.isFinite(Number(data.gps.lng))
+    ? { lat: Number(data.gps.lat), lng: Number(data.gps.lng) }
+    : null;
+  const fotoGps = Array.isArray(data.foto_gps)
+    ? data.foto_gps.map(g => (g && Number.isFinite(Number(g.lat)) && Number.isFinite(Number(g.lng))
+      ? { lat: Number(g.lat), lng: Number(g.lng) }
+      : null))
+    : [];
+  const gpsCheck = data.gps_check || null;
 
   const art = ARTIGIANI[artigianoId];
   let urlLavoro = '';
-  if (art && titolo && citta) {
+  let lavoroId = null;
+  if (!art || !titolo || !citta) {
+    return res.status(400).json({
+      success: false,
+      message: 'Dati del lavoro incompleti',
+    });
+  }
+
+  if (!gps) {
+    return res.status(400).json({
+      success: false,
+      message: 'Posizione GPS obbligatoria per pubblicare il lavoro',
+    });
+  }
+
+  if (gpsCheck && gpsCheck.ok === false) {
+    return res.status(400).json({
+      success: false,
+      message: 'Le coordinate delle foto non sono coerenti con la posizione dichiarata',
+    });
+  }
+
+  if (art && titolo && citta && gps) {
     const nuovoId = art.lavori.reduce((max, l) => Math.max(max, l.id || 0), 0) + 1;
     const nuovoLavoro = {
       id: nuovoId,
@@ -501,12 +749,15 @@ app.post('/api/lavoro/salva', (req, res) => {
       recensione: '',
       cliente: '',
       data: new Date().toISOString().split('T')[0],
+      gps,
+      foto_gps: fotoGps,
+      gps_check: gpsCheck,
       immagini: immaginiSalvate,
     };
     art.lavori.push(nuovoLavoro);
+    persistAddedJob(art.id, nuovoLavoro);
+    lavoroId = nuovoLavoro.id;
     urlLavoro = buildJobUrl(art.cat_slug, nuovoLavoro);
-  } else {
-    urlLavoro = data.url || '';
   }
 
   res.json({
@@ -514,7 +765,57 @@ app.post('/api/lavoro/salva', (req, res) => {
     message: 'Lavoro salvato con successo',
     immagini: immaginiSalvate,
     url_lavoro: urlLavoro,
+    lavoro_id: lavoroId,
   });
+});
+
+app.get('/recensione/:artigianoId/:lavoroId', (req, res) => {
+  const { artigiano, lavoro } = trovaLavoro(req.params.artigianoId, req.params.lavoroId);
+  if (!artigiano || !lavoro) return res.status(404).send('Lavoro non trovato');
+
+  res.render('recensione_lavoro', {
+    artigiano,
+    lavoro,
+    successo: req.query.ok === '1',
+    errore: '',
+    valori: {
+      cliente: '',
+      recensione: '',
+      stelle: String(lavoro.stelle || 5),
+    },
+  });
+});
+
+app.post('/recensione/:artigianoId/:lavoroId', (req, res) => {
+  const { artigiano, lavoro } = trovaLavoro(req.params.artigianoId, req.params.lavoroId);
+  if (!artigiano || !lavoro) return res.status(404).send('Lavoro non trovato');
+
+  const cliente = String(req.body.cliente || '').trim();
+  const recensione = String(req.body.recensione || '').trim();
+  const stelle = Math.max(1, Math.min(5, Number(req.body.stelle) || 5));
+
+  if (cliente.length < 2 || recensione.length < 10) {
+    return res.status(400).render('recensione_lavoro', {
+      artigiano,
+      lavoro,
+      successo: false,
+      errore: 'Inserisci nome cliente e una recensione di almeno 10 caratteri.',
+      valori: {
+        cliente,
+        recensione,
+        stelle: String(stelle),
+      },
+    });
+  }
+
+  lavoro.cliente = cliente;
+  lavoro.recensione = recensione;
+  lavoro.stelle = stelle;
+  lavoro.data_recensione = new Date().toISOString().split('T')[0];
+  aggiornaRatingArtigiano(artigiano);
+  persistUpdatedJob(artigiano.id, lavoro);
+
+  res.redirect(`/recensione/${artigiano.id}/${lavoro.id}?ok=1`);
 });
 
 app.get('/manifest.json', (req, res) => {

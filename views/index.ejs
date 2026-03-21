@@ -304,14 +304,12 @@ function eseguiRicerca() {
   const cit = document.getElementById('inp-cit').value.trim();
   if (!srv) { document.getElementById('inp-srv').focus(); shake(); return; }
   const voce = cercaVoce(srv);
-  const url  = buildUrl(voce, cit);
-  if (url) {
-    window.location.href = url;
-  } else {
-    // Nessuna categoria trovata → cerca per nome artigiano
-    const q = encodeURIComponent(srv);
-    window.location.href = '/cerca_attivita?q=' + q;
-  }
+  const params = new URLSearchParams();
+  params.set('q', srv);
+  if (cit) params.set('dove', cit);
+  if (voce && voce.catSlug) params.set('cat', voce.catSlug);
+  if (voce && voce.subSlug) params.set('subcat', voce.subSlug);
+  window.location.href = '/mappa-lavori?' + params.toString();
 }
 
 document.getElementById('btnCerca').addEventListener('click', eseguiRicerca);

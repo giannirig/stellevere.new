@@ -238,6 +238,12 @@ textarea{resize:none;line-height:1.55}
   display:none;align-items:center;gap:6px;margin-bottom:6px;
 }
 .mappa-coords.visible{display:flex}
+.mappa-coords.warn{
+  display:flex;
+  background:rgba(239,68,68,.08);
+  border-color:rgba(239,68,68,.28);
+  color:#fca5a5;
+}
 
 /* ── URL PREVIEW ── */
 .url-preview{
@@ -353,6 +359,9 @@ textarea{resize:none;line-height:1.55}
 }
 .btn-succ-gold{background:var(--stella);color:var(--nero)}
 .btn-succ-dark{background:var(--nero3);border:1px solid var(--bordo2);color:var(--testo)}
+.btn-succ-wa{background:var(--verde);color:#fff}
+.btn-succ-wa:disabled{background:var(--grigio2);color:var(--grigio);cursor:not-allowed}
+.succ-wa-note{font-size:11px;color:var(--grigio);line-height:1.5}
 </style>
 </head>
 <body>
@@ -578,8 +587,9 @@ textarea{resize:none;line-height:1.55}
       </div>
       <button class="btn-wa-richiedi" id="btn-wa" disabled onclick="inviaRichiestaWA()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.134.558 4.137 1.535 5.874L.057 23.404a.5.5 0 0 0 .61.61l5.488-1.467A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.944 9.944 0 0 1-5.193-1.453l-.37-.22-3.844 1.028 1.044-3.806-.242-.382A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
-        Invia messaggio WhatsApp
+        Invia dopo la pubblicazione
       </button>
+      <div class="fhint">La richiesta recensione si apre su WhatsApp subito dopo che il lavoro è stato pubblicato.</div>
       <!-- Anteprima messaggio -->
       <div class="wa-msg-preview" id="wa-msg-preview">
         <div class="wa-msg-label">Anteprima messaggio che riceverà il cliente</div>
@@ -611,6 +621,8 @@ textarea{resize:none;line-height:1.55}
     <div class="succ-url-val" id="succ-url-val">stellevere.it/…</div>
   </div>
   <div class="succ-btns">
+    <button class="btn-succ btn-succ-wa" id="btn-succ-wa" onclick="inviaRichiestaWA()" disabled>Invia richiesta recensione su WhatsApp</button>
+    <div class="succ-wa-note" id="succ-wa-note">Inserisci sopra il numero del cliente per inviare subito la richiesta recensione.</div>
     <button class="btn-succ btn-succ-gold" onclick="nuovoLavoro()">➕ Aggiungi un altro lavoro</button>
     <button class="btn-succ btn-succ-dark" onclick="vaiAlProfilo()">👤 Vai al tuo profilo</button>
   </div>
@@ -635,14 +647,18 @@ let stato = {
   titolo: '',
   descrizione: '',
   foto: [null, null, null],
+  fotoGps: [null, null, null],
   nomi_file: [null, null, null],
   alt_text: [null, null, null],
   caption: [null, null, null],
   citta: artigiano.citta,
   quartiere: '',
   gps: null,
+  gpsCheck: null,
   waCliente: '',
-  urlGenerata: ''
+  urlGenerata: '',
+  lavoroId: null,
+  pubblicato: false
 };
 
 // ── TOAST ──
@@ -886,9 +902,154 @@ function aggiornaCaptionArea() {
   });
   document.getElementById('caption-area').style.display = hasFoto ? 'block' : 'none';
 }
-function caricaFoto(e, idx) {
+
+function readExifValue(view, offset, littleEndian) {
+  const type = view.getUint16(offset, littleEndian);
+  const count = view.getUint32(offset + 4, littleEndian);
+  const valueOffset = offset + 8;
+  let actualOffset = valueOffset;
+  if (type !== 3 || count > 2) {
+    actualOffset = view.getUint32(valueOffset, littleEndian);
+  }
+  if (type === 2) {
+    return actualOffset;
+  }
+  if (type === 3) {
+    return count === 1 ? view.getUint16(actualOffset, littleEndian) : actualOffset;
+  }
+  if (type === 4) {
+    return view.getUint32(actualOffset, littleEndian);
+  }
+  if (type === 5) {
+    const values = [];
+    for (let i = 0; i < count; i++) {
+      const num = view.getUint32(actualOffset + i * 8, littleEndian);
+      const den = view.getUint32(actualOffset + i * 8 + 4, littleEndian) || 1;
+      values.push(num / den);
+    }
+    return values;
+  }
+  return null;
+}
+
+function convertExifGps(coords, ref) {
+  if (!coords || coords.length < 3) return null;
+  let value = coords[0] + (coords[1] / 60) + (coords[2] / 3600);
+  if (ref === 'S' || ref === 'W') value *= -1;
+  return value;
+}
+
+function estraiGpsExif(file) {
+  return new Promise(resolve => {
+    if (!file || !/jpe?g/i.test(file.type || '')) return resolve(null);
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const view = new DataView(reader.result);
+        if (view.getUint16(0) !== 0xFFD8) return resolve(null);
+        let offset = 2;
+        while (offset < view.byteLength) {
+          if (view.getUint8(offset) !== 0xFF) break;
+          const marker = view.getUint8(offset + 1);
+          const size = view.getUint16(offset + 2, false);
+          if (marker === 0xE1 && view.getUint32(offset + 4, false) === 0x45786966) {
+            const tiffStart = offset + 10;
+            const littleEndian = view.getUint16(tiffStart, false) === 0x4949;
+            const firstIfd = view.getUint32(tiffStart + 4, littleEndian);
+            const ifdOffset = tiffStart + firstIfd;
+            const entries = view.getUint16(ifdOffset, littleEndian);
+            let gpsIfdPointer = null;
+            for (let i = 0; i < entries; i++) {
+              const entryOffset = ifdOffset + 2 + i * 12;
+              const tag = view.getUint16(entryOffset, littleEndian);
+              if (tag === 0x8825) {
+                gpsIfdPointer = view.getUint32(entryOffset + 8, littleEndian);
+                break;
+              }
+            }
+            if (!gpsIfdPointer) return resolve(null);
+            const gpsOffset = tiffStart + gpsIfdPointer;
+            const gpsEntries = view.getUint16(gpsOffset, littleEndian);
+            let latRef = null;
+            let lngRef = null;
+            let lat = null;
+            let lng = null;
+            for (let i = 0; i < gpsEntries; i++) {
+              const entryOffset = gpsOffset + 2 + i * 12;
+              const tag = view.getUint16(entryOffset, littleEndian);
+              if (tag === 1) latRef = String.fromCharCode(view.getUint8(entryOffset + 8));
+              if (tag === 2) lat = readExifValue(view, entryOffset, littleEndian);
+              if (tag === 3) lngRef = String.fromCharCode(view.getUint8(entryOffset + 8));
+              if (tag === 4) lng = readExifValue(view, entryOffset, littleEndian);
+            }
+            const gps = {
+              lat: convertExifGps(lat, latRef),
+              lng: convertExifGps(lng, lngRef),
+            };
+            if (Number.isFinite(gps.lat) && Number.isFinite(gps.lng)) return resolve(gps);
+            return resolve(null);
+          }
+          offset += 2 + size;
+        }
+      } catch (_) {}
+      resolve(null);
+    };
+    reader.onerror = () => resolve(null);
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function distanzaMetri(a, b) {
+  if (!a || !b) return null;
+  const toRad = deg => deg * Math.PI / 180;
+  const r = 6371000;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const lat1 = toRad(a.lat);
+  const lat2 = toRad(b.lat);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return 2 * r * Math.asin(Math.sqrt(h));
+}
+
+function aggiornaVerificaGps() {
+  const coords = document.getElementById('mappa-coords');
+  const label = document.getElementById('coords-text');
+  if (!stato.gps) {
+    stato.gpsCheck = null;
+    coords.classList.remove('visible', 'warn');
+    return;
+  }
+
+  const fotoConGps = stato.fotoGps.filter(Boolean);
+  if (!fotoConGps.length) {
+    stato.gpsCheck = { ok: true, source: 'manual', distance: null };
+    coords.classList.remove('warn');
+    coords.classList.add('visible');
+    label.textContent = `Posizione rilevata · ${stato.gps.lat.toFixed(5)}, ${stato.gps.lng.toFixed(5)}`;
+    return;
+  }
+
+  const incompatibile = fotoConGps
+    .map(gps => distanzaMetri(stato.gps, gps))
+    .filter(v => Number.isFinite(v))
+    .some(d => d > 300);
+
+  if (incompatibile) {
+    stato.gpsCheck = { ok: false, source: 'exif' };
+    coords.classList.add('visible', 'warn');
+    label.textContent = 'Coordinate foto non coerenti con la posizione dichiarata';
+    return;
+  }
+
+  stato.gpsCheck = { ok: true, source: 'exif' };
+  coords.classList.remove('warn');
+  coords.classList.add('visible');
+  label.textContent = `Posizione verificata: GPS artigiano coerente con le foto`;
+}
+async function caricaFoto(e, idx) {
   const file = e.target.files[0];
   if (!file) return;
+  stato.fotoGps[idx] = await estraiGpsExif(file);
   const reader = new FileReader();
   reader.onload = ev => {
     stato.foto[idx] = ev.target.result;
@@ -901,12 +1062,14 @@ function caricaFoto(e, idx) {
       <div class="foto-del" onclick="event.stopPropagation();rimuoviFoto(${idx})">✕</div>
       <div class="foto-slot-num">${idx+1}</div>`;
     aggiornaCaptionArea();
+    aggiornaVerificaGps();
     controllaForm();
   };
   reader.readAsDataURL(file);
 }
 function rimuoviFoto(idx) {
   stato.foto[idx]      = null;
+  stato.fotoGps[idx]   = null;
   stato.nomi_file[idx] = null;
   stato.alt_text[idx]  = null;
   stato.caption[idx]   = null;
@@ -919,6 +1082,7 @@ function rimuoviFoto(idx) {
     <div class="foto-slot-label">${labels[idx]}</div>
     <input type="file" id="file-${idx}" accept="image/*" capture="environment" onchange="caricaFoto(event,${idx})" style="display:none">`;
   aggiornaCaptionArea();
+  aggiornaVerificaGps();
   controllaForm();
 }
 
@@ -944,6 +1108,8 @@ function rilevaGPS() {
       document.getElementById('coords-text').textContent =
         `Posizione rilevata · ${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`;
       coords.classList.add('visible');
+      coords.classList.remove('warn');
+      aggiornaVerificaGps();
       controllaForm();
     },
     () => {
@@ -955,21 +1121,39 @@ function rilevaGPS() {
   );
 }
 
-// ── WHATSAPP ──
+// WhatsApp
+function getPublicJobUrl() {
+  return stato.urlGenerata || `stellevere.it/scheda/${artigiano.id}`;
+}
+
+function getReviewUrl() {
+  if (!stato.pubblicato || !stato.lavoroId) return getPublicJobUrl();
+  return `stellevere.it/recensione/${artigiano.id}/${stato.lavoroId}`;
+}
+
+function buildWhatsAppReviewMessage() {
+  const titolo = document.getElementById('f-titolo').value.trim() || 'lavoro recente';
+  const citta  = document.getElementById('f-citta').value.trim() || artigiano.citta;
+  const quart  = document.getElementById('f-quartiere').value.trim();
+  const zona   = quart ? `${quart}, ${citta}` : citta;
+  const url    = getReviewUrl();
+  return `Ciao! Sono ${artigiano.nome} 👋\n\nGrazie per avermi scelto per il lavoro "${titolo}" a ${zona}!\n\nTi lascio qui il link diretto per recensire proprio questo lavoro su StelleVere:\n\n🔗 ${url}\n\nLa tua recensione sarà collegata solo a questo intervento. Grazie di cuore! 🙏`;
+}
+
 function aggiornaPrevWA(val) {
   stato.waCliente = val.trim();
   const numOk = val.replace(/\s/g,'').length >= 9;
-  document.getElementById('btn-wa').disabled = !numOk;
+  document.getElementById('btn-wa').disabled = true;
+  document.getElementById('btn-succ-wa').disabled = !(numOk && stato.pubblicato);
+  document.getElementById('succ-wa-note').textContent = numOk
+    ? (stato.pubblicato
+      ? 'Il numero è pronto: puoi inviare subito la richiesta recensione.'
+      : 'Numero salvato: potrai inviare la richiesta recensione appena il lavoro sarà pubblicato.')
+    : 'Inserisci sopra il numero del cliente per inviare subito la richiesta recensione.';
   const prev = document.getElementById('wa-msg-preview');
   const bubble = document.getElementById('wa-bubble-text');
   if (numOk) {
-    const titolo = document.getElementById('f-titolo').value.trim() || 'lavoro recente';
-    const citta  = document.getElementById('f-citta').value.trim()  || artigiano.citta;
-    const quart  = document.getElementById('f-quartiere').value.trim();
-    const zona   = quart ? `${quart}, ${citta}` : citta;
-    const url    = stato.urlGenerata || `stellevere.it/schede/${artigiano.id}`;
-    bubble.textContent =
-      `Ciao! Sono ${artigiano.nome} 👋\n\nGrazie per avermi scelto per il lavoro "${titolo}" a ${zona}!\n\nSe sei soddisfatto, ti chiedo un grande favore: lasciami 5 stelle ⭐⭐⭐⭐⭐ su StelleVere — ci vuole solo un minuto e mi aiuta tantissimo a trovare nuovi clienti:\n\n🔗 ${url}\n\nGrazie di cuore! 🙏`;
+    bubble.textContent = buildWhatsAppReviewMessage();
     prev.classList.add('visible');
   } else {
     prev.classList.remove('visible');
@@ -977,26 +1161,29 @@ function aggiornaPrevWA(val) {
 }
 
 function inviaRichiestaWA() {
-  const num    = stato.waCliente.replace(/[\s\-\+]/g,'');
-  const titolo = document.getElementById('f-titolo').value.trim() || 'lavoro recente';
-  const citta  = document.getElementById('f-citta').value.trim()  || artigiano.citta;
-  const quart  = document.getElementById('f-quartiere').value.trim();
-  const zona   = quart ? `${quart}, ${citta}` : citta;
-  const url    = stato.urlGenerata || `stellevere.it/schede/${artigiano.id}`;
-  const msg = encodeURIComponent(
-    `Ciao! Sono ${artigiano.nome} 👋\n\nGrazie per avermi scelto per il lavoro "${titolo}" a ${zona}!\n\nSe sei soddisfatto, ti chiedo un grande favore: lasciami 5 stelle ⭐⭐⭐⭐⭐ su StelleVere — ci vuole solo un minuto e mi aiuta tantissimo a trovare nuovi clienti:\n\n🔗 ${url}\n\nGrazie di cuore! 🙏`
-  );
+  if (!stato.pubblicato) {
+    mostraToast('Pubblica prima il lavoro per inviare la richiesta');
+    return;
+  }
+  if (!stato.waCliente.trim()) {
+    mostraToast('Inserisci il numero WhatsApp del cliente');
+    return;
+  }
+  const num = stato.waCliente.replace(/[\s\-\+]/g,'');
+  const msg = encodeURIComponent(buildWhatsAppReviewMessage());
   window.open(`https://wa.me/${num}?text=${msg}`, '_blank');
   mostraToast('✓ Apertura WhatsApp...', 1800);
 }
 
-// ── VALIDA ──
+// Valida
 function controllaForm() {
   const titolo  = document.getElementById('f-titolo').value.trim();
   const desc    = document.getElementById('f-desc').value.trim();
   const citta   = document.getElementById('f-citta').value.trim();
   const fotoOk  = stato.foto.some(f => f !== null);
-  const ok = titolo.length >= 5 && desc.length >= 20 && fotoOk && citta.length >= 2;
+  const gpsOk = !!stato.gps;
+  const gpsCoerente = !stato.gpsCheck || stato.gpsCheck.ok;
+  const ok = titolo.length >= 5 && desc.length >= 20 && fotoOk && citta.length >= 2 && gpsOk && gpsCoerente;
   document.getElementById('btn-pubblica').disabled = !ok;
   const hint = document.getElementById('pubblica-hint');
   if (ok) {
@@ -1008,6 +1195,8 @@ function controllaForm() {
     if (desc.length < 20)  mancanti.push('descrizione');
     if (!fotoOk)           mancanti.push('almeno 1 foto');
     if (citta.length < 2)  mancanti.push('città');
+    if (!gpsOk) mancanti.push('posizione GPS');
+    if (!gpsCoerente) mancanti.push('coerenza GPS/foto');
     hint.textContent = 'Manca: ' + mancanti.join(', ');
     hint.style.color = 'var(--grigio)';
   }
@@ -1027,6 +1216,8 @@ async function pubblicaLavoro() {
     sottocategoria: stato.sottocategoria,
     titolo, descrizione: desc, citta, quartiere: quart,
     gps: stato.gps,
+    foto_gps: stato.fotoGps,
+    gps_check: stato.gpsCheck,
     foto_data:  stato.foto,
     nomi_file:  stato.nomi_file,
     alt_text:   stato.alt_text,
@@ -1045,7 +1236,13 @@ async function pubblicaLavoro() {
         : (stato.urlGenerata || `stellevere.it/scheda/${artigiano.id}`);
       document.getElementById('succ-url-val').textContent = urlMostrata;
       stato.urlGenerata = urlMostrata;
+      stato.lavoroId = res.lavoro_id || null;
+      stato.pubblicato = true;
+      aggiornaPrevWA(stato.waCliente);
       document.getElementById('succ-overlay').classList.add('show');
+    } else {
+      btn.disabled = false; btn.textContent = 'â˜… Pubblica sul tuo profilo';
+      mostraToast(res.message || 'Impossibile pubblicare il lavoro');
     }
   } catch(e) {
     btn.disabled = false; btn.textContent = '★ Pubblica sul tuo profilo';
@@ -1059,11 +1256,21 @@ function nuovoLavoro() {
   document.getElementById('f-titolo').value = '';
   document.getElementById('f-desc').value   = '';
   document.getElementById('f-quartiere').value = '';
+  document.getElementById('f-wa-cliente').value = '';
   aggiornaConto(document.getElementById('f-titolo'),'cnt-titolo');
   aggiornaConto(document.getElementById('f-desc'),'cnt-desc');
   stato.foto = [null,null,null];
+  stato.fotoGps = [null,null,null];
+  stato.gps = null;
+  stato.gpsCheck = null;
+  stato.waCliente = '';
+  stato.lavoroId = null;
+  stato.pubblicato = false;
   [0,1,2].forEach(i => rimuoviFoto(i));
-  aggiornaURL(); controllaForm();
+  document.getElementById('mappa-coords').classList.remove('visible','warn');
+  document.getElementById('mappa-label').textContent = 'Nessuna posizione rilevata';
+  document.getElementById('mappa-sub').textContent = 'La zona appare su Google Maps per i tuoi clienti';
+  aggiornaURL(); controllaForm(); aggiornaPrevWA('');
   mostraToast('Pronto per un nuovo lavoro!', 1800);
 }
 

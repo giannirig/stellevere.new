@@ -36,7 +36,8 @@ body{background:var(--nero);font-family:'Inter',sans-serif;color:var(--testo);mi
 .slabel{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--grigio);margin-bottom:12px}
 .lgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px}
 .lcard{background:var(--nero2);border:1px solid var(--bordo);border-radius:11px;overflow:hidden;cursor:pointer}
-.limg{width:100%;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:28px}
+.limg{width:100%;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:28px;position:relative;overflow:hidden}
+.limg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .l1 .limg{background:linear-gradient(135deg,#1a2a3a,#2d4a6a)}
 .l2 .limg{background:linear-gradient(135deg,#1a2a1a,#2a4a2a)}
 .l3 .limg{background:linear-gradient(135deg,#2a1a1a,#4a2a1a)}
@@ -97,7 +98,13 @@ body{background:var(--nero);font-family:'Inter',sans-serif;color:var(--testo);mi
   <div class="lgrid">
     <% for (const [_i, lavoro] of artigiano.lavori.entries()) { %>
     <div class="lcard l<%= (_i + 1) %>">
-      <div class="limg"><%= lavoro.emoji %></div>
+      <div class="limg">
+        <% if (lavoro.immagini && lavoro.immagini.length) { %>
+        <img src="/static/uploads/<%= lavoro.immagini[0].file %>" alt="<%= lavoro.immagini[0].alt || lavoro.titolo %>">
+        <% } else { %>
+        <%= lavoro.emoji %>
+        <% } %>
+      </div>
       <div class="lbody">
         <div class="ltitle"><%= lavoro.titolo %></div>
         <div class="lmeta">📍 <%= lavoro.quartiere %> · ★★★★★</div>
@@ -107,6 +114,7 @@ body{background:var(--nero);font-family:'Inter',sans-serif;color:var(--testo);mi
   </div>
   <div class="slabel">Recensioni verificate via WhatsApp</div>
   <% for (const [_i, lavoro] of artigiano.lavori.entries()) { %>
+  <% if (lavoro.recensione && lavoro.cliente) { %>
   <div class="rec-box">
     <div class="rec-stars">★★★★★</div>
     <div class="rec-text">"<%= lavoro.recensione %>"</div>
@@ -119,6 +127,7 @@ body{background:var(--nero);font-family:'Inter',sans-serif;color:var(--testo);mi
       <div class="rec-wa">via WhatsApp</div>
     </div>
   </div>
+  <% } %>
   <% } %>
 </div>
 <a class="btn-add" href="/artigiano/<%= artigiano.id %>/inserisci">➕ Aggiungi lavoro</a>

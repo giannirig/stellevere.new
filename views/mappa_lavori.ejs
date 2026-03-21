@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mappa lavori realizzati · StelleVere</title>
+<meta name="description" content="Visualizza sulla mappa i lavori reali pubblicati su StelleVere, filtrati per artigiano, intervento e zona.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<style>
+:root{--nero:#0a0a0a;--nero2:#111;--nero3:#171717;--bordo:#2a2a2a;--stella:#f5c842;--verde:#25d366;--bianco:#fff;--testo:#e0e0e0;--grigio:#777}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--nero);color:var(--testo);font-family:'Inter',sans-serif}
+a{text-decoration:none;color:inherit}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(10,10,10,.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--bordo);padding:13px 16px;display:flex;align-items:center;gap:12px}
+.logo{font-size:16px;font-weight:900;color:var(--stella)}
+.topbar-sub{font-size:12px;color:var(--grigio)}
+.wrap{max-width:1280px;margin:0 auto;padding:18px 16px 32px}
+.hero{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:16px;margin-bottom:18px}
+.hero h1{font-size:clamp(24px,4vw,40px);font-weight:900;color:var(--bianco);line-height:1.05;margin-bottom:8px}
+.hero p{font-size:14px;color:var(--grigio);max-width:720px;line-height:1.6}
+.stats{display:flex;flex-wrap:wrap;gap:10px}
+.stat{background:var(--nero2);border:1px solid var(--bordo);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:700}
+.stat strong{color:var(--stella)}
+.filters{display:grid;grid-template-columns:2fr 2fr 1.2fr 1.2fr auto;gap:10px;margin-bottom:16px}
+.filters input,.filters select{width:100%;background:var(--nero2);border:1px solid var(--bordo);border-radius:12px;padding:13px 14px;color:var(--bianco);font:inherit}
+.filters button{background:var(--stella);color:#111;border:none;border-radius:12px;padding:13px 18px;font:inherit;font-weight:900;cursor:pointer}
+.layout{display:grid;grid-template-columns:minmax(320px,420px) 1fr;gap:14px}
+.sidebar{background:var(--nero2);border:1px solid var(--bordo);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;min-height:72vh}
+.side-head{padding:16px 16px 10px;border-bottom:1px solid var(--bordo)}
+.side-title{font-size:16px;font-weight:900;color:var(--bianco);margin-bottom:4px}
+.side-sub{font-size:12px;color:var(--grigio);line-height:1.5}
+.results{padding:10px;display:flex;flex-direction:column;gap:10px;overflow:auto}
+.job-card{background:var(--nero3);border:1px solid var(--bordo);border-radius:14px;overflow:hidden;display:grid;grid-template-columns:112px 1fr;cursor:pointer;transition:border-color .15s,transform .1s}
+.job-card:hover,.job-card.active{border-color:var(--stella);transform:translateY(-1px)}
+.job-card img,.job-placeholder{width:112px;height:112px;object-fit:cover;display:block}
+.job-placeholder{background:linear-gradient(135deg,#1e293b,#334155);display:flex;align-items:center;justify-content:center;font-size:28px}
+.job-body{padding:12px}
+.job-title{font-size:14px;font-weight:800;color:var(--bianco);line-height:1.3;margin-bottom:5px}
+.job-meta,.job-art,.job-rec{font-size:12px;color:var(--grigio);line-height:1.5}
+.job-art{color:#d6d6d6}
+.job-badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.badge{font-size:10px;font-weight:800;padding:4px 7px;border-radius:999px}
+.badge-cat{background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.2);color:var(--stella)}
+.badge-sub{background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);color:var(--verde)}
+.badge-score{background:var(--nero2);border:1px solid var(--bordo);color:#ddd}
+.map-wrap{background:var(--nero2);border:1px solid var(--bordo);border-radius:18px;overflow:hidden;min-height:72vh;position:relative}
+#map{height:72vh;width:100%}
+.empty{padding:28px;text-align:center;color:var(--grigio);font-size:14px;line-height:1.7}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#111;color:#fff}
+.pin-popup{width:220px}
+.pin-popup img{width:100%;height:112px;object-fit:cover;border-radius:10px;margin-bottom:10px}
+.pin-title{font-size:14px;font-weight:800;color:#fff;line-height:1.3;margin-bottom:4px}
+.pin-meta,.pin-rec{font-size:12px;color:#c4c4c4;line-height:1.5}
+.pin-link{display:inline-flex;margin-top:10px;font-size:12px;font-weight:800;color:var(--stella)}
+@media(max-width:960px){.filters{grid-template-columns:1fr 1fr}.layout{grid-template-columns:1fr}.sidebar,.map-wrap,#map{min-height:unset;height:50vh}}
+@media(max-width:640px){.filters{grid-template-columns:1fr}.job-card{grid-template-columns:96px 1fr}.job-card img,.job-placeholder{width:96px;height:96px}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a class="logo" href="/">★ StelleVere</a>
+  <div class="topbar-sub">Mappa lavori reali per zona, categoria e intervento</div>
+</div>
+
+<div class="wrap">
+  <div class="hero">
+    <div>
+      <h1>Mappa dei lavori realizzati</h1>
+      <p>Visualizza i lavori pubblicati dagli artigiani aderenti a StelleVere nella zona cercata. Ogni pin mostra chi ha eseguito il lavoro, il tipo di intervento e la valutazione.</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><strong><%= jobs.length %></strong> lavori visibili</div>
+      <div class="stat"><strong><%= [...new Set(jobs.map(j => j.artigiano))].length %></strong> artigiani</div>
+      <div class="stat"><strong><%= active_quartiere_slug || active_city_slug || 'Italia' %></strong> area</div>
+    </div>
+  </div>
+
+  <form class="filters" method="get" action="/mappa-lavori">
+    <input type="text" name="q" value="<%= q %>" placeholder="Che intervento cerchi? Es. sostituzione caldaia">
+    <input type="text" name="dove" value="<%= dove %>" placeholder="Dove? Es. Roma zona Salario">
+    <select name="cat">
+      <option value="">Tutti gli artigiani</option>
+      <% for (const [slug, cat] of Object.entries(categorie)) { %>
+      <option value="<%= slug %>" <%= categoria_slug === slug ? 'selected' : '' %>><%= cat.cat_tipo %></option>
+      <% } %>
+    </select>
+    <select name="subcat">
+      <option value="">Tutti gli interventi</option>
+      <% for (const [catSlug, group] of Object.entries(sottocategorie)) { %>
+      <% for (const [slug, sub] of Object.entries(group)) { %>
+      <option value="<%= slug %>" <%= subcat_slug === slug ? 'selected' : '' %>><%= sub.nome %></option>
+      <% } %>
+      <% } %>
+    </select>
+    <button type="submit">Aggiorna mappa</button>
+  </form>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="side-head">
+        <div class="side-title">Lavori trovati sulla mappa</div>
+        <div class="side-sub">Clicca una card per evidenziare il pin corrispondente e aprire la pagina del lavoro.</div>
+      </div>
+      <div class="results" id="results">
+        <% if (!jobs.length) { %>
+        <div class="empty">Nessun lavoro trovato con questi filtri. Prova ad allargare la zona o a cercare un intervento più generico.</div>
+        <% } %>
+        <% for (const job of jobs) { %>
+        <a class="job-card" href="<%= job.url %>" data-job-id="<%= job.id %>">
+          <% if (job.image) { %>
+          <img src="<%= job.image %>" alt="<%= job.image_alt %>">
+          <% } else { %>
+          <div class="job-placeholder">🔧</div>
+          <% } %>
+          <div class="job-body">
+            <div class="job-title"><%= job.titolo %></div>
+            <div class="job-meta">📍 <%= job.quartiere %>, <%= job.citta %></div>
+            <div class="job-art"><%= job.artigiano %> · <%= job.categoria %></div>
+            <% if (job.recensione) { %><div class="job-rec">"<%= job.recensione %>"</div><% } %>
+            <div class="job-badges">
+              <span class="badge badge-cat"><%= job.categoria %></span>
+              <% if (job.sottocategoria) { %><span class="badge badge-sub"><%= job.sottocategoria %></span><% } %>
+              <span class="badge badge-score">★ <%= Number(job.stelle).toFixed(1) %></span>
+            </div>
+          </div>
+        </a>
+        <% } %>
+      </div>
+    </aside>
+
+    <section class="map-wrap">
+      <div id="map"></div>
+    </section>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+const pins = <%- pins_json %>;
+const center = { lat: <%= center.lat %>, lng: <%= center.lng %> };
+const map = L.map('map', { scrollWheelZoom: true }).setView([center.lat, center.lng], pins.length === 1 ? 14 : 12);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '&copy; OpenStreetMap'
+}).addTo(map);
+
+const markers = new Map();
+const cards = document.querySelectorAll('.job-card');
+document.querySelectorAll('.filters select').forEach(el => el.addEventListener('change', () => el.form.submit()));
+
+function popupHtml(pin) {
+  const rec = pin.recensione ? `<div class="pin-rec">"${pin.recensione}"</div>` : '';
+  const img = pin.image ? `<img src="${pin.image}" alt="${pin.image_alt}">` : '';
+  const sub = pin.sottocategoria ? ` · ${pin.sottocategoria}` : '';
+  return `
+    <div class="pin-popup">
+      ${img}
+      <div class="pin-title">${pin.titolo}</div>
+      <div class="pin-meta">${pin.artigiano} · ${pin.categoria}${sub}</div>
+      <div class="pin-meta">📍 ${pin.quartiere}, ${pin.citta} · ★ ${Number(pin.stelle).toFixed(1)}</div>
+      ${rec}
+      <a class="pin-link" href="${pin.url}">Apri il lavoro →</a>
+    </div>
+  `;
+}
+
+pins.forEach(pin => {
+  const marker = L.marker([pin.lat, pin.lng]).addTo(map).bindPopup(popupHtml(pin));
+  marker.on('click', () => evidenzia(pin.id));
+  markers.set(String(pin.id), marker);
+});
+
+if (pins.length > 1) {
+  const bounds = L.latLngBounds(pins.map(pin => [pin.lat, pin.lng]));
+  map.fitBounds(bounds.pad(0.12));
+}
+
+function evidenzia(id) {
+  cards.forEach(card => card.classList.toggle('active', card.dataset.jobId === String(id)));
+}
+
+cards.forEach(card => {
+  card.addEventListener('mouseenter', () => {
+    const marker = markers.get(card.dataset.jobId);
+    if (!marker) return;
+    marker.openPopup();
+    map.panTo(marker.getLatLng(), { animate: true });
+    evidenzia(card.dataset.jobId);
+  });
+});
+</script>
+</body>
+</html>
