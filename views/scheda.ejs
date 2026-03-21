@@ -35,7 +35,7 @@ body{background:var(--nero);font-family:'Inter',sans-serif;color:var(--testo);mi
 .section{padding:16px 16px 4px}
 .slabel{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--grigio);margin-bottom:12px}
 .lgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px}
-.lcard{background:var(--nero2);border:1px solid var(--bordo);border-radius:11px;overflow:hidden;cursor:pointer}
+.lcard{background:var(--nero2);border:1px solid var(--bordo);border-radius:11px;overflow:hidden;cursor:pointer;text-decoration:none;color:inherit;display:block}
 .limg{width:100%;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:28px;position:relative;overflow:hidden}
 .limg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .l1 .limg{background:linear-gradient(135deg,#1a2a3a,#2d4a6a)}
@@ -97,7 +97,7 @@ body{background:var(--nero);font-family:'Inter',sans-serif;color:var(--testo);mi
   <div class="slabel">Lavori certificati</div>
   <div class="lgrid">
     <% for (const [_i, lavoro] of artigiano.lavori.entries()) { %>
-    <div class="lcard l<%= (_i + 1) %>">
+    <a class="lcard l<%= (_i + 1) %>" href="<%= buildJobUrl(artigiano.cat_slug, lavoro) %>">
       <div class="limg">
         <% if (lavoro.immagini && lavoro.immagini.length) { %>
         <img src="/static/uploads/<%= lavoro.immagini[0].file %>" alt="<%= lavoro.immagini[0].alt || lavoro.titolo %>">
@@ -109,7 +109,7 @@ body{background:var(--nero);font-family:'Inter',sans-serif;color:var(--testo);mi
         <div class="ltitle"><%= lavoro.titolo %></div>
         <div class="lmeta">📍 <%= lavoro.quartiere %> · ★★★★★</div>
       </div>
-    </div>
+    </a>
     <% } %>
   </div>
   <div class="slabel">Recensioni verificate via WhatsApp</div>
