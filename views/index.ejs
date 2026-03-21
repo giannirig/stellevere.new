@@ -188,13 +188,13 @@
 <div class="cats-section">
   <p class="cats-title">Sfoglia per categoria</p>
   <div class="cats-grid">
-    {% set EM = {'drop':'💧','zap':'⚡','paint':'🎨','wall':'🧱','wood':'🪵','tool':'🔧'} %}
-    {% for slug, cat in categorie.items() %}
-    <a class="cat-link" href="/{{ slug }}">
-      <span class="cat-em">{{ EM.get(cat.icona,'🔧') }}</span>
-      <span class="cat-nm">{{ cat.nome }}</span>
+    <% const EM = {'drop':'💧','zap':'⚡','paint':'🎨','wall':'🧱','wood':'🪵','tool':'🔧'}; %>
+    <% for (const [slug, cat] of Object.entries(categorie)) { %>
+    <a class="cat-link" href="/<%= slug %>">
+      <span class="cat-em"><%= (EM[cat.icona] || '🔧') %></span>
+      <span class="cat-nm"><%= cat.nome %></span>
     </a>
-    {% endfor %}
+    <% } %>
   </div>
 </div>
 
@@ -225,8 +225,8 @@
 </div>
 
 <script>
-const CAT_DATA    = {{ categorie | tojson }};
-const SUBCAT_DATA = {{ sottocategorie | tojson }};
+const CAT_DATA    = <%- JSON.stringify(categorie) %>;
+const SUBCAT_DATA = <%- JSON.stringify(sottocategorie) %>;
 const EMOJI = { drop:'💧', zap:'⚡', paint:'🎨', wall:'🧱', wood:'🪵', tool:'🔧' };
 
 const CAT_ALIAS = {

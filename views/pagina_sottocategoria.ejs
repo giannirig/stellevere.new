@@ -3,30 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-{% if citta_nome %}
-<title>{{ subcat.nome }} {{ citta_nome }} – {{ cat.plurale }} verificati · StelleVere</title>
-<meta name="description" content="Trova {{ cat.plurale|lower }} specializzati in {{ subcat.nome|lower }} a {{ citta_nome }}. Lavori reali, stelle vere. Contatta subito su WhatsApp.">
-<link rel="canonical" href="https://www.stellevere.it/{{ categoria_slug }}/{{ subcat_slug }}/{{ citta_slug }}">
-{% else %}
-<title>{{ subcat.nome }} – {{ cat.plurale }} verificati · StelleVere</title>
-<meta name="description" content="{{ subcat.desc }}. Trova {{ cat.plurale|lower }} verificati con lavori reali. Stelle vere, non comprate.">
-<link rel="canonical" href="https://www.stellevere.it/{{ categoria_slug }}/{{ subcat_slug }}">
-{% endif %}
+<% if (citta_nome) { %>
+<title><%= subcat.nome %> <%= citta_nome %> – <%= cat.plurale %> verificati · StelleVere</title>
+<meta name="description" content="Trova <%= cat.plurale.toLowerCase() %> specializzati in <%= subcat.nome.toLowerCase() %> a <%= citta_nome %>. Lavori reali, stelle vere. Contatta subito su WhatsApp.">
+<link rel="canonical" href="https://www.stellevere.it/<%= categoria_slug %>/<%= subcat_slug %>/<%= citta_slug %>">
+<% } else { %>
+<title><%= subcat.nome %> – <%= cat.plurale %> verificati · StelleVere</title>
+<meta name="description" content="<%= subcat.desc %>. Trova <%= cat.plurale.toLowerCase() %> verificati con lavori reali. Stelle vere, non comprate.">
+<link rel="canonical" href="https://www.stellevere.it/<%= categoria_slug %>/<%= subcat_slug %>">
+<% } %>
 <meta name="robots" content="index, follow">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Service",
- "name":"{{ subcat.nome }}{% if citta_nome %} a {{ citta_nome }}{% endif %}",
- "description":"{{ subcat.desc }}",
+ "name":"<%= subcat.nome %><% if (citta_nome) { %> a <%= citta_nome %><% } %>",
+ "description":"<%= subcat.desc %>",
  "provider":{"@type":"Organization","name":"StelleVere","url":"https://www.stellevere.it"},
- "areaServed":{% if citta_nome %}"{{ citta_nome }}"{% else %}"Italia"{% endif %},
- "url":"https://www.stellevere.it/{{ categoria_slug }}/{{ subcat_slug }}{% if citta_slug %}/{{ citta_slug }}{% endif %}"}
+ "areaServed":<% if (citta_nome) { %>"<%= citta_nome %>"<% } else { %>"Italia"<% } %>,
+ "url":"https://www.stellevere.it/<%= categoria_slug %>/<%= subcat_slug %><% if (citta_slug) { %>/<%= citta_slug %><% } %>"}
 </script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[
   {"@type":"ListItem","position":1,"name":"StelleVere","item":"https://www.stellevere.it"},
-  {"@type":"ListItem","position":2,"name":"{{ cat.nome }}","item":"https://www.stellevere.it/{{ categoria_slug }}"},
-  {"@type":"ListItem","position":3,"name":"{{ subcat.nome }}","item":"https://www.stellevere.it/{{ categoria_slug }}/{{ subcat_slug }}"}
-  {% if citta_nome %},{"@type":"ListItem","position":4,"name":"{{ citta_nome }}","item":"https://www.stellevere.it/{{ categoria_slug }}/{{ subcat_slug }}/{{ citta_slug }}"}{% endif %}
+  {"@type":"ListItem","position":2,"name":"<%= cat.nome %>","item":"https://www.stellevere.it/<%= categoria_slug %>"},
+  {"@type":"ListItem","position":3,"name":"<%= subcat.nome %>","item":"https://www.stellevere.it/<%= categoria_slug %>/<%= subcat_slug %>"}
+  <% if (citta_nome) { %>,{"@type":"ListItem","position":4,"name":"<%= citta_nome %>","item":"https://www.stellevere.it/<%= categoria_slug %>/<%= subcat_slug %>/<%= citta_slug %>"}<% } %>
 ]}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -93,125 +93,125 @@ h1{font-size:clamp(22px,5vw,34px);font-weight:900;color:var(--bianco);line-heigh
 
 <div class="topbar">
   <a class="logo" href="/">★ StelleVere</a>
-  <div class="topbar-bc">· {{ cat.nome }} · {{ subcat.nome }}{% if citta_nome %} · {{ citta_nome }}{% endif %}</div>
+  <div class="topbar-bc">· <%= cat.nome %> · <%= subcat.nome %><% if (citta_nome) { %> · <%= citta_nome %><% } %></div>
 </div>
 
 <div class="wrap">
   <nav class="bc" aria-label="Percorso">
     <a href="/">StelleVere</a>
     <span>›</span>
-    <a href="/{{ categoria_slug }}">{{ cat.nome }}</a>
+    <a href="/<%= categoria_slug %>"><%= cat.nome %></a>
     <span>›</span>
-    {% if citta_nome %}
-    <a href="/{{ categoria_slug }}/{{ subcat_slug }}">{{ subcat.nome }}</a>
+    <% if (citta_nome) { %>
+    <a href="/<%= categoria_slug %>/<%= subcat_slug %>"><%= subcat.nome %></a>
     <span>›</span>
-    <span style="color:var(--testo)">{{ citta_nome }}</span>
-    {% else %}
-    <span style="color:var(--testo)">{{ subcat.nome }}</span>
-    {% endif %}
+    <span style="color:var(--testo)"><%= citta_nome %></span>
+    <% } else { %>
+    <span style="color:var(--testo)"><%= subcat.nome %></span>
+    <% } %>
   </nav>
 
   <!-- HERO -->
   <div class="hero">
     <div class="hero-tag">
-      <a href="/{{ categoria_slug }}">{{ cat.icona }} {{ cat.nome }}</a>
-      › {{ subcat.nome }}
+      <a href="/<%= categoria_slug %>"><%= cat.icona %> <%= cat.nome %></a>
+      › <%= subcat.nome %>
     </div>
-    {% if citta_nome %}
-    <h1>{{ subcat.nome }} a {{ citta_nome }}</h1>
-    <div class="hero-sub">{{ cat.plurale }} specializzati in {{ subcat.nome|lower }} a {{ citta_nome }}. Recensioni verificate via WhatsApp — stelle vere, non comprate.</div>
-    {% else %}
-    <h1>{{ subcat.nome }}<br>{{ cat.plurale }} verificati</h1>
-    <div class="hero-sub">{{ subcat.desc }}. Recensioni verificate via WhatsApp — stelle vere, non comprate.</div>
-    {% endif %}
+    <% if (citta_nome) { %>
+    <h1><%= subcat.nome %> a <%= citta_nome %></h1>
+    <div class="hero-sub"><%= cat.plurale %> specializzati in <%= subcat.nome.toLowerCase() %> a <%= citta_nome %>. Recensioni verificate via WhatsApp — stelle vere, non comprate.</div>
+    <% } else { %>
+    <h1><%= subcat.nome %><br><%= cat.plurale %> verificati</h1>
+    <div class="hero-sub"><%= subcat.desc %>. Recensioni verificate via WhatsApp — stelle vere, non comprate.</div>
+    <% } %>
     <div class="hero-stats">
-      <div class="stat-pill"><span class="stat-num">{{ jobs|length }}</span> lavori verificati</div>
-      {% if not citta_nome %}
-      <div class="stat-pill"><span class="stat-num">{{ citta_list|length }}</span> città coperte</div>
-      {% else %}
-      <div class="stat-pill"><span class="stat-num">{{ quart_list|length }}</span> quartieri</div>
-      {% endif %}
+      <div class="stat-pill"><span class="stat-num"><%= jobs.length %></span> lavori verificati</div>
+      <% if (!citta_nome) { %>
+      <div class="stat-pill"><span class="stat-num"><%= citta_list.length %></span> città coperte</div>
+      <% } else { %>
+      <div class="stat-pill"><span class="stat-num"><%= quart_list.length %></span> quartieri</div>
+      <% } %>
     </div>
   </div>
 
   <!-- FILTRA PER CITTÀ (solo se non filtrato) -->
-  {% if not citta_nome and citta_list %}
+  <% if (!citta_nome && citta_list.length) { %>
   <div class="slabel">Città disponibili <div class="slabel-line"></div></div>
   <div class="loc-grid">
-    {% for cs, count in citta_list %}
-    <a class="loc-card" href="/{{ categoria_slug }}/{{ subcat_slug }}/{{ cs }}">
-      <div class="loc-nome">{{ cs.replace('-',' ').title() }}</div>
-      <div class="loc-count"><strong>{{ count }}</strong> lavori</div>
+    <% for (const [cs, count] of citta_list) { %>
+    <a class="loc-card" href="/<%= categoria_slug %>/<%= subcat_slug %>/<%= cs %>">
+      <div class="loc-nome"><%= cs.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) %></div>
+      <div class="loc-count"><strong><%= count %></strong> lavori</div>
       <div class="loc-arrow">Vedi tutti →</div>
     </a>
-    {% endfor %}
+    <% } %>
   </div>
-  {% endif %}
+  <% } %>
 
   <!-- FILTRA PER QUARTIERE (solo se filtrato per città) -->
-  {% if citta_nome and quart_list %}
+  <% if (citta_nome && quart_list.length) { %>
   <div class="slabel">Per quartiere <div class="slabel-line"></div></div>
   <div class="loc-grid">
-    {% for quart, count in quart_list %}
-    <a class="loc-card" href="/{{ categoria_slug }}/{{ citta_slug }}?q={{ slugify(quart) }}">
-      <div class="loc-nome">{{ quart }}</div>
-      <div class="loc-count"><strong>{{ count }}</strong> lavori</div>
+    <% for (const [quart, count] of quart_list) { %>
+    <a class="loc-card" href="/<%= categoria_slug %>/<%= citta_slug %>?q=<%= slugify(quart) %>">
+      <div class="loc-nome"><%= quart %></div>
+      <div class="loc-count"><strong><%= count %></strong> lavori</div>
     </a>
-    {% endfor %}
+    <% } %>
   </div>
-  {% endif %}
+  <% } %>
 
   <!-- LAVORI -->
-  {% if jobs %}
-  <div class="slabel">Lavori verificati{% if citta_nome %} a {{ citta_nome }}{% endif %} <div class="slabel-line"></div></div>
+  <% if (jobs.length) { %>
+  <div class="slabel">Lavori verificati<% if (citta_nome) { %> a <%= citta_nome %><% } %> <div class="slabel-line"></div></div>
   <div class="jobs-list">
-    {% for j in jobs %}
-    {% set sc = j.get('sottocategoria_slug') or subcat_slug %}
-    {% set ts = slugify(j.titolo) %}
-    {% set cs = slugify(j.citta) + '-' + slugify(j.get('quartiere','')) %}
-    <a class="job-card" href="/{{ categoria_slug }}/{{ sc }}/{{ ts }}/{{ cs }}">
+    <% for (const j of jobs) { %>
+    <% const sc = j.sottocategoria_slug || subcat_slug; %>
+    <% const ts = slugify(j.titolo); %>
+    <% const cs2 = slugify(j.citta) + '-' + slugify(j.quartiere || ''); %>
+    <a class="job-card" href="/<%= categoria_slug %>/<%= sc %>/<%= ts %>/<%= cs2 %>">
       <div class="job-left">
-        <div class="job-titolo">{{ j.titolo }}</div>
+        <div class="job-titolo"><%= j.titolo %></div>
         <div class="job-meta">
-          <span>📍 {{ j.quartiere }}{% if j.quartiere %}, {% endif %}{{ j.citta }}</span>
+          <span>📍 <%= j.quartiere %><% if (j.quartiere) { %>, <% } %><%= j.citta %></span>
           <span style="color:var(--stella);font-weight:800">★★★★★</span>
         </div>
-        <div class="job-art">{{ j.artigiano.nome }}</div>
+        <div class="job-art"><%= j.artigiano.nome %></div>
       </div>
       <div class="job-right">
-        <div class="job-stelle">★ {{ j.stelle }}.0</div>
-        <div class="job-visite">{{ j.visite or 0 }} visite</div>
+        <div class="job-stelle">★ <%= j.stelle %>.0</div>
+        <div class="job-visite"><%= j.visite || 0 %> visite</div>
       </div>
     </a>
-    {% endfor %}
+    <% } %>
   </div>
-  {% else %}
+  <% } else { %>
   <div style="padding:32px;text-align:center;color:var(--grigio);font-size:13px">
-    Nessun lavoro trovato in questa area. <a href="/{{ categoria_slug }}/{{ subcat_slug }}" style="color:var(--stella)">Vedi tutti i lavori →</a>
+    Nessun lavoro trovato in questa area. <a href="/<%= categoria_slug %>/<%= subcat_slug %>" style="color:var(--stella)">Vedi tutti i lavori →</a>
   </div>
-  {% endif %}
+  <% } %>
 
   <!-- ALTRE SOTTOCATEGORIE DELLA STESSA CAT -->
-  {% set all_subcats = SOTTOCATEGORIE.get(categoria_slug, {}) %}
-  {% if all_subcats|length > 1 %}
-  <div class="slabel">Altre specializzazioni · {{ cat.nome }} <div class="slabel-line"></div></div>
+  <% const all_subcats = SOTTOCATEGORIE[categoria_slug] || {}; %>
+  <% if (Object.keys(all_subcats).length > 1) { %>
+  <div class="slabel">Altre specializzazioni · <%= cat.nome %> <div class="slabel-line"></div></div>
   <div class="loc-grid">
-    {% for sc_slug, sc_info in all_subcats.items() %}
-    {% if sc_slug != subcat_slug %}
-    <a class="loc-card" href="/{{ categoria_slug }}/{{ sc_slug }}">
-      <div class="loc-nome">{{ sc_info.nome }}</div>
-      <div class="loc-count" style="margin-bottom:6px">{{ sc_info.desc[:55] }}…</div>
+    <% for (const [sc_slug, sc_info] of Object.entries(all_subcats)) { %>
+    <% if (sc_slug !== subcat_slug) { %>
+    <a class="loc-card" href="/<%= categoria_slug %>/<%= sc_slug %>">
+      <div class="loc-nome"><%= sc_info.nome %></div>
+      <div class="loc-count" style="margin-bottom:6px"><%= sc_info.desc.substring(0, 55) %>…</div>
       <div class="loc-arrow">Vedi lavori →</div>
     </a>
-    {% endif %}
-    {% endfor %}
+    <% } %>
+    <% } %>
   </div>
-  {% endif %}
+  <% } %>
 
   <!-- CTA -->
   <div class="cta-strip">
-    <div class="cta-title">Sei un {{ cat.cat_tipo|lower }}?</div>
-    <div class="cta-sub">Pubblica i tuoi lavori di {{ subcat.nome|lower }} su StelleVere. Ogni lavoro diventa una pagina su Google.</div>
+    <div class="cta-title">Sei un <%= cat.cat_tipo.toLowerCase() %>?</div>
+    <div class="cta-sub">Pubblica i tuoi lavori di <%= subcat.nome.toLowerCase() %> su StelleVere. Ogni lavoro diventa una pagina su Google.</div>
     <a class="btn-cta" href="/scheda/fossati-antonio">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
       Inizia ora — è gratis

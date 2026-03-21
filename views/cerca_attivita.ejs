@@ -115,53 +115,53 @@
 
 <div class="hero-mini">
   <h1>Trova il tuo artigiano</h1>
-  <p>{{ artigiani|length }} professionisti verificati su StelleVere</p>
+  <p><%= artigiani.length %> professionisti verificati su StelleVere</p>
 </div>
 
 <!-- Filtri -->
 <div class="filtri">
-  <input id="f-nome" type="text" placeholder="🔍 Cerca per nome o ID…" oninput="filtra()" autocomplete="off" value="{{ q_iniziale }}">
+  <input id="f-nome" type="text" placeholder="🔍 Cerca per nome o ID…" oninput="filtra()" autocomplete="off" value="<%= q_iniziale %>">
   <select id="f-cat" onchange="filtra()">
     <option value="">Tutte le categorie</option>
-    {% for slug, cat in categorie.items() %}
-    <option value="{{ slug }}"{% if cat_iniziale == slug %} selected{% endif %}>{{ cat.nome }}</option>
-    {% endfor %}
+    <% for (const [slug, cat] of Object.entries(categorie)) { %>
+    <option value="<%= slug %>"<%= cat_iniziale === slug ? ' selected' : '' %>><%= cat.nome %></option>
+    <% } %>
   </select>
-  <input id="f-cit" type="text" placeholder="📍 Città…" oninput="filtra()" autocomplete="off" value="{{ cit_iniziale }}">
+  <input id="f-cit" type="text" placeholder="📍 Città…" oninput="filtra()" autocomplete="off" value="<%= cit_iniziale %>">
 </div>
 
 <p class="contatore" id="contatore"></p>
 
 <!-- Lista artigiani -->
 <div class="lista" id="lista">
-  {% set emoji_map = {'drop':'💧','zap':'⚡','paint':'🎨','wall':'🧱','wood':'🪵','tool':'🔧'} %}
-  {% set filtrati_ids = artigiani_filtrati | map(attribute='id') | list %}
-  {% for a in artigiani %}
-  {% set emoji = emoji_map.get(categorie.get(a.cat_slug, {}).get('icona',''), '🔧') %}
-  <a class="card" href="/scheda/{{ a.id }}"
-     data-nome="{{ a.nome | lower }}"
-     data-id="{{ a.id | lower }}"
-     data-cat="{{ a.cat_slug }}"
-     data-cit="{{ a.citta | lower }}"
-     {% if a.id not in filtrati_ids %}style="display:none"{% endif %}>
-    <div class="card-av">{{ a.get('emoji', emoji) }}</div>
+  <% const emoji_map = {'drop':'💧','zap':'⚡','paint':'🎨','wall':'🧱','wood':'🪵','tool':'🔧'}; %>
+  <% const filtrati_ids = artigiani_filtrati.map(a => a.id); %>
+  <% for (const a of artigiani) { %>
+  <% const emoji = emoji_map[((categorie[a.cat_slug] || {}).icona || '')] || '🔧'; %>
+  <a class="card" href="/scheda/<%= a.id %>"
+     data-nome="<%= a.nome.toLowerCase() %>"
+     data-id="<%= a.id.toLowerCase() %>"
+     data-cat="<%= a.cat_slug %>"
+     data-cit="<%= a.citta.toLowerCase() %>"
+     <% if (!filtrati_ids.includes(a.id)) { %>style="display:none"<% } %>>
+    <div class="card-av"><%= (a.emoji || emoji) %></div>
     <div class="card-info">
-      <div class="card-nome">{{ a.nome }}</div>
+      <div class="card-nome"><%= a.nome %></div>
       <div class="card-meta">
-        <span class="tag">{{ categorie.get(a.cat_slug, {}).get('nome', a.cat_slug) }}</span>
-        <span class="tag">📍 {{ a.citta }}</span>
-        {% if a.lavori %}
-        <span class="tag">{{ a.lavori|length }} lavori</span>
-        {% endif %}
+        <span class="tag"><%= ((categorie[a.cat_slug] || {}).nome || a.cat_slug) %></span>
+        <span class="tag">📍 <%= a.citta %></span>
+        <% if (a.lavori) { %>
+        <span class="tag"><%= a.lavori.length %> lavori</span>
+        <% } %>
         <span class="badge-ver">✓ Verificato</span>
       </div>
     </div>
-    {% if a.stelle %}
-    <div class="card-stelle">★ {{ "%.1f"|format(a.stelle) }}</div>
-    {% endif %}
+    <% if (a.stelle) { %>
+    <div class="card-stelle">★ <%= a.stelle.toFixed(1) %></div>
+    <% } %>
     <div class="card-arrow">›</div>
   </a>
-  {% endfor %}
+  <% } %>
 </div>
 
 <p class="nessuno" id="nessuno">Nessun artigiano trovato con questi filtri.</p>

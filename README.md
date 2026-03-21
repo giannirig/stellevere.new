@@ -4,25 +4,26 @@ Directory di artigiani italiani verificati — "Stelle vere, non comprate".
 
 ## Struttura del Progetto
 
-- `main.py` — Applicazione Flask: route, dati ARTIGIANI/CATEGORIE/SOTTOCATEGORIE, helper slugify/build_job_url
-- `templates/`
-  - `index.html` — Homepage
-  - `scheda.html` — Scheda pubblica artigiano
-  - `inserisci_lavoro.html` — PWA inserimento lavori (ottimizzato smartphone)
-  - `pagina_lavoro.html` — Pagina SEO singolo lavoro (3-seg o 4-seg)
-  - `pagina_categoria.html` — Directory categoria con griglia sottocategorie
-  - `pagina_sottocategoria.html` — Directory sottocategoria (e subcat+città)
-  - `pagina_citta.html` — Directory città dentro categoria
-  - `galleria_foto.html` — Galleria foto lavori per categoria+città
+- `server.js` — Applicazione Express: route, dati ARTIGIANI/CATEGORIE/SOTTOCATEGORIE, helper slugify/buildJobUrl
+- `views/`
+  - `index.ejs` — Homepage
+  - `scheda.ejs` — Scheda pubblica artigiano
+  - `inserisci_lavoro.ejs` — PWA inserimento lavori (ottimizzato smartphone)
+  - `pagina_lavoro.ejs` — Pagina SEO singolo lavoro (3-seg o 4-seg)
+  - `pagina_categoria.ejs` — Directory categoria con griglia sottocategorie
+  - `pagina_sottocategoria.ejs` — Directory sottocategoria (e subcat+città)
+  - `pagina_citta.ejs` — Directory città dentro categoria
+  - `galleria_foto.ejs` — Galleria foto lavori per categoria+città
+  - `cerca_attivita.ejs` — Cerca attività / artigiani
 - `static/`
   - `icons/` — Icone PWA
   - `uploads/` — Foto lavori caricate dagli artigiani
 
 ## Stack Tecnologico
 
-- **Linguaggio:** Python 3.11
-- **Framework:** Flask
-- **Server:** Gunicorn su porta 5000
+- **Linguaggio:** Node.js
+- **Framework:** Express + EJS
+- **Server:** Node.js su porta 5000
 - **Stile:** Dark theme (#0a0a0a), Inter font, oro #f5c842, verde WhatsApp #25d366
 
 ## Route e struttura URL (4 livelli)
@@ -55,7 +56,7 @@ Directory di artigiani italiani verificati — "Stelle vere, non comprate".
 - **CATEGORIE** — dict slug→nome/cat_tipo/plurale/icona
 - **SOTTOCATEGORIE** — dict cat_slug→{subcat_slug→{nome,desc}} (6 categorie, 4–6 subcat ciascuna, ~30 subcat totali)
 - **ESEMPI_PER_CATEGORIA** — 8–10 esempi realistici per categoria
-- **helper:** `slugify()`, `build_jobs_index()`, `jobs_by_category_city()`, `jobs_by_subcat()`, `build_job_url()`, `_render_pagina_lavoro()`
+- **helper:** `slugify()`, `buildJobsIndex()`, `jobsByCategoryCity()`, `jobsBySubcat()`, `buildJobUrl()`, `renderPaginaLavoro()`
 
 ## Ogni lavoro ha `sottocategoria_slug`
 
@@ -76,6 +77,6 @@ Tutti i lavori in ARTIGIANI hanno il campo `sottocategoria_slug` che determina:
 ## Avviare l'Applicazione
 
 ```bash
-python main.py       # sviluppo
-gunicorn --bind=0.0.0.0:5000 --reuse-port main:app   # produzione
+npm run dev      # sviluppo (con --watch)
+npm start        # produzione
 ```

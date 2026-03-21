@@ -3,25 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Foto {{ cat.nome }} a {{ citta_nome }} · StelleVere</title>
-<meta name="description" content="Galleria foto lavori di {{ cat.plurale|lower }} verificati a {{ citta_nome }}. Immagini reali di cantieri completati, con didascalie e alt text.">
+<title>Foto <%= cat.nome %> a <%= citta_nome %> · StelleVere</title>
+<meta name="description" content="Galleria foto lavori di <%= cat.plurale.toLowerCase() %> verificati a <%= citta_nome %>. Immagini reali di cantieri completati, con didascalie e alt text.">
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="https://www.stellevere.it/{{ categoria_slug }}/{{ citta_slug }}/foto-lavori">
+<link rel="canonical" href="https://www.stellevere.it/<%= categoria_slug %>/<%= citta_slug %>/foto-lavori">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "ImageGallery",
-  "name": "Foto lavori {{ cat.nome }} a {{ citta_nome }}",
-  "description": "Galleria foto lavori di {{ cat.plurale|lower }} verificati a {{ citta_nome }} su StelleVere",
-  "url": "https://www.stellevere.it/{{ categoria_slug }}/{{ citta_slug }}/foto-lavori"{% if foto %},
-  "image": [{% for f in foto %}
+  "name": "Foto lavori <%= cat.nome %> a <%= citta_nome %>",
+  "description": "Galleria foto lavori di <%= cat.plurale.toLowerCase() %> verificati a <%= citta_nome %> su StelleVere",
+  "url": "https://www.stellevere.it/<%= categoria_slug %>/<%= citta_slug %>/foto-lavori"<% if (foto.length) { %>,
+  "image": [<% for (const [_fi, f] of foto.entries()) { %>
     {
       "@type": "ImageObject",
-      "url": "https://www.stellevere.it/static/uploads/{{ f.file }}",
-      "name": "{{ f.alt }}",
-      "description": "{{ f.caption }}"
-    }{% if not loop.last %},{% endif %}{% endfor %}
-  ]{% endif %}
+      "url": "https://www.stellevere.it/static/uploads/<%= f.file %>",
+      "name": "<%= f.alt %>",
+      "description": "<%= f.caption %>"
+    }<%= _fi < foto.length - 1 ? ',' : '' %><% } %>
+  ]<% } %>
 }
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -114,8 +114,8 @@ h1{font-size:clamp(18px,4.5vw,28px);font-weight:900;color:var(--bianco);line-hei
 <div class="topbar">
   <a class="logo" href="/">★ StelleVere</a>
   <div class="topbar-bc">
-    · <a href="/{{ categoria_slug }}" style="color:var(--grigio)">{{ cat.nome }}</a>
-    · <a href="/{{ categoria_slug }}/{{ citta_slug }}" style="color:var(--grigio)">{{ citta_nome }}</a>
+    · <a href="/<%= categoria_slug %>" style="color:var(--grigio)"><%= cat.nome %></a>
+    · <a href="/<%= categoria_slug %>/<%= citta_slug %>" style="color:var(--grigio)"><%= citta_nome %></a>
     · Foto lavori
   </div>
 </div>
@@ -124,26 +124,26 @@ h1{font-size:clamp(18px,4.5vw,28px);font-weight:900;color:var(--bianco);line-hei
   <nav class="bc">
     <a href="/">StelleVere</a>
     <span>›</span>
-    <a href="/{{ categoria_slug }}">{{ cat.nome }}</a>
+    <a href="/<%= categoria_slug %>"><%= cat.nome %></a>
     <span>›</span>
-    <a href="/{{ categoria_slug }}/{{ citta_slug }}">{{ citta_nome }}</a>
+    <a href="/<%= categoria_slug %>/<%= citta_slug %>"><%= citta_nome %></a>
     <span>›</span>
     <span style="color:var(--testo)">Foto lavori</span>
   </nav>
 
   <div class="hero">
-    <h1>Foto lavori {{ cat.nome }}<br>a {{ citta_nome }}</h1>
+    <h1>Foto lavori <%= cat.nome %><br>a <%= citta_nome %></h1>
     <div class="hero-sub">Immagini reali di cantieri completati. Stelle vere, non comprate.</div>
     <div class="hero-stats">
-      <div class="stat-pill"><span class="stat-num">{{ foto|length }}</span> foto pubblicate</div>
-      <div class="stat-pill"><span class="stat-num">{{ n_lavori }}</span> lavori documentati</div>
+      <div class="stat-pill"><span class="stat-num"><%= foto.length %></span> foto pubblicate</div>
+      <div class="stat-pill"><span class="stat-num"><%= n_lavori %></span> lavori documentati</div>
     </div>
   </div>
 
-  {% if foto %}
+  <% if (foto.length) { %>
   <!-- FILTRO -->
   <div class="filter-bar">
-    <button class="filt-btn active" onclick="filtra(this,'')">Tutte ({{ foto|length }})</button>
+    <button class="filt-btn active" onclick="filtra(this,'')">Tutte (<%= foto.length %>)</button>
     <button class="filt-btn" onclick="filtra(this,'Principale')">Foto principale</button>
     <button class="filt-btn" onclick="filtra(this,'Dettaglio')">Dettaglio</button>
     <button class="filt-btn" onclick="filtra(this,'Risultato')">Risultato finale</button>
@@ -151,31 +151,31 @@ h1{font-size:clamp(18px,4.5vw,28px);font-weight:900;color:var(--bianco);line-hei
 
   <!-- GRIGLIA FOTO -->
   <div class="foto-grid" id="foto-grid">
-    {% for f in foto %}
-    <div class="foto-card" data-pos="{{ f.posizione }}" onclick="openLightbox({{ loop.index0 }})">
+    <% for (const [_fi, f] of foto.entries()) { %>
+    <div class="foto-card" data-pos="<%= f.posizione %>" onclick="openLightbox(<%= _fi %>)">
       <div class="foto-img">
-        <img src="/static/uploads/{{ f.file }}"
-             alt="{{ f.alt }}"
+        <img src="/static/uploads/<%= f.file %>"
+             alt="<%= f.alt %>"
              loading="lazy"
              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
         <div class="foto-placeholder" style="display:none">🔧</div>
-        <div class="foto-badge {{ f.posizione | lower }}">{{ f.posizione }}</div>
+        <div class="foto-badge <%= f.posizione.toLowerCase() %>"><%= f.posizione %></div>
       </div>
       <div class="foto-body">
-        <div class="foto-titolo">{{ f.lavoro.titolo }}</div>
-        {% if f.caption %}
-        <div class="foto-caption">{{ f.caption }}</div>
-        {% endif %}
+        <div class="foto-titolo"><%= f.lavoro.titolo %></div>
+        <% if (f.caption) { %>
+        <div class="foto-caption"><%= f.caption %></div>
+        <% } %>
         <div class="foto-footer">
-          <span class="foto-art">{{ f.artigiano.nome }}</span>
-          <span class="foto-loc">📍 {{ f.lavoro.quartiere }}</span>
-          <a class="foto-link" href="/{{ categoria_slug }}/{{ slugify(f.lavoro.titolo) }}/{{ slugify(f.lavoro.citta) }}-{{ slugify(f.lavoro.quartiere) }}" onclick="event.stopPropagation()">
+          <span class="foto-art"><%= f.artigiano.nome %></span>
+          <span class="foto-loc">📍 <%= f.lavoro.quartiere %></span>
+          <a class="foto-link" href="/<%= categoria_slug %>/<%= slugify(f.lavoro.titolo) %>/<%= slugify(f.lavoro.citta) %>-<%= slugify(f.lavoro.quartiere) %>" onclick="event.stopPropagation()">
             Vedi lavoro →
           </a>
         </div>
       </div>
     </div>
-    {% endfor %}
+    <% } %>
   </div>
 
   <!-- LIGHTBOX -->
@@ -190,19 +190,19 @@ h1{font-size:clamp(18px,4.5vw,28px);font-weight:900;color:var(--bianco);line-hei
     </div>
   </div>
 
-  {% else %}
+  <% } else { %>
   <div class="empty">
     <div class="empty-icon">📷</div>
     <div class="empty-title">Nessuna foto ancora</div>
-    <div class="empty-sub">Gli artigiani verificati di {{ citta_nome }} stanno documentando i loro lavori.</div>
-    <a class="btn-back" href="/{{ categoria_slug }}/{{ citta_slug }}">
-      ← Vedi i lavori a {{ citta_nome }}
+    <div class="empty-sub">Gli artigiani verificati di <%= citta_nome %> stanno documentando i loro lavori.</div>
+    <a class="btn-back" href="/<%= categoria_slug %>/<%= citta_slug %>">
+      ← Vedi i lavori a <%= citta_nome %>
     </a>
   </div>
-  {% endif %}
+  <% } %>
 
   <div class="cta-strip">
-    <div class="cta-title">Sei un {{ cat.cat_tipo | lower }} a {{ citta_nome }}?</div>
+    <div class="cta-title">Sei un <%= cat.cat_tipo.toLowerCase() %> a <%= citta_nome %>?</div>
     <div class="cta-sub">Documenta i tuoi lavori con foto reali — ogni immagine indicizzata da Google porta nuovi clienti.</div>
     <a class="btn-cta" href="/">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
@@ -213,14 +213,14 @@ h1{font-size:clamp(18px,4.5vw,28px);font-weight:900;color:var(--bianco);line-hei
 
 <script>
 const fotoData = [
-  {% for f in foto %}
+  <% for (const [_fi, f] of foto.entries()) { %>
   {
-    src: '/static/uploads/{{ f.file }}',
-    alt: {{ f.alt | tojson }},
-    caption: {{ f.caption | tojson }},
-    pos: '{{ f.posizione }}'
-  }{% if not loop.last %},{% endif %}
-  {% endfor %}
+    src: '/static/uploads/<%= f.file %>',
+    alt: <%- JSON.stringify(f.alt) %>,
+    caption: <%- JSON.stringify(f.caption) %>,
+    pos: '<%= f.posizione %>'
+  }<%= _fi < foto.length - 1 ? ',' : '' %>
+  <% } %>
 ];
 let lbIdx = 0;
 

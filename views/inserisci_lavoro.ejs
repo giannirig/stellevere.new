@@ -362,8 +362,8 @@ textarea{resize:none;line-height:1.55}
   <div class="logo">★ StelleVere</div>
   <div style="flex:1;font-size:12px;color:var(--grigio);padding-left:4px">· Aggiungi lavoro</div>
   <div class="artigiano-pill">
-    <div class="artigiano-av">{{ artigiano.emoji }}</div>
-    <div class="artigiano-nome">{{ artigiano.nome.split()[0] }}</div>
+    <div class="artigiano-av"><%= artigiano.emoji %></div>
+    <div class="artigiano-nome"><%= artigiano.nome.split(" ")[0] %></div>
   </div>
 </div>
 
@@ -500,19 +500,19 @@ textarea{resize:none;line-height:1.55}
       <div style="font-size:10px;font-weight:800;color:var(--grigio);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">
         ★ Aggiungi una breve didascalia · Google la legge
       </div>
-      {% for i in [0,1,2] %}
-      <div id="cap-item-{{ i }}" class="cap-item" style="display:none;flex-direction:column;gap:5px;margin-bottom:10px">
+      <% for (const i of [0, 1, 2]) { %>
+      <div id="cap-item-<%= i %>" class="cap-item" style="display:none;flex-direction:column;gap:5px;margin-bottom:10px">
         <div style="font-size:10px;font-weight:700;color:var(--grigio)">
-          Foto {{ i+1 }} – <span class="cap-alt" style="color:var(--grigio2);font-style:italic"></span>
+          Foto <%= i + 1 %> – <span class="cap-alt" style="color:var(--grigio2);font-style:italic"></span>
         </div>
         <input type="text"
-               id="cap-{{ i }}"
+               id="cap-<%= i %>"
                placeholder="Es: Impianto ultimato e collaudato"
                maxlength="80"
-               oninput="stato.caption[{{ i }}]=this.value"
+               oninput="stato.caption[<%= i %>]=this.value"
                style="background:var(--nero3);border:1px solid var(--bordo2);color:var(--testo);border-radius:8px;padding:8px 12px;font-size:12px;font-family:'Inter',sans-serif;width:100%">
       </div>
-      {% endfor %}
+      <% } %>
     </div>
   </div>
 
@@ -523,8 +523,8 @@ textarea{resize:none;line-height:1.55}
       <div>
         <div style="font-size:10px;font-weight:700;color:var(--grigio);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">Città</div>
         <input type="text" id="f-citta"
-               placeholder="{{ artigiano.citta }}"
-               value="{{ artigiano.citta }}"
+               placeholder="<%= artigiano.citta %>"
+               value="<%= artigiano.citta %>"
                oninput="aggiornaURL();controllaForm()">
       </div>
       <div>
@@ -619,13 +619,13 @@ textarea{resize:none;line-height:1.55}
 <script>
 // ── DATI ──
 const artigiano = {
-  nome: "{{ artigiano.nome }}",
-  categoria: "{{ artigiano.categoria }}",
-  citta: "{{ artigiano.citta }}",
-  id: "{{ artigiano.id }}"
+  nome: "<%= artigiano.nome %>",
+  categoria: "<%= artigiano.categoria %>",
+  citta: "<%= artigiano.citta %>",
+  id: "<%= artigiano.id %>"
 };
-const lavoriEsistenti = {{ artigiano.lavori | tojson }};
-const SOTTOCATEGORIE = {{ sottocategorie_json | safe }};
+const lavoriEsistenti = <%- JSON.stringify(artigiano.lavori) %>;
+const SOTTOCATEGORIE = <%- sottocategorie_json %>;
 
 let stato = {
   categoria: 'Idraulica',

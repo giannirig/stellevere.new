@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ cat.nome }} verificati vicino a te · StelleVere</title>
-<meta name="description" content="Trova {{ cat.plurale|lower }} verificati con recensioni reali. Stelle vere, non comprate. Cerca per città e quartiere.">
+<title><%= cat.nome %> verificati vicino a te · StelleVere</title>
+<meta name="description" content="Trova <%= cat.plurale.toLowerCase() %> verificati con recensioni reali. Stelle vere, non comprate. Cerca per città e quartiere.">
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="https://www.stellevere.it/{{ categoria_slug }}">
+<link rel="canonical" href="https://www.stellevere.it/<%= categoria_slug %>">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"CollectionPage","name":"{{ cat.nome }} verificati · StelleVere","description":"Trova {{ cat.plurale|lower }} con recensioni verificate su StelleVere.","url":"https://www.stellevere.it/{{ categoria_slug }}"}
+{"@context":"https://schema.org","@type":"CollectionPage","name":"<%= cat.nome %> verificati · StelleVere","description":"Trova <%= cat.plurale.toLowerCase() %> con recensioni verificate su StelleVere.","url":"https://www.stellevere.it/<%= categoria_slug %>"}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -112,105 +112,105 @@ h1{font-size:clamp(22px,5vw,34px);font-weight:900;color:var(--bianco);line-heigh
 
 <div class="topbar">
   <a class="logo" href="/">★ StelleVere</a>
-  <div class="topbar-bc">· {{ cat.nome }}</div>
+  <div class="topbar-bc">· <%= cat.nome %></div>
 </div>
 
 <div class="wrap">
   <nav class="bc">
     <a href="/">StelleVere</a>
     <span>›</span>
-    <span style="color:var(--testo)">{{ cat.nome }}</span>
+    <span style="color:var(--testo)"><%= cat.nome %></span>
   </nav>
 
   <!-- HERO -->
   <div class="hero">
-    <h1>{{ cat.plurale }} verificati<br>vicino a te</h1>
+    <h1><%= cat.plurale %> verificati<br>vicino a te</h1>
     <div class="hero-sub">Ogni lavoro è reale, ogni stella è guadagnata. "Stelle vere, non comprate."</div>
     <div class="hero-stats">
-      <div class="stat-pill"><span class="stat-num">{{ jobs|length }}</span> lavori pubblicati</div>
-      <div class="stat-pill"><span class="stat-num">{{ artigiani|length }}</span> {{ cat.plurale|lower }} attivi</div>
-      <div class="stat-pill"><span class="stat-num">{{ citta_list|length }}</span> città coperte</div>
+      <div class="stat-pill"><span class="stat-num"><%= jobs.length %></span> lavori pubblicati</div>
+      <div class="stat-pill"><span class="stat-num"><%= artigiani.length %></span> <%= cat.plurale.toLowerCase() %> attivi</div>
+      <div class="stat-pill"><span class="stat-num"><%= citta_list.length %></span> città coperte</div>
     </div>
   </div>
 
   <!-- SOTTOCATEGORIE -->
-  {% if sottocategorie %}
+  <% if (sottocategorie && Object.keys(sottocategorie).length > 0) { %>
   <div class="slabel">Specializzazioni <div class="slabel-line"></div></div>
   <div class="subcat-grid">
-    {% for sc_slug, sc in sottocategorie.items() %}
-    <a class="subcat-card" href="/{{ categoria_slug }}/{{ sc_slug }}">
-      <div class="subcat-nome">{{ sc.nome }}</div>
-      <div class="subcat-desc">{{ sc.desc }}</div>
+    <% for (const [sc_slug, sc] of Object.entries(sottocategorie)) { %>
+    <a class="subcat-card" href="/<%= categoria_slug %>/<%= sc_slug %>">
+      <div class="subcat-nome"><%= sc.nome %></div>
+      <div class="subcat-desc"><%= sc.desc %></div>
       <div class="subcat-arrow">Vedi lavori →</div>
     </a>
-    {% endfor %}
+    <% } %>
   </div>
-  {% endif %}
+  <% } %>
 
   <!-- CITTÀ -->
   <div class="slabel">Cerca per città <div class="slabel-line"></div></div>
   <div class="citta-grid">
-    {% for citta, count in citta_list %}
-    <a class="citta-card" href="/{{ categoria_slug }}/{{ slugify(citta) }}">
-      <div class="citta-nome">{{ citta }}</div>
-      <div class="citta-count"><strong>{{ count }}</strong> lavori verificati</div>
+    <% for (const [citta, count] of citta_list) { %>
+    <a class="citta-card" href="/<%= categoria_slug %>/<%= slugify(citta) %>">
+      <div class="citta-nome"><%= citta %></div>
+      <div class="citta-count"><strong><%= count %></strong> lavori verificati</div>
       <div class="citta-arrow">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         Vedi tutti
       </div>
     </a>
-    {% endfor %}
+    <% } %>
   </div>
 
   <!-- ARTIGIANI -->
-  {% if artigiani %}
-  <div class="slabel">{{ cat.plurale }} attivi <div class="slabel-line"></div></div>
+  <% if (artigiani && artigiani.length > 0) { %>
+  <div class="slabel"><%= cat.plurale %> attivi <div class="slabel-line"></div></div>
   <div class="art-grid">
-    {% for art in artigiani %}
-    <a class="art-card" href="/scheda/{{ art.id }}">
+    <% for (const art of artigiani) { %>
+    <a class="art-card" href="/scheda/<%= art.id %>">
       <div class="art-av">🔧</div>
       <div>
-        <div class="art-nome">{{ art.nome }}</div>
-        <div class="art-loc">📍 {{ art.citta }}</div>
+        <div class="art-nome"><%= art.nome %></div>
+        <div class="art-loc">📍 <%= art.citta %></div>
         <div class="art-rating">
           <span class="art-stars">★★★★★</span>
-          <span class="art-num">{{ art.stelle }}</span>
-          <span class="art-rec">· {{ art.recensioni }} rec.</span>
+          <span class="art-num"><%= art.stelle %></span>
+          <span class="art-rec">· <%= art.recensioni %> rec.</span>
         </div>
         <div class="art-badge">✓ Verificato</div>
       </div>
     </a>
-    {% endfor %}
+    <% } %>
   </div>
-  {% endif %}
+  <% } %>
 
   <!-- ULTIMI LAVORI -->
   <div class="slabel">Ultimi lavori pubblicati <div class="slabel-line"></div></div>
   <div class="jobs-list">
-    {% for j in jobs[:12] %}
-    {% set sc = j.sottocategoria_slug %}
-    {% set job_url = '/' + categoria_slug + '/' + sc + '/' + slugify(j.titolo) + '/' + slugify(j.citta) + '-' + slugify(j.quartiere) if sc else '/' + categoria_slug + '/' + slugify(j.titolo) + '/' + slugify(j.citta) + '-' + slugify(j.quartiere) %}
-    <a class="job-card" href="{{ job_url }}">
+    <% for (const j of jobs.slice(0, 12)) { %>
+    <% const sc = j.sottocategoria_slug; %>
+    <% const job_url = sc ? '/' + categoria_slug + '/' + sc + '/' + slugify(j.titolo) + '/' + slugify(j.citta) + '-' + slugify(j.quartiere) : '/' + categoria_slug + '/' + slugify(j.titolo) + '/' + slugify(j.citta) + '-' + slugify(j.quartiere); %>
+    <a class="job-card" href="<%= job_url %>">
       <div class="job-left">
-        <div class="job-titolo">{{ j.titolo }}</div>
+        <div class="job-titolo"><%= j.titolo %></div>
         <div class="job-meta">
-          <span class="job-loc">📍 {{ j.quartiere }}, {{ j.citta }}</span>
-          {% if sc %}<span class="job-subcat">{{ sottocategorie[sc].nome if sc in sottocategorie else sc }}</span>{% endif %}
+          <span class="job-loc">📍 <%= j.quartiere %>, <%= j.citta %></span>
+          <% if (sc) { %><span class="job-subcat"><%= (sottocategorie[sc] ? sottocategorie[sc].nome : sc) %></span><% } %>
           <span style="color:var(--stella);font-weight:800;font-size:11px">★★★★★</span>
         </div>
-        <div class="job-art">{{ j.artigiano.nome }}</div>
+        <div class="job-art"><%= j.artigiano.nome %></div>
       </div>
       <div class="job-right">
-        <div class="job-stelle">★ {{ j.stelle }}.0</div>
-        <div class="job-visite">{{ j.visite }} visite</div>
+        <div class="job-stelle">★ <%= j.stelle %>.0</div>
+        <div class="job-visite"><%= j.visite || 0 %> visite</div>
       </div>
     </a>
-    {% endfor %}
+    <% } %>
   </div>
 
   <!-- CTA -->
   <div class="cta-strip">
-    <div class="cta-title">Sei un {{ cat.cat_tipo|lower }}?</div>
+    <div class="cta-title">Sei un <%= cat.cat_tipo.toLowerCase() %>?</div>
     <div class="cta-sub">Pubblica i tuoi lavori su StelleVere — gratis. Ogni lavoro diventa una pagina indicizzata su Google.</div>
     <a class="btn-cta" href="/scheda/fossati-antonio">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>

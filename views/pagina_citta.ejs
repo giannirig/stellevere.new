@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ cat.nome }} a {{ citta_nome }} verificati · StelleVere</title>
-<meta name="description" content="Trova {{ cat.plurale|lower }} verificati a {{ citta_nome }}. Recensioni reali, stelle guadagnate. Cerca per quartiere.">
+<title><%= cat.nome %> a <%= citta_nome %> verificati · StelleVere</title>
+<meta name="description" content="Trova <%= cat.plurale.toLowerCase() %> verificati a <%= citta_nome %>. Recensioni reali, stelle guadagnate. Cerca per quartiere.">
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="https://www.stellevere.it/{{ categoria_slug }}/{{ citta_slug }}">
+<link rel="canonical" href="https://www.stellevere.it/<%= categoria_slug %>/<%= citta_slug %>">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"CollectionPage","name":"{{ cat.nome }} a {{ citta_nome }} · StelleVere","description":"{{ cat.plurale }} verificati a {{ citta_nome }} su StelleVere.","url":"https://www.stellevere.it/{{ categoria_slug }}/{{ citta_slug }}"}
+{"@context":"https://schema.org","@type":"CollectionPage","name":"<%= cat.nome %> a <%= citta_nome %> · StelleVere","description":"<%= cat.plurale %> verificati a <%= citta_nome %> su StelleVere.","url":"https://www.stellevere.it/<%= categoria_slug %>/<%= citta_slug %>"}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -90,96 +90,96 @@ h1{font-size:clamp(20px,5vw,30px);font-weight:900;color:var(--bianco);line-heigh
 
 <div class="topbar">
   <a class="logo" href="/">★ StelleVere</a>
-  <div class="topbar-bc">· <a href="/{{ categoria_slug }}" style="color:var(--grigio)">{{ cat.nome }}</a> · {{ citta_nome }}</div>
+  <div class="topbar-bc">· <a href="/<%= categoria_slug %>" style="color:var(--grigio)"><%= cat.nome %></a> · <%= citta_nome %></div>
 </div>
 
 <div class="wrap">
   <nav class="bc">
     <a href="/">StelleVere</a>
     <span>›</span>
-    <a href="/{{ categoria_slug }}">{{ cat.nome }}</a>
+    <a href="/<%= categoria_slug %>"><%= cat.nome %></a>
     <span>›</span>
-    <span style="color:var(--testo)">{{ citta_nome }}</span>
+    <span style="color:var(--testo)"><%= citta_nome %></span>
   </nav>
 
   <!-- HERO -->
   <div class="hero">
-    <h1>{{ cat.plurale }} verificati<br>a {{ citta_nome }}</h1>
+    <h1><%= cat.plurale %> verificati<br>a <%= citta_nome %></h1>
     <div class="hero-sub">Recensioni reali verificate via WhatsApp. "Stelle vere, non comprate."</div>
     <div class="hero-stats">
-      <div class="stat-pill"><span class="stat-num">{{ jobs|length }}</span> lavori a {{ citta_nome }}</div>
-      <div class="stat-pill"><span class="stat-num">{{ artigiani|length }}</span> professionisti</div>
-      <div class="stat-pill"><span class="stat-num">{{ quart_list|length }}</span> quartieri</div>
+      <div class="stat-pill"><span class="stat-num"><%= jobs.length %></span> lavori a <%= citta_nome %></div>
+      <div class="stat-pill"><span class="stat-num"><%= artigiani.length %></span> professionisti</div>
+      <div class="stat-pill"><span class="stat-num"><%= quart_list.length %></span> quartieri</div>
     </div>
   </div>
 
   <!-- FILTRO QUARTIERI -->
-  {% if quart_list %}
+  <% if (quart_list.length) { %>
   <div class="slabel">Filtra per quartiere <div class="slabel-line"></div></div>
   <div class="quart-wrap" id="quart-filter">
     <div class="quart-pill active" onclick="filtraQuartiere(this, '')">
-      Tutti <span class="quart-badge">{{ jobs|length }}</span>
+      Tutti <span class="quart-badge"><%= jobs.length %></span>
     </div>
-    {% for quart, count in quart_list %}
-    <div class="quart-pill" onclick="filtraQuartiere(this, '{{ quart }}')">
-      {{ quart }} <span class="quart-badge">{{ count }}</span>
+    <% for (const [quart, count] of quart_list) { %>
+    <div class="quart-pill" onclick="filtraQuartiere(this, '<%= quart %>')">
+      <%= quart %> <span class="quart-badge"><%= count %></span>
     </div>
-    {% endfor %}
+    <% } %>
   </div>
-  {% endif %}
+  <% } %>
 
   <!-- ARTIGIANI ATTIVI -->
-  {% if artigiani %}
-  <div class="slabel">{{ cat.plurale }} a {{ citta_nome }} <div class="slabel-line"></div></div>
+  <% if (artigiani.length) { %>
+  <div class="slabel"><%= cat.plurale %> a <%= citta_nome %> <div class="slabel-line"></div></div>
   <div class="art-grid">
-    {% for art in artigiani %}
-    <a class="art-card" href="/scheda/{{ art.id }}">
+    <% for (const art of artigiani) { %>
+    <a class="art-card" href="/scheda/<%= art.id %>">
       <div class="art-av">🔧</div>
       <div>
-        <div class="art-nome">{{ art.nome }}</div>
-        <div class="art-loc">📍 {{ art.citta }}</div>
+        <div class="art-nome"><%= art.nome %></div>
+        <div class="art-loc">📍 <%= art.citta %></div>
         <div class="art-rating">
           <span class="art-stars">★★★★★</span>
-          <span style="font-weight:800;color:var(--bianco)">{{ art.stelle }}</span>
-          <span style="color:var(--grigio)">· {{ art.recensioni }} rec.</span>
+          <span style="font-weight:800;color:var(--bianco)"><%= art.stelle %></span>
+          <span style="color:var(--grigio)">· <%= art.recensioni %> rec.</span>
         </div>
         <div class="art-badge">✓ Verificato</div>
       </div>
     </a>
-    {% endfor %}
+    <% } %>
   </div>
-  {% endif %}
+  <% } %>
 
   <!-- LAVORI -->
   <div class="slabel">Lavori pubblicati <div class="slabel-line"></div></div>
   <div class="jobs-list" id="jobs-list">
-    {% for j in jobs %}
-    <a class="job-card" href="/{{ categoria_slug }}/{{ slugify(j.titolo) }}/{{ slugify(j.citta) }}-{{ slugify(j.quartiere) }}"
-       data-quartiere="{{ j.quartiere }}">
+    <% for (const j of jobs) { %>
+    <a class="job-card" href="/<%= categoria_slug %>/<%= slugify(j.titolo) %>/<%= slugify(j.citta) %>-<%= slugify(j.quartiere) %>"
+       data-quartiere="<%= j.quartiere %>">
       <div class="job-left">
-        <div class="job-titolo">{{ j.titolo }}</div>
+        <div class="job-titolo"><%= j.titolo %></div>
         <div class="job-meta">
-          <span class="job-quart">{{ j.quartiere }}</span>
+          <span class="job-quart"><%= j.quartiere %></span>
           <span style="color:var(--stella);font-weight:800">★★★★★</span>
         </div>
-        {% if j.recensione %}
-        <div class="job-rec">"{{ j.recensione }}"</div>
-        {% endif %}
+        <% if (j.recensione) { %>
+        <div class="job-rec">"<%= j.recensione %>"</div>
+        <% } %>
       </div>
       <div class="job-right">
-        <div class="job-stelle">★ {{ j.stelle }}.0</div>
-        <div class="job-visite">{{ j.visite }} visite</div>
+        <div class="job-stelle">★ <%= j.stelle %>.0</div>
+        <div class="job-visite"><%= j.visite %> visite</div>
       </div>
     </a>
-    {% endfor %}
-    {% if not jobs %}
+    <% } %>
+    <% if (!jobs.length) { %>
     <div class="empty-state">Nessun lavoro pubblicato ancora in questa città.</div>
-    {% endif %}
+    <% } %>
   </div>
 
   <!-- CTA -->
   <div class="cta-strip">
-    <div class="cta-title">Sei un {{ cat.cat_tipo|lower }} a {{ citta_nome }}?</div>
+    <div class="cta-title">Sei un <%= cat.cat_tipo.toLowerCase() %> a <%= citta_nome %>?</div>
     <div class="cta-sub">Pubblica i tuoi lavori e fatti trovare dai clienti del tuo quartiere — gratis.</div>
     <a class="btn-cta" href="/scheda/fossati-antonio">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>

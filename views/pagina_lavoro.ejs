@@ -3,47 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ titolo_seo }} a {{ loc_seo }} · {{ artigiano.nome }} · StelleVere</title>
-<meta name="description" content="{{ lavoro.descrizione[:155] if lavoro else titolo_seo + ' a ' + loc_seo + ' — ' + artigiano.nome + ', artigiano verificato su StelleVere.' }}">
+<title><%= titolo_seo %> a <%= loc_seo %> · <%= artigiano.nome %> · StelleVere</title>
+<meta name="description" content="<%= lavoro ? lavoro.descrizione.substring(0, 155) : (titolo_seo + ' a ' + loc_seo + ' — ' + artigiano.nome + ', artigiano verificato su StelleVere.') %>">
 <meta name="robots" content="index, follow">
 <!-- Open Graph -->
-<meta property="og:title" content="{{ titolo_seo }} a {{ loc_seo }} · {{ artigiano.nome }}">
-<meta property="og:description" content="{{ lavoro.descrizione[:200] if lavoro else '' }}">
+<meta property="og:title" content="<%= titolo_seo %> a <%= loc_seo %> · <%= artigiano.nome %>">
+<meta property="og:description" content="<%= lavoro ? lavoro.descrizione.substring(0, 200) : '' %>">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://www.stellevere.it/{{ categoria_slug }}/{{ titolo_slug }}/{{ loc_slug }}">
+<meta property="og:url" content="https://www.stellevere.it/<%= categoria_slug %>/<%= titolo_slug %>/<%= loc_slug %>">
 <!-- Schema.org LocalBusiness + ImageObject JSON-LD -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
-  "name": "{{ artigiano.nome }}",
-  "description": "{{ lavoro.descrizione if lavoro else titolo_seo }}",
+  "name": "<%- artigiano.nome %>",
+  "description": "<%- lavoro ? lavoro.descrizione : titolo_seo %>",
   "address": {
     "@type": "PostalAddress",
-    "addressLocality": "{{ loc_seo }}",
+    "addressLocality": "<%- loc_seo %>",
     "addressCountry": "IT"
   },
   "aggregateRating": {
     "@type": "AggregateRating",
-    "ratingValue": "{{ artigiano.stelle }}",
-    "reviewCount": "{{ artigiano.recensioni }}"
+    "ratingValue": "<%- artigiano.stelle %>",
+    "reviewCount": "<%- artigiano.recensioni %>"
   },
-  "url": "https://www.stellevere.it/scheda/{{ artigiano_slug }}"{% if lavoro and lavoro.immagini %},
-  "image": [{% for img in lavoro.immagini %}
+  "url": "https://www.stellevere.it/scheda/<%- artigiano_slug %>"<% if (lavoro && lavoro.immagini && lavoro.immagini.length) { %>,
+  "image": [<% for (const [_imgIdx, img] of lavoro.immagini.entries()) { %>
     {
       "@type": "ImageObject",
-      "url": "https://www.stellevere.it/static/uploads/{{ img.file }}",
-      "name": "{{ img.alt }}",
-      "description": "{{ img.caption }}",
-      "representativeOfPage": {{ "true" if loop.first else "false" }}
-    }{% if not loop.last %},{% endif %}{% endfor %}
-  ]{% endif %}
+      "url": "https://www.stellevere.it/static/uploads/<%- img.file %>",
+      "name": "<%- img.alt %>",
+      "description": "<%- img.caption %>",
+      "representativeOfPage": <%- _imgIdx === 0 ? 'true' : 'false' %>
+    }<%- _imgIdx < lavoro.immagini.length - 1 ? ',' : '' %><% } %>
+  ]<% } %>
 }
 </script>
-{% if lavoro and lavoro.immagini %}
-<meta property="og:image" content="https://www.stellevere.it/static/uploads/{{ lavoro.immagini[0].file }}">
-{% endif %}
-<link rel="canonical" href="https://www.stellevere.it/{{ categoria_slug }}/{{ titolo_slug }}/{{ loc_slug }}">
+<% if (lavoro && lavoro.immagini && lavoro.immagini.length) { %>
+<meta property="og:image" content="https://www.stellevere.it/static/uploads/<%= lavoro.immagini[0].file %>">
+<% } %>
+<link rel="canonical" href="https://www.stellevere.it/<%= categoria_slug %>/<%= titolo_slug %>/<%= loc_slug %>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -172,7 +172,7 @@ h1{font-size:clamp(20px,5vw,28px);font-weight:900;color:var(--bianco);line-heigh
 <!-- TOPBAR -->
 <div class="topbar">
   <a class="logo" href="/">★ StelleVere</a>
-  <div class="topbar-bc">› {{ artigiano.categoria }} › {{ loc_seo }} › {{ artigiano.nome }}</div>
+  <div class="topbar-bc">› <%= artigiano.categoria %> › <%= loc_seo %> › <%= artigiano.nome %></div>
 </div>
 
 <div class="wrap">
@@ -181,109 +181,109 @@ h1{font-size:clamp(20px,5vw,28px);font-weight:900;color:var(--bianco);line-heigh
   <nav class="breadcrumb" aria-label="Percorso">
     <a href="/">StelleVere</a>
     <span>›</span>
-    <a href="/{{ categoria_slug }}">{{ cat_seo }}</a>
-    {% if subcat_slug %}
+    <a href="/<%= categoria_slug %>"><%= cat_seo %></a>
+    <% if (subcat_slug) { %>
     <span>›</span>
-    <a href="/{{ categoria_slug }}/{{ subcat_slug }}">{{ subcat.nome if subcat else subcat_slug }}</a>
-    {% endif %}
+    <a href="/<%= categoria_slug %>/<%= subcat_slug %>"><%= subcat ? subcat.nome : subcat_slug %></a>
+    <% } %>
     <span>›</span>
-    <span style="color:var(--testo)">{{ titolo_seo }}</span>
+    <span style="color:var(--testo)"><%= titolo_seo %></span>
   </nav>
 
   <!-- IMMAGINE PRINCIPALE -->
   <div class="lav-hero">
     <div class="lav-hero-bg"></div>
-    <div class="lav-emoji">{{ lavoro.emoji if lavoro else '🔧' }}</div>
+    <div class="lav-emoji"><%= (lavoro && lavoro.emoji) ? lavoro.emoji : '🔧' %></div>
   </div>
 
   <!-- BADGES -->
   <div class="badges">
     <span class="badge badge-v">✓ Lavoro verificato</span>
     <span class="badge badge-s">★★★★★ 5.0</span>
-    <span class="badge badge-g">📍 {{ loc_seo }}</span>
-    <span class="badge badge-g">{{ artigiano.categoria }}</span>
+    <span class="badge badge-g">📍 <%= loc_seo %></span>
+    <span class="badge badge-g"><%= artigiano.categoria %></span>
   </div>
 
   <!-- TITOLO H1 (ottimizzato per Google) -->
-  <h1>{{ titolo_seo }} a {{ loc_seo }}</h1>
+  <h1><%= titolo_seo %> a <%= loc_seo %></h1>
   <div class="loc-tag">
-    <span>👤</span> {{ artigiano.nome }} · {{ artigiano.categoria }} · {{ artigiano.citta }}
+    <span>👤</span> <%= artigiano.nome %> · <%= artigiano.categoria %> · <%= artigiano.citta %>
   </div>
 
   <!-- DESCRIZIONE -->
   <div class="desc-box">
-    {{ lavoro.descrizione if lavoro else 'Lavoro eseguito da ' + artigiano.nome + ', artigiano verificato su StelleVere.' }}
+    <%= lavoro ? lavoro.descrizione : ('Lavoro eseguito da ' + artigiano.nome + ', artigiano verificato su StelleVere.') %>
   </div>
 
   <!-- GALLERIA FOTO -->
-  {% if lavoro and lavoro.immagini %}
+  <% if (lavoro && lavoro.immagini && lavoro.immagini.length) { %>
   <div class="slabel">Foto del lavoro</div>
   <div class="foto-gallery">
-    {% for img in lavoro.immagini %}
+    <% for (const [_imgIdx, img] of lavoro.immagini.entries()) { %>
     <div class="foto-item">
-      <img src="/static/uploads/{{ img.file }}"
-           alt="{{ img.alt }}"
+      <img src="/static/uploads/<%= img.file %>"
+           alt="<%= img.alt %>"
            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
       <div class="foto-placeholder" style="display:none">🔧</div>
       <div class="foto-caption">
-        <div class="foto-posizione">{{ img.posizione }}</div>
-        <div class="foto-caption-text">{{ img.caption }}</div>
+        <div class="foto-posizione"><%= img.posizione %></div>
+        <div class="foto-caption-text"><%= img.caption %></div>
       </div>
     </div>
-    {% endfor %}
+    <% } %>
   </div>
-  <a class="foto-gallery-link" href="/{{ categoria_slug }}/{{ slugify(lavoro.citta) }}/foto-lavori">
+  <a class="foto-gallery-link" href="/<%= categoria_slug %>/<%= slugify(lavoro.citta) %>/foto-lavori">
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m3 9 4-4 4 4 4-6 6 6"/><circle cx="8.5" cy="13.5" r="1.5"/></svg>
-    Vedi tutte le foto {{ artigiano.categoria | lower }} a {{ lavoro.citta }}
+    Vedi tutte le foto <%= artigiano.categoria.toLowerCase() %> a <%= lavoro.citta %>
   </a>
-  {% endif %}
+  <% } %>
 
   <!-- ARTIGIANO -->
   <div class="slabel">Chi ha eseguito il lavoro</div>
   <div class="art-card">
-    <div class="art-av">{{ artigiano.emoji }}</div>
+    <div class="art-av"><%= artigiano.emoji %></div>
     <div>
-      <div class="art-nome">{{ artigiano.nome }}</div>
-      <div class="art-cat">{{ artigiano.categoria }} · {{ artigiano.citta }}</div>
+      <div class="art-nome"><%= artigiano.nome %></div>
+      <div class="art-cat"><%= artigiano.categoria %> · <%= artigiano.citta %></div>
       <div class="art-rating">
         <span class="art-stars">★★★★★</span>
-        <span class="art-num">{{ artigiano.stelle }}</span>
-        <span class="art-rec">· {{ artigiano.recensioni }} recensioni verificate</span>
+        <span class="art-num"><%= artigiano.stelle %></span>
+        <span class="art-rec">· <%= artigiano.recensioni %> recensioni verificate</span>
       </div>
     </div>
   </div>
 
   <!-- RECENSIONE -->
-  {% if lavoro %}
+  <% if (lavoro) { %>
   <div class="slabel">Recensione del cliente</div>
   <div class="rec-box">
     <div class="rec-stars">★★★★★</div>
-    <div class="rec-text">"{{ lavoro.recensione }}"</div>
+    <div class="rec-text">"<%= lavoro.recensione %>"</div>
     <div class="rec-author">
-      <div class="rec-av">{{ lavoro.cliente[0] }}</div>
+      <div class="rec-av"><%= lavoro.cliente[0] %></div>
       <div>
-        <div class="rec-name">{{ lavoro.cliente }}</div>
+        <div class="rec-name"><%= lavoro.cliente %></div>
         <div style="font-size:10px;color:var(--grigio)">Cliente verificato</div>
       </div>
       <div class="rec-badge">★ Stella Vera</div>
     </div>
   </div>
-  {% endif %}
+  <% } %>
 
   <!-- ALTRI LAVORI -->
-  <div class="slabel">Altri lavori di {{ artigiano.nome }}</div>
+  <div class="slabel">Altri lavori di <%= artigiano.nome %></div>
   <div class="altri-grid">
-    {% for l in artigiano.lavori %}
-    {% if l.id != (lavoro.id if lavoro else -1) %}
-    <a class="alt-card" href="/{{ artigiano.categoria.lower() }}/{{ l.titolo.lower().replace(' ','-') }}/{{ artigiano.citta.lower() }}-{{ l.quartiere.lower().replace(' ','-') }}">
-      <div class="alt-img bg{{ loop.index }}">{{ l.emoji }}</div>
+    <% for (const [_li, l] of artigiano.lavori.entries()) { %>
+    <% if (l.id !== (lavoro ? lavoro.id : -1)) { %>
+    <a class="alt-card" href="/<%= artigiano.categoria.toLowerCase() %>/<%= l.titolo.toLowerCase().replace(/ /g, '-') %>/<%= artigiano.citta.toLowerCase() %>-<%= l.quartiere.toLowerCase().replace(/ /g, '-') %>">
+      <div class="alt-img bg<%= (_li + 1) %>"><%= l.emoji %></div>
       <div class="alt-body">
-        <div class="alt-title">{{ l.titolo }}</div>
-        <div class="alt-loc">📍 {{ l.quartiere }}</div>
+        <div class="alt-title"><%= l.titolo %></div>
+        <div class="alt-loc">📍 <%= l.quartiere %></div>
       </div>
     </a>
-    {% endif %}
-    {% endfor %}
+    <% } %>
+    <% } %>
   </div>
 
 </div><!-- end wrap -->
@@ -295,7 +295,7 @@ h1{font-size:clamp(20px,5vw,28px);font-weight:900;color:var(--bianco);line-heigh
       <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.134.558 4.137 1.535 5.874L.057 23.404a.5.5 0 0 0 .61.61l5.488-1.467A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.944 9.944 0 0 1-5.193-1.453l-.37-.22-3.844 1.028 1.044-3.806-.242-.382A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
       Contatta su WhatsApp
     </button>
-    <a class="btn-profilo" href="/scheda/{{ artigiano_slug }}">
+    <a class="btn-profilo" href="/scheda/<%= artigiano_slug %>">
       👤 Vedi profilo
     </a>
   </div>
@@ -303,8 +303,8 @@ h1{font-size:clamp(20px,5vw,28px);font-weight:900;color:var(--bianco);line-heigh
 
 <script>
 function contattaWA() {
-  var tel = "{{ artigiano.telefono }}".replace(/[\s\+\-]/g,'');
-  var nome = "{{ artigiano.nome }}";
+  var tel = "<%= artigiano.telefono %>".replace(/[\s\+\-]/g,'');
+  var nome = "<%= artigiano.nome %>";
   var msg = encodeURIComponent("Ciao " + nome + ", ho visto il tuo lavoro su StelleVere e vorrei un preventivo!");
   window.open("https://wa.me/" + tel + "?text=" + msg, "_blank");
 }

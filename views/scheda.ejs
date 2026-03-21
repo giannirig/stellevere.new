@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ artigiano.nome }} · StelleVere</title>
+<title><%= artigiano.nome %> · StelleVere</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#111111">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -69,25 +69,25 @@ body{background:var(--nero);font-family:'Inter',sans-serif;color:var(--testo);mi
 </div>
 <div class="hero">
   <div class="hero-top">
-    <div class="av">{{ artigiano.emoji }}</div>
+    <div class="av"><%= artigiano.emoji %></div>
     <div>
-      <div class="nome">{{ artigiano.nome }}</div>
-      <div class="cat">{{ artigiano.categoria }} · {{ artigiano.citta }}</div>
+      <div class="nome"><%= artigiano.nome %></div>
+      <div class="cat"><%= artigiano.categoria %> · <%= artigiano.citta %></div>
       <div class="chips">
         <span class="chip chip-v">✓ Verificato</span>
-        <span class="chip chip-s">★ {{ artigiano.stelle }}</span>
-        <span class="chip chip-g">📍 {{ artigiano.citta }}</span>
+        <span class="chip chip-s">★ <%= artigiano.stelle %></span>
+        <span class="chip chip-g">📍 <%= artigiano.citta %></span>
       </div>
     </div>
   </div>
   <div class="rating">
-    <div class="rnum">{{ artigiano.stelle }}</div>
+    <div class="rnum"><%= artigiano.stelle %></div>
     <div>
       <div class="rstars">★★★★★</div>
       <div class="rsub">Stelle vere, non comprate</div>
     </div>
     <div class="rcnt">
-      <strong>{{ artigiano.recensioni }}</strong>
+      <strong><%= artigiano.recensioni %></strong>
       <span>recensioni</span>
     </div>
   </div>
@@ -95,32 +95,32 @@ body{background:var(--nero);font-family:'Inter',sans-serif;color:var(--testo);mi
 <div class="section">
   <div class="slabel">Lavori certificati</div>
   <div class="lgrid">
-    {% for lavoro in artigiano.lavori %}
-    <div class="lcard l{{ loop.index }}">
-      <div class="limg">{{ lavoro.emoji }}</div>
+    <% for (const [_i, lavoro] of artigiano.lavori.entries()) { %>
+    <div class="lcard l<%= (_i + 1) %>">
+      <div class="limg"><%= lavoro.emoji %></div>
       <div class="lbody">
-        <div class="ltitle">{{ lavoro.titolo }}</div>
-        <div class="lmeta">📍 {{ lavoro.quartiere }} · ★★★★★</div>
+        <div class="ltitle"><%= lavoro.titolo %></div>
+        <div class="lmeta">📍 <%= lavoro.quartiere %> · ★★★★★</div>
       </div>
     </div>
-    {% endfor %}
+    <% } %>
   </div>
   <div class="slabel">Recensioni verificate via WhatsApp</div>
-  {% for lavoro in artigiano.lavori %}
+  <% for (const [_i, lavoro] of artigiano.lavori.entries()) { %>
   <div class="rec-box">
     <div class="rec-stars">★★★★★</div>
-    <div class="rec-text">"{{ lavoro.recensione }}"</div>
+    <div class="rec-text">"<%= lavoro.recensione %>"</div>
     <div class="rec-author">
-      <div class="rec-av">{{ lavoro.cliente[0] }}{{ lavoro.cliente.split()[1][0] if lavoro.cliente.split()|length > 1 else '' }}</div>
+      <div class="rec-av"><%= lavoro.cliente[0] %><%= (lavoro.cliente.split(' ')[1] ? lavoro.cliente.split(' ')[1][0] : '') %></div>
       <div>
-        <div class="rec-name">{{ lavoro.cliente }}</div>
+        <div class="rec-name"><%= lavoro.cliente %></div>
         <div class="rec-date">2024–2025</div>
       </div>
       <div class="rec-wa">via WhatsApp</div>
     </div>
   </div>
-  {% endfor %}
+  <% } %>
 </div>
-<a class="btn-add" href="/artigiano/{{ artigiano.id }}/inserisci">➕ Aggiungi lavoro</a>
+<a class="btn-add" href="/artigiano/<%= artigiano.id %>/inserisci">➕ Aggiungi lavoro</a>
 </body>
 </html>
