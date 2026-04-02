@@ -1,0 +1,81 @@
+{
+  "profiles": {
+    "idratest": {
+      "nome": "Idratest",
+      "telefono": "391 156 6400",
+      "sede_legale": "Via Milano, 58, 00199 Roma RM",
+      "website_url": "",
+      "facebook_url": "",
+      "instagram_url": "",
+      "tiktok_url": "",
+      "hours": [
+        {
+          "day": "Lunedì",
+          "closed": false,
+          "morningOpen": "08:00",
+          "morningClose": "13:00",
+          "afternoonOpen": "14:30",
+          "afternoonClose": "18:00",
+          "display": "08:00 - 13:00 / 14:30 - 18:00"
+        },
+        {
+          "day": "Martedì",
+          "closed": false,
+          "morningOpen": "08:00",
+          "morningClose": "13:00",
+          "afternoonOpen": "14:30",
+          "afternoonClose": "18:00",
+          "display": "08:00 - 13:00 / 14:30 - 18:00"
+        },
+        {
+          "day": "Mercoledì",
+          "closed": false,
+          "morningOpen": "08:00",
+          "morningClose": "13:00",
+          "afternoonOpen": "14:30",
+          "afternoonClose": "18:00",
+          "display": "08:00 - 13:00 / 14:30 - 18:00"
+        },
+        {
+          "day": "Giovedì",
+          "closed": false,
+          "morningOpen": "08:00",
+          "morningClose": "13:00",
+          "afternoonOpen": "14:30",
+          "afternoonClose": "18:00",
+          "display": "08:00 - 13:00 / 14:30 - 18:00"
+        },
+        {
+          "day": "Venerdì",
+          "closed": false,
+          "morningOpen": "08:00",
+          "morningClose": "13:00",
+          "afternoonOpen": "14:30",
+          "afternoonClose": "18:00",
+          "display": "08:00 - 13:00 / 14:30 - 18:00"
+        },
+        {
+          "day": "Sabato",
+          "closed": false,
+          "morningOpen": "09:00",
+          "morningClose": "13:00",
+          "afternoonOpen": "",
+          "afternoonClose": "",
+          "display": "09:00 - 13:00"
+        },
+        {
+          "day": "Domenica",
+          "closed": true,
+          "morningOpen": "",
+          "morningClose": "",
+          "afternoonOpen": "",
+          "afternoonClose": "",
+          "display": "Chiuso"
+        }
+      ],
+      "claim_status": "claimed",
+      "descrizione_attivita": "Siamo attivi dal 1996 nel campo della climatizzazione. Installiamo climatizzatori delle micgliorti marche sia monosplit che dual split che multisplit oltre alle pompe di calore.",
+      "internal_email": ""
+    }
+  }
+}

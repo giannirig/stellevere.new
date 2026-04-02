@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><%= pageTitle %></title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <style>
+      :root {
+        --surface: rgba(255, 250, 243, 0.95);
+        --surface-strong: #fffaf4;
+        --ink: #241913;
+        --muted: #69584e;
+        --line: #ead7c3;
+        --accent: #b85b10;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Georgia, serif;
+        color: var(--ink);
+        background: linear-gradient(180deg, #fbf6f0 0%, #f0e2d1 100%);
+      }
+      main {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 14px 12px 48px;
+        display: grid;
+        gap: 14px;
+      }
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        padding: 16px;
+      }
+      .eyebrow {
+        font-size: 12px;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+        color: var(--accent);
+        font-weight: 700;
+      }
+      h1, h2, h3, p { margin: 0; }
+      h1 { font-size: clamp(34px, 7vw, 56px); line-height: 1; }
+      h2 { font-size: clamp(24px, 5vw, 34px); }
+      h3 { font-size: 20px; }
+      p { color: var(--muted); line-height: 1.45; }
+      .stack, .job-choice-grid, .map-layout, .work-grid, .toolbar, .filters-grid, .carousel-shell {
+        display: grid;
+        gap: 12px;
+      }
+      .chips, .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .chip, .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #fff;
+        border: 1px solid var(--line);
+        font-size: 13px;
+        color: var(--muted);
+      }
+      label {
+        display: grid;
+        gap: 6px;
+        font-size: 14px;
+      }
+      input, select, button, a.button-link {
+        width: 100%;
+        padding: 14px 15px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        font: inherit;
+        font-size: 16px;
+        background: #fff;
+        text-decoration: none;
+        color: inherit;
+      }
+      button.primary {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+      }
+      .map-box {
+        min-height: 420px;
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        background: #f0e3d2;
+      }
+      .map-box.expanded {
+        min-height: 74vh;
+      }
+      #category-map {
+        width: 100%;
+        height: 100%;
+        min-height: 420px;
+      }
+      .work-card, .artisan-card {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: var(--surface-strong);
+      }
+      .work-card {
+        padding: 14px;
+      }
+      .artisan-card {
+        padding: 14px;
+        text-decoration: none;
+        color: inherit;
+        display: grid;
+        gap: 8px;
+      }
+      .carousel {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(248px, 86%);
+        gap: 12px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        padding-bottom: 6px;
+      }
+      .carousel .artisan-card {
+        scroll-snap-align: start;
+      }
+      .carousel::-webkit-scrollbar {
+        height: 8px;
+      }
+      .carousel::-webkit-scrollbar-thumb {
+        background: #d7b89a;
+        border-radius: 999px;
+      }
+      a { color: inherit; }
+      @media (min-width: 760px) {
+        .job-choice-grid { grid-template-columns: 1.1fr .95fr auto; align-items: end; }
+        .toolbar { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .filters-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .map-layout { grid-template-columns: 1.06fr .94fr; align-items: start; }
+        .carousel { grid-auto-columns: minmax(260px, 32%); }
+      }
+      @media (min-width: 900px) {
+        .work-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .carousel { grid-auto-columns: minmax(260px, 24%); }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="panel">
+        <div class="stack">
+          <div class="eyebrow">Categoria</div>
+          <h1><%= categoriaLabel %></h1>
+          <p>Prima scegli il tipo di lavoro, poi guarda la mappa dei lavori già svolti nella tua zona. Più sotto puoi ampliare o restringere la ricerca per regione, provincia, città e quartiere.</p>
+          <div class="chips">
+            <span class="chip">Lavori in mappa: <strong style="margin-left:6px;"><%= lavori.length %></strong></span>
+            <span class="chip">Attività trovate: <strong style="margin-left:6px;"><%= totalArtigiani %></strong></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="stack">
+          <div>
+            <div class="eyebrow">Primo Passo</div>
+            <h2>Che lavoro devi fare?</h2>
+          </div>
+
+          <form method="get" class="stack" id="job-choice-form">
+            <input type="hidden" name="regione" value="<%= filters.regione %>" />
+            <input type="hidden" name="provincia" value="<%= filters.provincia %>" />
+            <input type="hidden" name="citta" value="<%= filters.citta %>" />
+            <input type="hidden" name="quartiere" value="<%= filters.quartiere %>" />
+
+            <div class="job-choice-grid">
+              <label>
+                Cerca un lavoro specifico
+                <input type="text" id="intervento-search" list="interventi-list" placeholder="Es. sostituzione rubinetto, box doccia, perdita acqua" value="<%= (availableInterventi.find((item) => item.slug === selectedIntervento) || {}).label || '' %>" />
+                <datalist id="interventi-list">
+                  <% availableInterventi.forEach(function(item) { %>
+                    <option value="<%= item.label %>"></option>
+                  <% }) %>
+                </datalist>
+              </label>
+
+              <label>
+                Oppure scegli dall'elenco
+                <select name="intervento" id="intervento-select">
+                  <option value="">Tutti i lavori di <%= categoriaLabel.toLowerCase() %></option>
+                  <% availableInterventi.forEach(function(item) { %>
+                    <option value="<%= item.slug %>" <%= selectedIntervento === item.slug ? 'selected' : '' %>><%= item.label %></option>
+                  <% }) %>
+                </select>
+              </label>
+
+              <label>
+                Avvia la ricerca
+                <button class="primary" type="submit">Mostra sulla mappa</button>
+              </label>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="stack">
+          <div>
+            <div class="eyebrow">Mappa Lavori</div>
+            <h2>Lavori già svolti nella tua zona</h2>
+            <p>Puoi espandere la cartina e muoverti liberamente per cercare in un’area più ampia quando i risultati sono pochi o non in linea con le aspettative.</p>
+          </div>
+
+          <div class="toolbar">
+            <button type="button" id="expand-map">Espandi la cartina</button>
+            <button type="button" id="use-my-zone">Usa la mia zona</button>
+            <a class="button-link" href="<%= filters.regione ? '/' + categoriaSlug + '?regione=' + encodeURIComponent(filters.regione) : '/' + categoriaSlug %>">Mostra altre zone</a>
+          </div>
+
+          <div class="map-layout">
+            <div class="map-box" id="map-box">
+              <div id="category-map"></div>
+            </div>
+
+            <div class="stack">
+              <div>
+                <div class="eyebrow">Risultati</div>
+                <h2>Lavori visibili in mappa</h2>
+              </div>
+              <% if (!lavori.length) { %>
+                <div class="work-card">
+                  <p>Non ci sono ancora lavori pubblicati con questi filtri. Puoi allargare la ricerca o scegliere un altro tipo di intervento.</p>
+                </div>
+              <% } else { %>
+                <div class="work-grid">
+                  <% lavori.forEach(function(lavoro) { %>
+                    <article class="work-card">
+                      <div class="stack">
+                        <strong><%= lavoro.titolo %></strong>
+                        <div class="meta">
+                          <span class="badge"><%= lavoro.tipo_nome || lavoro.titolo %></span>
+                          <% if (lavoro.citta) { %><span class="badge"><%= lavoro.citta %></span><% } %>
+                          <% if (lavoro.quartiere) { %><span class="badge"><%= lavoro.quartiere %></span><% } %>
+                        </div>
+                        <p><%= lavoro.artigiano_nome %></p>
+                        <div class="toolbar">
+                          <a class="button-link" href="<%= lavoro.detail_path %>">Apri lavoro</a>
+                          <a class="button-link" href="/artigiano/<%= lavoro.artigiano_slug %>">Apri artigiano</a>
+                        </div>
+                      </div>
+                    </article>
+                  <% }) %>
+                </div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="stack">
+          <div>
+            <div class="eyebrow">Filtri Zona</div>
+            <h2>Regione, provincia, città e quartiere</h2>
+          </div>
+
+          <form method="get" class="stack">
+            <input type="hidden" name="intervento" value="<%= selectedIntervento %>" />
+            <div class="filters-grid">
+              <label>
+                Regione
+                <select name="regione">
+                  <option value="">Tutte le regioni</option>
+                  <% availableRegions.forEach(function(region) { %>
+                    <option value="<%= region %>" <%= filters.regione === region ? 'selected' : '' %>><%= region %></option>
+                  <% }) %>
+                </select>
+              </label>
+
+              <label>
+                Provincia
+                <select name="provincia">
+                  <option value="">Tutte le province</option>
+                  <% availableProvinces.forEach(function(province) { %>
+                    <option value="<%= province %>" <%= filters.provincia === province ? 'selected' : '' %>><%= province %></option>
+                  <% }) %>
+                </select>
+              </label>
+
+              <label>
+                Città
+                <select name="citta">
+                  <option value="">Tutte le città</option>
+                  <% availableCities.forEach(function(city) { %>
+                    <option value="<%= city %>" <%= filters.citta === city ? 'selected' : '' %>><%= city %></option>
+                  <% }) %>
+                </select>
+              </label>
+
+              <label>
+                Quartiere
+                <select name="quartiere">
+                  <option value="">Tutti i quartieri</option>
+                  <% availableQuartieri.forEach(function(quartiere) { %>
+                    <option value="<%= quartiere %>" <%= filters.quartiere === quartiere ? 'selected' : '' %>><%= quartiere %></option>
+                  <% }) %>
+                </select>
+              </label>
+            </div>
+
+            <div class="toolbar">
+              <button class="primary" type="submit">Aggiorna la zona</button>
+              <button type="button" id="use-my-zone-secondary">Usa la mia zona</button>
+              <a class="button-link" href="<%= filters.regione ? '/' + categoriaSlug + '?regione=' + encodeURIComponent(filters.regione) : '/' + categoriaSlug %>">Azzera i filtri</a>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <% if (featuredArtigiani && featuredArtigiani.length) { %>
+        <section class="panel">
+          <div class="carousel-shell">
+            <div>
+              <div class="eyebrow">Artigiani In Evidenza</div>
+              <h2>Più vicini e più rilevanti per questa ricerca</h2>
+              <p>Nel carosello compaiono prima gli artigiani più vicini alla zona cercata. A parità di zona hanno priorità i profili con maggiore visibilità su StelleVere, poi valutazione e numero recensioni.</p>
+            </div>
+            <div class="carousel">
+              <% featuredArtigiani.forEach(function(artigiano) { %>
+                <a class="artisan-card" href="/artigiano/<%= artigiano.slug %>">
+                  <strong><%= artigiano.nome %></strong>
+                  <div class="meta">
+                    <% if (artigiano.citta_principale) { %><span class="badge"><%= artigiano.citta_principale %></span><% } %>
+                    <% if (artigiano.quartiere_principale) { %><span class="badge"><%= artigiano.quartiere_principale %></span><% } %>
+                  </div>
+                  <div class="meta">
+                    <span><%= artigiano.telefono %></span>
+                  </div>
+                  <div class="meta">
+                    <span class="badge">Valutazione <%= Number(artigiano.rating_avg || 0).toFixed(1) %></span>
+                    <span class="badge"><%= Number(artigiano.reviews_count || 0) %> recensioni</span>
+                  </div>
+                </a>
+              <% }) %>
+            </div>
+          </div>
+        </section>
+      <% } %>
+    </main>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script>
+      (function () {
+        const jobForm = document.getElementById('job-choice-form');
+        const searchInput = document.getElementById('intervento-search');
+        const selectInput = document.getElementById('intervento-select');
+        const primaryGeoButton = document.getElementById('use-my-zone');
+        const secondaryGeoButton = document.getElementById('use-my-zone-secondary');
+        const expandButton = document.getElementById('expand-map');
+        const mapBox = document.getElementById('map-box');
+        const regionSelect = document.querySelector('select[name="regione"]');
+        const provinceSelect = document.querySelector('select[name="provincia"]');
+        const citySelect = document.querySelector('select[name="citta"]');
+        const quartiereSelect = document.querySelector('select[name="quartiere"]');
+
+        const interventi = <%- JSON.stringify(availableInterventi) %>;
+        const geoTree = <%- JSON.stringify(
+          regions.map((region) => ({
+            nome: region.nome,
+            provinces: region.provinces.map((province) => ({
+              nome: province.nome,
+              cities: province.cities.map((city) => ({
+                nome: city.nome,
+                quartieri: city.quartieri || [],
+              })),
+            })),
+          }))
+        ) %>;
+        const knownCities = <%- JSON.stringify(
+          regions.flatMap((region) =>
+            region.provinces.flatMap((province) =>
+              province.cities
+                .filter((city) => city.coords && Number.isFinite(city.coords.lat) && Number.isFinite(city.coords.lng))
+                .map((city) => ({
+                  nome: city.nome,
+                  provincia: province.nome,
+                  regione: region.nome,
+                  lat: city.coords.lat,
+                  lng: city.coords.lng,
+                }))
+            )
+          )
+        ) %>;
+        const works = <%- JSON.stringify(
+          lavori.map((lavoro) => ({
+            titolo: lavoro.titolo,
+            artigiano_nome: lavoro.artigiano_nome,
+            detail_path: lavoro.detail_path,
+            citta: lavoro.citta,
+            quartiere: lavoro.quartiere,
+            tipo_nome: lavoro.tipo_nome,
+            lat: lavoro.map_lat,
+            lng: lavoro.map_lng,
+          }))
+        ) %>;
+
+        function normalizeText(value) {
+          return String(value || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .trim();
+        }
+
+        function syncInterventoSelection() {
+          if (!searchInput || !selectInput) return;
+          const query = normalizeText(searchInput.value);
+          if (!query) return;
+          const exact = interventi.find((item) => normalizeText(item.label) === query);
+          if (exact) {
+            selectInput.value = exact.slug;
+            return;
+          }
+          const partial = interventi.find((item) => normalizeText(item.label).includes(query));
+          if (partial) selectInput.value = partial.slug;
+        }
+
+        if (jobForm) {
+          jobForm.addEventListener('submit', syncInterventoSelection);
+        }
+
+        function setOptions(select, values, placeholder, selectedValue) {
+          if (!select) return;
+          const current = String(selectedValue || '');
+          select.innerHTML = '';
+
+          const placeholderOption = document.createElement('option');
+          placeholderOption.value = '';
+          placeholderOption.textContent = placeholder;
+          select.appendChild(placeholderOption);
+
+          values.forEach((value) => {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = value;
+            if (current && current === value) option.selected = true;
+            select.appendChild(option);
+          });
+        }
+
+        function getProvinceNodes(regionName) {
+          const region = geoTree.find((item) => item.nome === regionName);
+          return region ? region.provinces : [];
+        }
+
+        function getCityNodes(regionName, provinceName) {
+          const provinces = getProvinceNodes(regionName);
+          const province = provinces.find((item) => item.nome === provinceName);
+          return province ? province.cities : [];
+        }
+
+        function refreshGeoSelects(trigger) {
+          if (!regionSelect || !provinceSelect || !citySelect || !quartiereSelect) return;
+
+          const selectedRegion = regionSelect.value;
+          const provinceNodes = selectedRegion ? getProvinceNodes(selectedRegion) : [];
+          const provinceValues = provinceNodes.map((item) => item.nome).sort((a, b) => a.localeCompare(b, 'it'));
+
+          if (trigger === 'region' && !provinceValues.includes(provinceSelect.value)) {
+            provinceSelect.value = '';
+            citySelect.value = '';
+            quartiereSelect.value = '';
+          }
+          setOptions(provinceSelect, provinceValues, 'Tutte le province', provinceSelect.value);
+
+          const selectedProvince = provinceSelect.value;
+          const cityNodes = selectedRegion && selectedProvince ? getCityNodes(selectedRegion, selectedProvince) : [];
+          const cityValues = cityNodes.map((item) => item.nome).sort((a, b) => a.localeCompare(b, 'it'));
+
+          if ((trigger === 'region' || trigger === 'province') && !cityValues.includes(citySelect.value)) {
+            citySelect.value = '';
+            quartiereSelect.value = '';
+          }
+          setOptions(citySelect, cityValues, 'Tutte le città', citySelect.value);
+
+          const selectedCity = citySelect.value;
+          const quartiereValues = selectedRegion && selectedProvince && selectedCity
+            ? (cityNodes.find((item) => item.nome === selectedCity)?.quartieri || []).slice().sort((a, b) => a.localeCompare(b, 'it'))
+            : [];
+
+          if ((trigger === 'region' || trigger === 'province' || trigger === 'city') && !quartiereValues.includes(quartiereSelect.value)) {
+            quartiereSelect.value = '';
+          }
+          setOptions(quartiereSelect, quartiereValues, 'Tutti i quartieri', quartiereSelect.value);
+        }
+
+        if (regionSelect && provinceSelect && citySelect && quartiereSelect) {
+          regionSelect.addEventListener('change', function () {
+            refreshGeoSelects('region');
+          });
+          provinceSelect.addEventListener('change', function () {
+            refreshGeoSelects('province');
+          });
+          citySelect.addEventListener('change', function () {
+            refreshGeoSelects('city');
+          });
+
+          refreshGeoSelects('init');
+        }
+
+        function distanceKm(aLat, aLng, bLat, bLng) {
+          const toRad = (value) => value * Math.PI / 180;
+          const R = 6371;
+          const dLat = toRad(bLat - aLat);
+          const dLng = toRad(bLng - aLng);
+          const aa = Math.sin(dLat / 2) ** 2 +
+            Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLng / 2) ** 2;
+          return 2 * R * Math.atan2(Math.sqrt(aa), Math.sqrt(1 - aa));
+        }
+
+        function redirectToNearestCity(position) {
+          if (!knownCities.length) return;
+          const closest = knownCities
+            .map((city) => ({
+              ...city,
+              distance: distanceKm(position.coords.latitude, position.coords.longitude, city.lat, city.lng),
+            }))
+            .sort((a, b) => a.distance - b.distance)[0];
+
+          if (!closest) return;
+          const url = new URL(window.location.href);
+          url.searchParams.set('regione', closest.regione);
+          url.searchParams.set('provincia', closest.provincia);
+          url.searchParams.set('citta', closest.nome);
+          window.location.href = url.toString();
+        }
+
+        function askForGeo() {
+          if (!navigator.geolocation) return;
+          navigator.geolocation.getCurrentPosition(redirectToNearestCity, function () {});
+        }
+
+        if (primaryGeoButton) primaryGeoButton.addEventListener('click', askForGeo);
+        if (secondaryGeoButton) secondaryGeoButton.addEventListener('click', askForGeo);
+
+        const url = new URL(window.location.href);
+        if (!url.searchParams.get('citta') && !url.searchParams.get('provincia') && !url.searchParams.get('regione') && sessionStorage.getItem('stellevere-geo-<%= categoriaSlug %>') !== 'done') {
+          sessionStorage.setItem('stellevere-geo-<%= categoriaSlug %>', 'done');
+          askForGeo();
+        }
+
+        if (expandButton && mapBox) {
+          expandButton.addEventListener('click', function () {
+            mapBox.classList.toggle('expanded');
+            expandButton.textContent = mapBox.classList.contains('expanded') ? 'Riduci la cartina' : 'Espandi la cartina';
+            if (window.categoryMap) window.categoryMap.invalidateSize();
+          });
+        }
+
+        const points = works.filter((item) => Number.isFinite(Number(item.lat)) && Number.isFinite(Number(item.lng)));
+        if (!points.length) return;
+
+        const map = L.map('category-map', { scrollWheelZoom: true });
+        window.categoryMap = map;
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        const bounds = [];
+        points.forEach((item) => {
+          const lat = Number(item.lat);
+          const lng = Number(item.lng);
+          bounds.push([lat, lng]);
+          L.marker([lat, lng]).addTo(map).bindPopup(
+            '<strong>' + item.titolo + '</strong><br />' +
+            (item.tipo_nome || '') + '<br />' +
+            (item.artigiano_nome || '') + '<br />' +
+            [item.citta, item.quartiere].filter(Boolean).join(' · ') + '<br />' +
+            '<a href="' + item.detail_path + '">Apri lavoro</a>'
+          );
+        });
+
+        if (bounds.length === 1) {
+          map.setView(bounds[0], 13);
+        } else {
+          map.fitBounds(bounds, { padding: [28, 28] });
+        }
+      })();
+    </script>
+  </body>
+</html>

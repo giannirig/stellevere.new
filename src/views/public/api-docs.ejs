@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex,follow" />
+    <title>API REST | StelleVere</title>
+    <style>
+      :root {
+        --bg: #f7efe3;
+        --surface: #fffaf4;
+        --line: #e7d8c8;
+        --ink: #241d18;
+        --muted: #6e6258;
+        --accent: #bc5d08;
+        --ok: #157347;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Georgia, serif;
+        background: linear-gradient(180deg, #fcf7f1 0%, #efe2d1 100%);
+        color: var(--ink);
+      }
+      main {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 24px 16px 56px;
+        display: grid;
+        gap: 18px;
+      }
+      .panel {
+        background: rgba(255, 250, 244, 0.95);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        padding: 22px;
+      }
+      .eyebrow {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: .12em;
+        color: var(--accent);
+        font-weight: 700;
+      }
+      h1, h2, h3, p, pre { margin: 0; }
+      .muted { color: var(--muted); }
+      .row, .status-row { display: flex; flex-wrap: wrap; gap: 10px; }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 8px 12px;
+        background: #fff;
+        font-size: 14px;
+      }
+      .pill.ok { color: var(--ok); }
+      .grid {
+        display: grid;
+        gap: 14px;
+      }
+      .endpoint {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: #fff;
+        padding: 16px;
+        display: grid;
+        gap: 8px;
+      }
+      .endpoint-top {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+      .method {
+        min-width: 58px;
+        text-align: center;
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #fff;
+        background: #4b7bec;
+      }
+      .method.post { background: #b85b10; }
+      code, pre {
+        font-family: Consolas, monospace;
+        font-size: 13px;
+      }
+      pre {
+        background: #211812;
+        color: #f8eee2;
+        border-radius: 16px;
+        padding: 14px;
+        overflow: auto;
+        line-height: 1.45;
+      }
+      a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 700;
+      }
+      .links {
+        display: grid;
+        gap: 8px;
+      }
+      .copy-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .copy-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--accent);
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      @media (min-width: 860px) {
+        .grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="panel">
+        <div class="eyebrow">API REST V2</div>
+        <h1 style="margin-top: 8px;">Documentazione API StelleVere</h1>
+        <p class="muted" style="margin-top: 10px;">Endpoint JSON per artigiani, lavori, recensioni e integrazioni esterne. Questa pagina serve come riferimento rapido nel browser.</p>
+        <div class="status-row" style="margin-top: 14px;">
+          <span class="pill">Base URL: <strong style="margin-left: 6px;"><%= baseUrl %></strong></span>
+          <span class="pill <%= writeKeyConfigured ? 'ok' : '' %>">API write key: <strong style="margin-left: 6px;"><%= writeKeyConfigured ? 'configurata' : 'non configurata' %></strong></span>
+          <span class="pill <%= adminKeyConfigured ? 'ok' : '' %>">API admin key: <strong style="margin-left: 6px;"><%= adminKeyConfigured ? 'configurata' : 'non configurata' %></strong></span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="eyebrow">Endpoint</div>
+        <div class="grid" style="margin-top: 12px;">
+          <% endpoints.forEach(function(endpoint) { %>
+            <article class="endpoint">
+              <div class="endpoint-top">
+                <span class="method <%= endpoint.method === 'POST' ? 'post' : '' %>"><%= endpoint.method %></span>
+                <code><%= endpoint.path %></code>
+              </div>
+              <p class="muted"><%= endpoint.description %></p>
+            </article>
+          <% }) %>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="eyebrow">Esempi Rapidi</div>
+        <div class="links" style="margin-top: 12px;">
+          <a href="<%= baseUrl %>/api/artigiani" target="_blank" rel="noopener">Apri lista artigiani JSON</a>
+          <a href="<%= baseUrl %>/api/artigiani/idratest" target="_blank" rel="noopener">Apri dettaglio artigiano JSON</a>
+          <a href="<%= baseUrl %>/api/lavori?categoria=idraulica&citta=roma" target="_blank" rel="noopener">Apri lista lavori JSON</a>
+          <a href="<%= baseUrl %>/api/recensioni" target="_blank" rel="noopener">Apri lista recensioni JSON</a>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="eyebrow">Autenticazione</div>
+        <p class="muted" style="margin-top: 8px;">Gli endpoint di lettura sono pubblici. Gli endpoint di scrittura accettano la chiave via header <code>x-api-key</code> oppure come parametro <code>api_key</code>.</p>
+        <pre id="curl-create-job" style="margin-top: 12px;">curl -X POST "<%= baseUrl %>/api/lavori" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_WRITE_KEY" \
+  -d '{
+    "artigiano_slug": "idratest",
+    "categoria_slug": "idraulica",
+    "titolo": "Sostituzione rubinetto cucina",
+    "descrizione": "Sostituzione miscelatore cucina e verifica finale della tenuta.",
+    "citta": "Roma",
+    "quartiere": "Salario",
+    "lat": 41.9326,
+    "lng": 12.4994,
+    "immagini": [{ "src": "data:image/jpeg;base64,...", "name": "rubinetto-1.jpg" }]
+  }'</pre>
+        <div class="copy-row">
+          <button class="copy-btn" type="button" data-copy-target="curl-create-job">Copia curl creazione lavoro</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="eyebrow">Esempio Recensione</div>
+        <pre id="curl-create-review" style="margin-top: 12px;">curl -X POST "<%= baseUrl %>/api/recensioni" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_WRITE_KEY" \
+  -d '{
+    "artigiano_slug": "idratest",
+    "lavoro_slug": "sostituzione-caldaia-a-condensazione-roma-1774339190198",
+    "cliente_nome": "Mario Rossi",
+    "voto": 5,
+    "testo": "Lavoro preciso, puntuale e pulito."
+  }'</pre>
+        <div class="copy-row">
+          <button class="copy-btn" type="button" data-copy-target="curl-create-review">Copia curl recensione</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="eyebrow">Documentazione File</div>
+        <div class="links" style="margin-top: 12px;">
+          <a href="<%= baseUrl %>/health" target="_blank" rel="noopener">Health check</a>
+          <span class="muted">File locale docs: <code>docs/api-rest.md</code></span>
+          <span class="muted">File locale esempi curl: <code>docs/curl-examples.md</code></span>
+          <span class="muted">File locale Postman: <code>docs/postman-stellevere-v2.collection.json</code></span>
+        </div>
+      </section>
+    </main>
+    <script>
+      document.querySelectorAll('[data-copy-target]').forEach(function (button) {
+        button.addEventListener('click', async function () {
+          var target = document.getElementById(button.getAttribute('data-copy-target'));
+          if (!target) return;
+          try {
+            await navigator.clipboard.writeText(target.textContent);
+            var original = button.textContent;
+            button.textContent = 'Copiato';
+            setTimeout(function () {
+              button.textContent = original;
+            }, 1800);
+          } catch (_) {
+            var range = document.createRange();
+            range.selectNodeContents(target);
+            var selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

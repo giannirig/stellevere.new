@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>StelleVere.it | Trova l'artigiano più giusto per te</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <style>
+      :root {
+        --bg: #111317;
+        --surface: rgba(26, 30, 36, 0.95);
+        --surface-strong: #20252c;
+        --ink: #f2ece5;
+        --muted: #b1a79a;
+        --line: #343b45;
+        --accent: #b86a2f;
+        --accent-dark: #d48a53;
+        --trust: #7f8d99;
+        --soft: #2a211c;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Georgia, serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(184, 106, 47, 0.16), transparent 24%),
+          radial-gradient(circle at top right, rgba(212, 138, 83, 0.08), transparent 22%),
+          linear-gradient(180deg, #111317 0%, #171b21 100%);
+      }
+      main {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 14px 12px 54px;
+        display: grid;
+        gap: 14px;
+      }
+      h1, h2, h3, p { margin: 0; }
+      h1 { font-size: clamp(34px, 9vw, 68px); line-height: .98; }
+      h2 { font-size: clamp(28px, 6vw, 42px); line-height: 1.02; }
+      h3 { font-size: 20px; line-height: 1.1; }
+      p { color: var(--muted); line-height: 1.45; }
+      a { color: inherit; }
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 18px;
+        box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
+        backdrop-filter: blur(10px);
+      }
+      .eyebrow {
+        font-size: 12px;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .hero {
+        position: relative;
+        overflow: hidden;
+        background:
+          linear-gradient(145deg, rgba(24, 28, 34, 0.98), rgba(34, 26, 22, 0.98)),
+          var(--surface);
+      }
+      .hero::after {
+        content: "";
+        position: absolute;
+        inset: auto -36px -60px auto;
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(184, 106, 47, 0.22), transparent 70%);
+      }
+      .hero-grid, .mini-grid, .proof-grid, .icon-grid { display: grid; gap: 14px; }
+      .info-grid, .artisans-grid { display: grid; gap: 14px; }
+      .search-results-grid { display: grid; gap: 14px; }
+      .hero-copy, .hero-side, .stack { display: grid; gap: 12px; }
+      .hero-copy { order: 2; }
+      .hero-side { order: 1; }
+      .icon-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .hero-copy p { font-size: 17px; }
+      .search-box {
+        background: rgba(19, 23, 28, 0.92);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 14px;
+        display: grid;
+        gap: 12px;
+      }
+      .search-box strong { font-size: 22px; }
+      .search-grid { display: grid; gap: 10px; }
+      label {
+        display: grid;
+        gap: 6px;
+        font-size: 14px;
+        color: var(--ink);
+      }
+      input {
+        width: 100%;
+        padding: 15px 16px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        font: inherit;
+        font-size: 16px;
+        background: #13171c;
+        color: var(--ink);
+      }
+      .cta, .ghost {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 15px 18px;
+        border-radius: 999px;
+        font: inherit;
+        font-size: 16px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .cta {
+        background: linear-gradient(180deg, #c4793d 0%, #a85f28 100%);
+        color: #fff;
+        border: 0;
+        box-shadow: 0 14px 24px rgba(184, 106, 47, 0.22);
+      }
+      .ghost {
+        background: #232931;
+        border: 1px solid var(--line);
+        color: var(--accent-dark);
+      }
+      .pill-row { display: flex; flex-wrap: wrap; gap: 8px; }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 8px 12px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--line);
+        font-size: 14px;
+      }
+      .category-link, .info-card, .artisan-card, .review-card, .work-card {
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: var(--surface-strong);
+      }
+      .icon-card {
+        text-decoration: none;
+        color: inherit;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: rgba(255,255,255,0.04);
+        padding: 10px 8px;
+        display: grid;
+        gap: 6px;
+        justify-items: center;
+        text-align: center;
+      }
+      .categories-panel {
+        background:
+          linear-gradient(145deg, rgba(28,33,40,0.98), rgba(40,30,24,0.94)),
+          var(--surface);
+        padding: 14px;
+      }
+      .categories-panel h2 {
+        color: var(--accent-dark);
+        font-size: clamp(22px, 4.8vw, 32px);
+      }
+      .categories-panel .stack {
+        gap: 10px;
+      }
+      .icon-mark {
+        width: 58px;
+        height: 58px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(145deg, #232931, #2f261f);
+        border: 1px solid #4b3a2d;
+        font-size: 28px;
+      }
+      .icon-card strong {
+        font-size: 14px;
+        color: var(--accent-dark);
+      }
+      #search-map {
+        min-height: 360px;
+        border-radius: 22px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+      }
+      .search-work-card {
+        text-decoration: none;
+        color: inherit;
+        padding: 16px;
+        display: grid;
+        gap: 10px;
+      }
+      .category-link {
+        text-decoration: none;
+        padding: 14px;
+        display: grid;
+        gap: 6px;
+      }
+      .category-link span {
+        color: var(--accent-dark);
+        font-weight: 700;
+      }
+      .info-card, .review-card, .work-card { padding: 16px; }
+      .artisan-card {
+        text-decoration: none;
+        color: inherit;
+        overflow: hidden;
+      }
+      .artisan-body { padding: 16px; display: grid; gap: 10px; }
+      .artisans-grid.carousel {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(260px, 86%);
+        overflow-x: auto;
+        padding-bottom: 8px;
+        scrollbar-width: none;
+      }
+      .artisans-grid.carousel::-webkit-scrollbar { display: none; }
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .mini-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .claim-box {
+        background: linear-gradient(145deg, rgba(23, 79, 90, 0.94), rgba(33, 82, 92, 0.86));
+        color: #fff;
+      }
+      .claim-box p { color: rgba(255,255,255,0.82); }
+      .claim-box .eyebrow { color: #f3d2b7; }
+      .claim-box .cta { background: #fff; color: var(--trust); box-shadow: none; }
+      .featured-panel {
+        background: linear-gradient(145deg, rgba(23, 79, 90, 0.94), rgba(33, 82, 92, 0.86));
+        color: #fff;
+      }
+      .featured-panel p { color: rgba(255,255,255,0.82); }
+      .featured-artisans-title {
+        color: #f3d2b7;
+        font-size: clamp(20px, 4.2vw, 28px);
+        line-height: 1.1;
+      }
+      .site-footer {
+        margin: 10px auto 0;
+        max-width: 1180px;
+        padding: 0 12px 40px;
+      }
+      .footer-grid {
+        display: grid;
+        gap: 14px;
+      }
+      .footer-col {
+        display: grid;
+        gap: 10px;
+      }
+      .footer-col strong {
+        color: var(--ink);
+        font-size: 16px;
+      }
+      .footer-links {
+        display: grid;
+        gap: 8px;
+      }
+      .footer-links a {
+        color: var(--muted);
+        text-decoration: none;
+      }
+      .footer-links a:hover {
+        color: var(--ink);
+      }
+      .footer-note {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .note { font-size: 13px; color: var(--muted); }
+      @media (min-width: 760px) {
+        main { padding: 24px 18px 70px; gap: 18px; }
+        .panel { padding: 24px; }
+        .hero-grid { grid-template-columns: 1fr; align-items: start; }
+        .search-grid { grid-template-columns: 1.3fr .7fr auto; align-items: end; }
+        .cta, .ghost { width: auto; }
+        .icon-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+        .mini-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .info-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .artisans-grid:not(.carousel) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .proof-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .search-results-grid { grid-template-columns: 1.05fr .95fr; align-items: start; }
+        .artisans-grid.carousel { grid-auto-columns: minmax(280px, 31%); }
+        .footer-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      }
+    </style>
+  </head>
+  <body>
+    <%
+      const topCategories = [
+        { icon: '🔧', label: 'Idraulici', href: '/idraulica' },
+        { icon: '💡', label: 'Elettricisti', href: '/elettricisti' },
+        { icon: '🏠', label: 'Imbianchini', href: '/imbianchini' },
+        { icon: '🪵', label: 'Falegnami', href: '/falegnami' },
+        { icon: '🧱', label: 'Muratori', href: '/muratori' },
+        { icon: '❄️', label: 'Climatizzazione', href: '/climatizzazione' },
+        { icon: '🔥', label: 'Caldaie', href: '/caldaie' },
+        { icon: '🪟', label: 'Serramentisti', href: '/serramentisti' },
+        { icon: '🔐', label: 'Fabbri', href: '/fabbri' },
+        { icon: '🌿', label: 'Giardinieri', href: '/giardinieri' }
+      ];
+    %>
+    <main>
+      <section class="panel hero">
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <div class="eyebrow">StelleVere.it</div>
+            <h1>Trova l'artigiano più giusto per te</h1>
+            <p>Confronta lavori pubblicati, recensioni specifiche e presenza locale reale. Su StelleVere vedi chi ha già fatto interventi simili a quello che ti serve.</p>
+            <div class="pill-row">
+              <span class="pill">Solo aziende artigiane con partita IVA</span>
+            </div>
+          </div>
+
+          <div class="hero-side">
+            <form class="search-box" method="get" action="/">
+              <div class="eyebrow">Ricerca</div>
+              <strong>Che tipo di lavoro hai bisogno?</strong>
+              <div class="search-grid">
+                <label>
+                  Intervento richiesto
+                  <input name="q" value="<%= searchState.q %>" placeholder="Es. sostituzione caldaia, perdita acqua, impianto bagno" />
+                </label>
+                <label>
+                  Città
+                  <input name="citta" value="<%= searchState.citta %>" placeholder="Es. Roma" />
+                </label>
+                <button class="cta" type="submit">Cerca</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <% if ((searchState.q || searchState.citta) && searchWorks.length) { %>
+        <section class="panel">
+          <div class="stack">
+            <div>
+              <div class="eyebrow">Mappa Dei Lavori</div>
+              <h2>Lavori simili nella zona richiesta</h2>
+              <p>Clicca sul lavoro o sul pin: si apre prima il dettaglio del lavoro e da lì puoi vedere la scheda dell'artigiano che lo ha realizzato.</p>
+            </div>
+            <div class="search-results-grid">
+              <div id="search-map"></div>
+              <div class="stack">
+                <% searchWorks.forEach(function(lavoro) { %>
+                  <a class="category-link search-work-card" href="<%= lavoro.detail_path %>">
+                    <span><%= lavoro.titolo %></span>
+                    <p><%= lavoro.artigiano_nome %> · <%= lavoro.citta %><%= lavoro.quartiere ? ' · ' + lavoro.quartiere : '' %></p>
+                    <div class="meta">
+                      <span>Valutazione: <%= Number(lavoro.rating_avg || 0).toFixed(1) %></span>
+                      <% if (lavoro.map_is_approximate) { %><span>Zona approssimativa</span><% } %>
+                    </div>
+                  </a>
+                <% }) %>
+              </div>
+            </div>
+          </div>
+        </section>
+      <% } else if ((searchState.q || searchState.citta) && fallbackArtigiani.length) { %>
+        <section class="panel">
+          <div class="stack">
+            <div>
+              <div class="eyebrow">Risultati Ricerca</div>
+              <h2>Nessun lavoro con un titolo simile è stato pubblicato per ora</h2>
+              <% if (searchIntent && searchIntent.inferredCategoryLabel) { %>
+                <p>Abbiamo interpretato la richiesta come <strong><%= searchIntent.inferredCategoryLabel %></strong>. Anche se nessun artigiano ha ancora pubblicato lavori con un titolo simile, ecco gli artigiani della tua zona che potrebbero essere adatti a te.</p>
+              <% } else { %>
+                <p>Non ci sono ancora lavori pubblicati con un titolo simile, ma qui sotto trovi comunque gli artigiani della zona che potrebbero essere adatti alla tua richiesta.</p>
+              <% } %>
+            </div>
+            <div class="search-results-grid">
+              <div id="search-map"></div>
+              <div class="stack">
+                <% fallbackArtigiani.forEach(function(artigiano) { %>
+                  <a class="category-link search-work-card" href="/artigiano/<%= artigiano.slug %>">
+                    <span><%= artigiano.nome %></span>
+                    <p><%= artigiano.categoria_nome %> · <%= artigiano.citta_principale || 'Città da completare' %></p>
+                    <div class="meta">
+                      <span>Valutazione: <%= Number(artigiano.rating_avg || 0).toFixed(1) %></span>
+                      <span>Recensioni: <%= artigiano.reviews_count || 0 %></span>
+                      <span>Telefono: <%= artigiano.telefono %></span>
+                    </div>
+                  </a>
+                <% }) %>
+              </div>
+            </div>
+          </div>
+        </section>
+      <% } else if (searchState.q || searchState.citta) { %>
+        <section class="panel">
+          <div class="stack">
+            <div>
+              <div class="eyebrow">Risultati Ricerca</div>
+              <h2>Nessun lavoro simile trovato per ora</h2>
+              <% if (searchIntent && searchIntent.inferredCategoryLabel) { %>
+                <p>Abbiamo interpretato la richiesta come <strong><%= searchIntent.inferredCategoryLabel %></strong>, ma al momento non ci sono ancora lavori pubblicati che corrispondano bene a questa ricerca nella zona indicata.</p>
+              <% } else { %>
+                <p>Non abbiamo ancora trovato lavori pubblicati che corrispondano bene a questa ricerca. Prova a cambiare città o a usare una descrizione più semplice dell'intervento.</p>
+              <% } %>
+            </div>
+          </div>
+        </section>
+      <% } %>
+
+      <section class="panel categories-panel">
+        <div class="stack">
+          <div>
+            <div class="eyebrow">Categorie Principali</div>
+            <h2>Scegli tra le 10 categorie artigiane principali</h2>
+          </div>
+          <div class="icon-grid">
+            <% topCategories.forEach(function(item) { %>
+              <a class="icon-card" href="<%= item.href %>">
+                <span class="icon-mark"><%= item.icon %></span>
+                <strong><%= item.label %></strong>
+              </a>
+            <% }) %>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="stack">
+          <div>
+            <div class="eyebrow">Lavori Più Richiesti</div>
+            <h2>I lavori che le persone cercano più spesso</h2>
+          </div>
+          <div class="mini-grid">
+            <a class="category-link" href="/?q=sostituzione caldaia">
+              <span>Sostituzione caldaia</span>
+              <p>Idraulica e installazioni</p>
+            </a>
+            <a class="category-link" href="/?q=rifacimento bagno">
+              <span>Rifacimento bagno</span>
+              <p>Interventi completi e ristrutturazioni</p>
+            </a>
+            <a class="category-link" href="/?q=ricerca perdita acqua">
+              <span>Ricerca perdita acqua</span>
+              <p>Guasti e pronto intervento</p>
+            </a>
+            <a class="category-link" href="/?q=sostituzione rubinetto">
+              <span>Sostituzione rubinetto</span>
+              <p>Piccoli lavori urgenti</p>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel claim-box">
+        <div class="stack">
+          <div class="eyebrow">Sei un artigiano?</div>
+          <h2>Fatti trovare da chi ti sta già cercando</h2>
+          <p>Crea senza costi il tuo profilo su StelleVere e ottieni una visibilità locale impareggiabile.</p>
+          <p>StelleVere è il sito dove far conoscere i tuoi lavori e ricevere recensioni certificate e specifiche. Mai più recensioni false da persone che non hai mai conosciuto.</p>
+          <a class="cta" href="/for-artigiani">Cerca, crea o rivendica la tua scheda</a>
+          <span class="note" style="color: rgba(255,255,255,0.74);">(solo per aziende artigiane con partita IVA)</span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="stack">
+          <div>
+            <div class="eyebrow">Perché Funziona</div>
+            <h2>Non solo profili. Qui trovi lavori veri.</h2>
+          </div>
+          <div class="info-grid">
+            <article class="info-card">
+              <strong>Visibilità locale vera</strong>
+              <p>Pubblicare su StelleVere i tuoi lavori significa rafforzare la tua presenza nella tua zona.</p>
+            </article>
+            <article class="info-card">
+              <strong>Recensioni specifiche</strong>
+              <p>La recensione è legata al singolo intervento, quindi il cliente capisce per cosa è stato valutato l’artigiano.</p>
+            </article>
+            <article class="info-card">
+              <strong>Più fiducia subito</strong>
+              <p>Foto, zona del lavoro e prova reale aiutano le persone a scegliere meglio il professionista più adatto.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel featured-panel" id="artigiani">
+        <div class="stack">
+          <div>
+            <h2 class="featured-artisans-title">Artigiani In Evidenza</h2>
+          </div>
+          <% if (!featuredArtigiani.length) { %>
+            <p>Nessun artigiano trovato con questi filtri.</p>
+          <% } else { %>
+            <div class="artisans-grid carousel" id="featured-artisans-grid">
+              <% featuredArtigiani.forEach(function(artigiano) { %>
+                <a class="artisan-card" href="/artigiano/<%= artigiano.slug %>">
+                  <div class="artisan-body">
+                    <strong><%= artigiano.nome %></strong>
+                    <p><%= artigiano.categoria_nome %> · <%= artigiano.citta_principale || 'Città da completare' %></p>
+                    <div class="meta">
+                      <span>Telefono: <%= artigiano.telefono %></span>
+                    </div>
+                    <div class="meta">
+                      <span>Valutazione: <%= Number(artigiano.rating_avg || 0).toFixed(1) %></span>
+                      <span>Recensioni: <%= artigiano.reviews_count || 0 %></span>
+                    </div>
+                  </div>
+                </a>
+              <% }) %>
+            </div>
+          <% } %>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="stack">
+          <div>
+            <div class="eyebrow">Lavori E Recensioni</div>
+            <h2>Prove reali già pubblicate</h2>
+          </div>
+          <div class="proof-grid">
+            <div class="work-card">
+              <strong>Lavori recenti</strong>
+              <% if (!lavori.length) { %>
+                <p>Nessun lavoro disponibile per ora.</p>
+              <% } else { %>
+                <% lavori.slice(0, 3).forEach(function(lavoro) { %>
+                  <p><strong><%= lavoro.titolo %></strong><br /><%= lavoro.artigiano_nome %> · <%= lavoro.citta %></p>
+                <% }) %>
+              <% } %>
+            </div>
+            <div class="review-card">
+              <strong>Recensioni recenti</strong>
+              <% if (!recensioni.length) { %>
+                <p>Le recensioni certificate compariranno qui appena i clienti inizieranno a lasciare il loro feedback.</p>
+              <% } else { %>
+                <% recensioni.slice(0, 3).forEach(function(recensione) { %>
+                  <p><strong><%= recensione.cliente_nome %></strong><br /><%= recensione.titolo %> · voto <%= recensione.voto %>/5</p>
+                <% }) %>
+              <% } %>
+            </div>
+            <div class="info-card">
+              <strong>Per le aziende artigiane</strong>
+              <p>Rivendica la tua scheda, pubblica i lavori che hai eseguito e usa WhatsApp per raccogliere recensioni vere e specifiche.</p>
+              <a class="ghost" href="/for-artigiani" style="margin-top: 12px;">Cerca la tua attivita</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <section class="panel footer-grid">
+        <div class="footer-col">
+          <strong>StelleVere</strong>
+          <div class="footer-links">
+            <a href="/chi-siamo">Chi siamo</a>
+            <a href="/come-funziona">Come funziona</a>
+            <a href="/idraulica">Categorie artigiane</a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <strong>Per i clienti</strong>
+          <div class="footer-links">
+            <a href="/">Trova un artigiano</a>
+            <a href="/idraulica">Lavori nella tua zona</a>
+            <a href="/api/docs">API e integrazioni</a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <strong>Per le aziende artigiane</strong>
+          <div class="footer-links">
+            <a href="/for-artigiani">Gestisci la pagina della tua attività</a>
+            <a href="/for-artigiani">Crea o rivendica la tua attività</a>
+            <a href="/dashboard/idratest/lavori/nuovo">Pubblica un lavoro</a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <strong>Legale</strong>
+          <div class="footer-links">
+            <a href="/privacy-policy">Privacy Policy</a>
+            <a href="/cookie-policy">Gestione cookie</a>
+            <a href="/come-funziona">Recensioni e funzionamento</a>
+          </div>
+        </div>
+        <p class="footer-note">StelleVere mostra lavori reali, recensioni specifiche e profili di aziende artigiane con partita IVA.</p>
+      </section>
+    </footer>
+    <% if ((searchState.q || searchState.citta) && (searchWorks.length || fallbackArtigiani.length)) { %>
+      <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""
+      ></script>
+      <script>
+        const searchMapItems = <%- JSON.stringify(
+          (searchWorks.length ? searchWorks.map((lavoro) => ({
+            titolo: lavoro.titolo,
+            artigiano_nome: lavoro.artigiano_nome,
+            detail_path: lavoro.detail_path,
+            citta: lavoro.citta,
+            quartiere: lavoro.quartiere,
+            rating_avg: Number(lavoro.rating_avg || 0),
+            lat: lavoro.map_lat,
+            lng: lavoro.map_lng,
+            approximate: Boolean(lavoro.map_is_approximate),
+            kind: 'lavoro',
+          })) : fallbackArtigiani.map((artigiano, index) => ({
+            titolo: artigiano.nome,
+            artigiano_nome: artigiano.nome,
+            detail_path: '/artigiano/' + artigiano.slug,
+            citta: artigiano.citta_principale,
+            quartiere: '',
+            rating_avg: Number(artigiano.rating_avg || 0),
+            lat: artigiano.map_lat,
+            lng: artigiano.map_lng,
+            approximate: true,
+            kind: 'artigiano',
+            marker_index: index,
+          })))
+          .filter((item) => Number.isFinite(Number(item.lat)) && Number.isFinite(Number(item.lng)))
+        ) %>;
+
+        if (searchMapItems.length) {
+          const map = L.map('search-map', { scrollWheelZoom: false });
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+          }).addTo(map);
+
+          const bounds = [];
+          const cityMarkerCount = {};
+          searchMapItems.forEach((item) => {
+            let lat = Number(item.lat);
+            let lng = Number(item.lng);
+
+            if (item.kind === 'artigiano') {
+              const cityKey = String(item.citta || 'zona').toLowerCase();
+              const count = cityMarkerCount[cityKey] || 0;
+              cityMarkerCount[cityKey] = count + 1;
+              const angle = count * 0.9;
+              const radius = 0.012 + (count % 3) * 0.004;
+              lat += Math.sin(angle) * radius;
+              lng += Math.cos(angle) * radius;
+            }
+
+            const marker = L.marker([lat, lng]).addTo(map);
+            marker.bindPopup(`
+              <strong>${item.titolo}</strong><br />
+              ${item.artigiano_nome}<br />
+              ${item.citta}${item.quartiere ? ' · ' + item.quartiere : ''}<br />
+              Valutazione: ${item.rating_avg.toFixed(1)}<br />
+              ${item.approximate ? '<em>Posizione approssimativa</em><br />' : ''}
+              <a href="${item.detail_path}">${item.kind === 'artigiano' ? 'Apri scheda artigiano' : 'Apri dettaglio lavoro'}</a>
+            `);
+            bounds.push([lat, lng]);
+          });
+
+          if (bounds.length === 1) {
+            map.setView(bounds[0], 13);
+          } else {
+            map.fitBounds(bounds, { padding: [24, 24] });
+          }
+        }
+      </script>
+    <% } %>
+    <% if (featuredArtigianiPool && featuredArtigianiPool.length) { %>
+      <script>
+        (function () {
+          const pool = <%- JSON.stringify(featuredArtigianiPool.map((artigiano) => ({
+            slug: artigiano.slug,
+            nome: artigiano.nome,
+            categoria_nome: artigiano.categoria_nome,
+            citta_principale: artigiano.citta_principale || '',
+            telefono: artigiano.telefono,
+            rating_avg: Number(artigiano.rating_avg || 0),
+            reviews_count: Number(artigiano.reviews_count || 0),
+            plan_nome: (artigiano.public_plan && artigiano.public_plan.nome) || 'Free',
+            plan_priority: Number(artigiano.plan_priority || 0),
+            map_lat: artigiano.map_lat,
+            map_lng: artigiano.map_lng
+          }))) %>;
+
+          const section = document.getElementById('artigiani');
+          if (!section || !pool.length) return;
+
+          const grid = section.querySelector('#featured-artisans-grid');
+          if (!grid) return;
+
+          let autoScrollTimer = null;
+          let paused = false;
+
+          function buildCardsMarkup(items) {
+            return items.map((artigiano) => `
+              <a class="artisan-card" href="/artigiano/${artigiano.slug}">
+                <div class="artisan-body">
+                  <strong>${artigiano.nome}</strong>
+                  <p>${artigiano.categoria_nome} · ${artigiano.citta_principale || 'Città da completare'}</p>
+                  <div class="meta">
+                    <span>Telefono: ${artigiano.telefono}</span>
+                  </div>
+                  <div class="meta">
+                    <span>Valutazione: ${Number(artigiano.rating_avg || 0).toFixed(1)}</span>
+                    <span>Recensioni: ${artigiano.reviews_count || 0}</span>
+                  </div>
+                </div>
+              </a>
+            `).join('');
+          }
+
+          function renderCards(items) {
+            const visibleItems = items.slice(0, 6);
+            grid.innerHTML = buildCardsMarkup(visibleItems) + buildCardsMarkup(visibleItems);
+            grid.scrollLeft = 0;
+          }
+
+          function startAutoScroll() {
+            if (autoScrollTimer) clearInterval(autoScrollTimer);
+            autoScrollTimer = setInterval(function () {
+              if (!paused) {
+                const halfWidth = grid.scrollWidth / 2;
+                grid.scrollLeft += 1;
+                if (grid.scrollLeft >= halfWidth) {
+                  grid.scrollLeft = 0;
+                }
+              }
+            }, 20);
+          }
+
+          function distanceKm(aLat, aLng, bLat, bLng) {
+            const toRad = (value) => value * Math.PI / 180;
+            const R = 6371;
+            const dLat = toRad(bLat - aLat);
+            const dLng = toRad(bLng - aLng);
+            const aa = Math.sin(dLat / 2) ** 2 +
+              Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLng / 2) ** 2;
+            return 2 * R * Math.atan2(Math.sqrt(aa), Math.sqrt(1 - aa));
+          }
+
+          renderCards(pool.slice(0, 6));
+          startAutoScroll();
+
+          grid.addEventListener('mouseenter', function () { paused = true; });
+          grid.addEventListener('mouseleave', function () { paused = false; });
+          grid.addEventListener('touchstart', function () { paused = true; }, { passive: true });
+          grid.addEventListener('touchend', function () { paused = false; }, { passive: true });
+
+          if (!navigator.geolocation) return;
+
+          navigator.geolocation.getCurrentPosition(function (position) {
+            const ranked = pool
+              .map((artigiano) => {
+                const hasCoords = Number.isFinite(Number(artigiano.map_lat)) && Number.isFinite(Number(artigiano.map_lng));
+                const distance = hasCoords
+                  ? distanceKm(position.coords.latitude, position.coords.longitude, Number(artigiano.map_lat), Number(artigiano.map_lng))
+                  : Number.POSITIVE_INFINITY;
+                return { ...artigiano, distance };
+              })
+              .sort((a, b) => {
+                if (b.plan_priority !== a.plan_priority) return b.plan_priority - a.plan_priority;
+                if (a.distance !== b.distance) return a.distance - b.distance;
+                if (Number(b.rating_avg || 0) !== Number(a.rating_avg || 0)) return Number(b.rating_avg || 0) - Number(a.rating_avg || 0);
+                if (Number(b.reviews_count || 0) !== Number(a.reviews_count || 0)) return Number(b.reviews_count || 0) - Number(a.reviews_count || 0);
+                return String(a.nome || '').localeCompare(String(b.nome || ''), 'it');
+              })
+              .slice(0, 6);
+
+            renderCards(ranked);
+            startAutoScroll();
+          }, function () {});
+        })();
+      </script>
+    <% } %>
+    <% if (false && featuredArtigianiPool && featuredArtigianiPool.length) { %>
+      <script>
+        (function () {
+          const pool = <%- JSON.stringify(featuredArtigianiPool.map((artigiano) => ({
+            slug: artigiano.slug,
+            nome: artigiano.nome,
+            categoria_nome: artigiano.categoria_nome,
+            citta_principale: artigiano.citta_principale || '',
+            telefono: artigiano.telefono,
+            rating_avg: Number(artigiano.rating_avg || 0),
+            reviews_count: Number(artigiano.reviews_count || 0),
+            plan_nome: (artigiano.public_plan && artigiano.public_plan.nome) || 'Free',
+            plan_priority: Number(artigiano.plan_priority || 0),
+            map_lat: artigiano.map_lat,
+            map_lng: artigiano.map_lng
+          }))) %>;
+
+          const grid = document.getElementById('featured-artisans-grid');
+          const copy = document.getElementById('featured-artisans-copy');
+          if (!grid || !pool.length) return;
+          let animationFrame = null;
+          let paused = false;
+
+          function buildCardsMarkup(items) {
+            return items.map((artigiano) => `
+              <a class="artisan-card" href="/artigiano/${artigiano.slug}">
+                <div class="artisan-body">
+                  <strong>${artigiano.nome}</strong>
+                  <p>${artigiano.categoria_nome} · ${artigiano.citta_principale || 'Città da completare'}</p>
+                  <div class="meta">
+                    <span>Telefono: ${artigiano.telefono}</span>
+                    <span>Piano: ${artigiano.plan_nome}</span>
+                  </div>
+                  <div class="meta">
+                    <span>Valutazione: ${Number(artigiano.rating_avg || 0).toFixed(1)}</span>
+                    <span>Recensioni: ${artigiano.reviews_count || 0}</span>
+                  </div>
+                </div>
+              </a>
+            `).join('');
+          }
+
+          function renderCards(items) {
+            const visibleItems = items.slice(0, 6);
+            grid.innerHTML = buildCardsMarkup(visibleItems) + buildCardsMarkup(visibleItems);
+            grid.scrollLeft = 0;
+          }
+
+          function startAutoScroll() {
+            if (animationFrame) cancelAnimationFrame(animationFrame);
+            const step = function () {
+              if (!paused) {
+                const halfWidth = grid.scrollWidth / 2;
+                grid.scrollLeft += 0.45;
+                if (grid.scrollLeft >= halfWidth) {
+                  grid.scrollLeft = 0;
+                }
+              }
+              animationFrame = requestAnimationFrame(step);
+            };
+            animationFrame = requestAnimationFrame(step);
+          }
+
+          function distanceKm(aLat, aLng, bLat, bLng) {
+            const toRad = (value) => value * Math.PI / 180;
+            const R = 6371;
+            const dLat = toRad(bLat - aLat);
+            const dLng = toRad(bLng - aLng);
+            const aa = Math.sin(dLat / 2) ** 2 +
+              Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLng / 2) ** 2;
+            return 2 * R * Math.atan2(Math.sqrt(aa), Math.sqrt(1 - aa));
+          }
+
+          renderCards(pool.slice(0, 6));
+          startAutoScroll();
+
+          grid.addEventListener('mouseenter', function () {
+            paused = true;
+          });
+          grid.addEventListener('mouseleave', function () {
+            paused = false;
+          });
+          grid.addEventListener('touchstart', function () {
+            paused = true;
+          }, { passive: true });
+          grid.addEventListener('touchend', function () {
+            paused = false;
+          }, { passive: true });
+
+          if (!navigator.geolocation) return;
+
+          navigator.geolocation.getCurrentPosition(function (position) {
+            const ranked = pool
+              .map((artigiano) => {
+                const hasCoords = Number.isFinite(Number(artigiano.map_lat)) && Number.isFinite(Number(artigiano.map_lng));
+                const distance = hasCoords
+                  ? distanceKm(position.coords.latitude, position.coords.longitude, Number(artigiano.map_lat), Number(artigiano.map_lng))
+                  : Number.POSITIVE_INFINITY;
+                return { ...artigiano, distance };
+              })
+              .sort((a, b) => {
+                if (b.plan_priority !== a.plan_priority) return b.plan_priority - a.plan_priority;
+                if (a.distance !== b.distance) return a.distance - b.distance;
+                if (Number(b.rating_avg || 0) !== Number(a.rating_avg || 0)) return Number(b.rating_avg || 0) - Number(a.rating_avg || 0);
+                if (Number(b.reviews_count || 0) !== Number(a.reviews_count || 0)) return Number(b.reviews_count || 0) - Number(a.reviews_count || 0);
+                return String(a.nome || '').localeCompare(String(b.nome || ''), 'it');
+              })
+              .slice(0, 6);
+
+            renderCards(ranked);
+            startAutoScroll();
+            if (copy) {
+              copy.textContent = 'Artigiani in evidenza su StelleVere.';
+            }
+          }, function () {});
+        })();
+      </script>
+    <% } %>
+    <script>
+      (function () {
+        const proofGrid = document.querySelector('.proof-grid');
+        if (!proofGrid) return;
+
+        const paragraphs = proofGrid.querySelectorAll('.work-card p, .review-card p');
+        paragraphs.forEach(function (paragraph) {
+          if (paragraph.querySelector('a')) return;
+
+          const strong = paragraph.querySelector('strong');
+          if (!strong) return;
+
+          const query = String(strong.textContent || '').trim();
+          if (!query) return;
+
+          const href = '/?q=' + encodeURIComponent(query);
+          paragraph.style.cursor = 'pointer';
+          paragraph.addEventListener('click', function () {
+            window.location.href = href;
+          });
+
+          strong.innerHTML = '<a href="' + href + '">' + strong.innerHTML + '</a>';
+        });
+      })();
+    </script>
+    <script>
+      (function () {
+        const proofGrid = document.querySelector('.proof-grid');
+        if (!proofGrid) return;
+
+        const reviewCard = proofGrid.querySelector('.review-card');
+        const workCards = proofGrid.querySelectorAll('.work-card');
+        if (!reviewCard || !workCards.length) return;
+
+        reviewCard.remove();
+
+        const firstWorkCard = workCards[0];
+        if (!firstWorkCard) return;
+
+        const existingRows = Array.from(firstWorkCard.querySelectorAll('p'));
+        if (existingRows.length < 2) return;
+
+        const cloneCard = firstWorkCard.cloneNode(true);
+        const title = cloneCard.querySelector('strong');
+        if (title) title.textContent = 'Altri lavori recenti';
+
+        const cloneRows = Array.from(cloneCard.querySelectorAll('p'));
+        cloneRows.forEach(function (row, index) {
+          const sourceRow = existingRows[index + 3];
+          if (sourceRow) {
+            row.innerHTML = sourceRow.innerHTML;
+          } else if (index === 0) {
+            row.textContent = 'Altri lavori recenti compariranno qui appena la directory crescerà.';
+          } else {
+            row.remove();
+          }
+        });
+
+        proofGrid.insertBefore(cloneCard, proofGrid.querySelector('.info-card'));
+      })();
+    </script>
+  </body>
+</html>

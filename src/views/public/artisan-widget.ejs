@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex,follow" />
+    <link rel="canonical" href="<%= canonicalUrl %>" />
+    <title><%= artigiano.nome %> | Widget lavori | StelleVere</title>
+    <style>
+      :root {
+        --bg: #fffaf5;
+        --surface: #ffffff;
+        --line: #e7d8c8;
+        --ink: #241d18;
+        --muted: #6e6258;
+        --accent: #bc5d08;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Georgia, serif;
+        color: var(--ink);
+        background: linear-gradient(180deg, #fffdf9 0%, #f6eee3 100%);
+      }
+      .widget {
+        display: grid;
+        gap: 16px;
+        padding: 16px;
+      }
+      .card {
+        background: rgba(255, 255, 255, 0.96);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 18px;
+      }
+      .eyebrow {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: var(--accent);
+      }
+      h1, h2, h3, p { margin: 0; }
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .badge {
+        border: 1px solid var(--line);
+        background: #fffaf5;
+        border-radius: 999px;
+        padding: 8px 11px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .cta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 11px 16px;
+        border-radius: 999px;
+        text-decoration: none;
+        font-weight: 700;
+      }
+      .cta.primary {
+        background: var(--accent);
+        color: #fff;
+      }
+      .cta.secondary {
+        color: var(--accent);
+        border: 1px solid #d8b79b;
+        background: transparent;
+      }
+      .works {
+        display: grid;
+        gap: 12px;
+      }
+      .work-card {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: 108px minmax(0, 1fr);
+        text-decoration: none;
+        color: inherit;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: var(--surface);
+        overflow: hidden;
+      }
+      .work-media {
+        min-height: 108px;
+        background: linear-gradient(135deg, #f1ddc3, #fbf2e8);
+      }
+      .work-media img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      .work-body {
+        display: grid;
+        gap: 8px;
+        padding: 12px 14px 12px 0;
+      }
+      .work-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .work-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        font-size: 13px;
+      }
+      .work-links a {
+        color: var(--accent);
+        font-weight: 700;
+        text-decoration: none;
+      }
+      .muted { color: var(--muted); }
+      .empty {
+        padding: 16px;
+        border-radius: 16px;
+        background: #fffdf9;
+        border: 1px dashed var(--line);
+      }
+      @media (max-width: 640px) {
+        .widget { padding: 12px; }
+        .hero, .card { padding: 16px; border-radius: 18px; }
+        .work-card {
+          grid-template-columns: 1fr;
+        }
+        .work-media {
+          min-height: 180px;
+        }
+        .work-body {
+          padding: 0 14px 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="widget">
+      <section class="card">
+        <div class="eyebrow">Ultimi lavori pubblicati</div>
+        <h2 style="margin-top: 6px;">Lavori svolti da <%= artigiano.nome %></h2>
+        <div class="meta" style="margin-top: 10px;">
+          <span class="badge"><%= artigiano.categoria_nome %></span>
+          <% if (artigiano.citta_principale) { %>
+            <span class="badge"><%= artigiano.citta_principale %></span>
+          <% } %>
+          <span class="badge">Valutazione: <strong><%= Number(artigiano.rating_avg || 0).toFixed(1) %></strong></span>
+        </div>
+        <% if (!lavori.length) { %>
+          <div class="empty" style="margin-top: 12px;">
+            <p class="muted">Questa attività non ha ancora pubblicato lavori da mostrare nel widget.</p>
+          </div>
+        <% } else { %>
+          <div class="works" style="margin-top: 14px;">
+            <% lavori.forEach(function(lavoro) { %>
+              <article class="work-card">
+                <div class="work-media">
+                  <% if (lavoro.cover_path) { %>
+                    <img src="<%= lavoro.cover_path.startsWith('data:') ? lavoro.cover_path : baseUrl + '/uploads/' + lavoro.cover_path %>" alt="<%= lavoro.cover_alt || lavoro.titolo %>" />
+                  <% } else if (Array.isArray(lavoro.immagini) && lavoro.immagini[0] && lavoro.immagini[0].src) { %>
+                    <img src="<%= lavoro.immagini[0].src.startsWith('data:') ? lavoro.immagini[0].src : baseUrl + '/uploads/' + lavoro.immagini[0].src %>" alt="<%= lavoro.immagini[0].alt || lavoro.titolo %>" />
+                  <% } %>
+                </div>
+                <div class="work-body">
+                  <h3><%= lavoro.titolo %></h3>
+                  <div class="work-meta">
+                    <% if (lavoro.citta || lavoro.quartiere) { %>
+                      <span>
+                        <%= [lavoro.citta, lavoro.quartiere ? 'zona ' + lavoro.quartiere : ''].filter(Boolean).join(', ') %>
+                      </span>
+                    <% } %>
+                    <% if (lavoro.reviews_count) { %><span><%= lavoro.reviews_count %> recensioni</span><% } %>
+                  </div>
+                  <% if (lavoro.display_description) { %>
+                    <p class="muted"><%= lavoro.display_description %></p>
+                  <% } %>
+                  <div class="work-links">
+                    <a href="<%= baseUrl %><%= lavoro.detail_path %>" target="_blank" rel="noopener">Apri lavoro su StelleVere</a>
+                    <a href="<%= baseUrl %>/artigiano/<%= artigiano.slug %>" target="_blank" rel="noopener">Scheda artigiano</a>
+                  </div>
+                </div>
+              </article>
+            <% }) %>
+          </div>
+        <% } %>
+
+        <% if (widgetCta) { %>
+          <div class="empty" style="margin-top: 14px;">
+            <strong>Vuoi mostrare più lavori sul tuo sito?</strong>
+            <p class="muted" style="margin-top: 8px;">Con un piano a pagamento su StelleVere puoi pubblicare più lavori e mostrarli anche qui, nel widget del tuo sito.</p>
+            <div class="cta-row" style="margin-top: 10px;">
+              <a class="cta primary" href="<%= baseUrl %>/artigiano/<%= artigiano.slug %>" target="_blank" rel="noopener">Scopri di più su StelleVere</a>
+            </div>
+          </div>
+        <% } %>
+      </section>
+    </main>
+
+    <script>
+      (function () {
+        function updateHeight() {
+          if (!window.parent || window.parent === window) return;
+          window.parent.postMessage({
+            source: 'stellevere-widget',
+            height: Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)
+          }, '*');
+        }
+
+        window.addEventListener('load', updateHeight);
+        window.addEventListener('resize', updateHeight);
+        setTimeout(updateHeight, 150);
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="canonical" href="<%= canonicalUrl %>" />
+    <title><%= artigiano.nome %> | StelleVere V2</title>
+    <script type="application/ld+json">
+      <%- JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'LocalBusiness',
+        name: artigiano.nome,
+        telephone: artigiano.telefono,
+        address: artigiano.indirizzo_completo ? {
+          '@type': 'PostalAddress',
+          streetAddress: artigiano.indirizzo_completo,
+          addressLocality: artigiano.citta_principale || '',
+          addressCountry: 'IT'
+        } : undefined,
+        areaServed: artigiano.citta_principale || undefined,
+        aggregateRating: Number(artigiano.reviews_count || 0) > 0 ? {
+          '@type': 'AggregateRating',
+          ratingValue: Number(artigiano.rating_avg || 0).toFixed(1),
+          reviewCount: Number(artigiano.reviews_count || 0)
+        } : undefined,
+        url: canonicalUrl
+      }).replace(/</g, '\\u003c') %>
+    </script>
+    <style>
+      :root {
+        --bg: #f6f1e8;
+        --surface: rgba(255, 252, 247, 0.92);
+        --line: #e7d8c8;
+        --ink: #241d18;
+        --muted: #6e6258;
+        --accent: #bc5d08;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Georgia, serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(191, 91, 4, 0.12), transparent 28%),
+          linear-gradient(180deg, #fbf7f1 0%, #efe4d5 100%);
+      }
+      main { max-width: 1140px; margin: 0 auto; padding: 32px 20px 56px; display: grid; gap: 24px; }
+      .hero, .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 26px; padding: 24px; backdrop-filter: blur(10px); }
+      .eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); }
+      .muted { color: var(--muted); }
+      .meta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
+      .badge { border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px; background: #fff; }
+      .claim-box { margin-top: 18px; padding: 18px; border-radius: 20px; background: linear-gradient(135deg, rgba(188, 93, 8, 0.08), rgba(255,255,255,0.9)); border: 1px solid #e4c39f; }
+      .cta { display: inline-block; margin-top: 12px; padding: 12px 18px; border-radius: 999px; background: #bc5d08; color: #fff; text-decoration: none; border: 0; font: inherit; cursor: pointer; }
+      .cta.disabled { background: #efe2d5; color: #7d6c60; cursor: default; }
+      .cta.secondary { background: transparent; color: var(--accent); border: 1px solid #d5b79a; }
+      .jobs-summary { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+      .summary-box { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; min-width: 140px; }
+      .grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+      .hours-list { display: grid; gap: 4px; }
+      .hours-row {
+        display: inline-flex;
+        align-items: baseline;
+        justify-content: flex-start;
+        gap: 6px;
+        padding: 4px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 13px;
+        width: 100%;
+      }
+      .hours-row:last-child { border-bottom: 0; }
+      .hours-row strong { min-width: 0; }
+      .job { background: #fffdf9; border: 1px solid var(--line); border-radius: 20px; overflow: hidden; text-decoration: none; color: inherit; transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease; }
+      .job:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(36, 29, 24, 0.08); border-color: #d6b08c; }
+      .job-media { aspect-ratio: 16 / 10; background: linear-gradient(135deg, #f0d7b4, #f9efe2); display: grid; place-items: center; color: var(--accent); font-size: 15px; }
+      .job-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .job-body { padding: 16px; display: grid; gap: 10px; }
+      .row { display: flex; gap: 10px; flex-wrap: wrap; font-size: 14px; color: var(--muted); }
+      a.back { color: var(--accent); text-decoration: none; }
+      .modal-shell { position: fixed; inset: 0; background: rgba(36, 29, 24, 0.52); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 20; }
+      .modal-shell.open { display: flex; }
+      .modal { width: min(100%, 520px); background: #fffaf5; border: 1px solid #e4c39f; border-radius: 24px; padding: 22px; box-shadow: 0 18px 50px rgba(36, 29, 24, 0.18); }
+      .modal p { margin: 10px 0 0; }
+      .modal-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+      @media (max-width: 720px) {
+        main { padding: 20px 14px 40px; }
+        .hero, .panel { padding: 18px; border-radius: 22px; }
+        .cta, .cta.secondary { width: 100%; text-align: center; }
+        .modal-actions { flex-direction: column; }
+        .hours-row { font-size: 12px; gap: 4px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <a class="back" href="/">← Torna alla home V2</a>
+
+      <section class="hero">
+        <div class="eyebrow">Scheda artigiano</div>
+        <h1><%= artigiano.nome %></h1>
+        <p class="muted">
+          <%= artigiano.categoria_nome %>
+          <% if (artigiano.citta_principale) { %>
+            · <%= artigiano.citta_principale %>
+          <% } %>
+          <% if (artigiano.quartiere_principale) { %>
+            · <%= artigiano.quartiere_principale %>
+          <% } %>
+        </p>
+        <% if (artigiano.bio) { %>
+          <p><%= artigiano.bio %></p>
+        <% } %>
+        <div class="meta">
+          <div class="badge">Telefono: <strong><%= artigiano.telefono %></strong></div>
+          <% if (artigiano.indirizzo_completo) { %>
+            <div class="badge">Indirizzo: <strong><%= artigiano.indirizzo_completo %></strong></div>
+          <% } %>
+          <div class="badge">Valutazione: <strong><%= Number(artigiano.rating_avg || 0).toFixed(1) %></strong></div>
+          <div class="badge">Recensioni: <strong><%= artigiano.reviews_count || 0 %></strong></div>
+          <div class="badge">Lavori: <strong><%= lavori.length %></strong></div>
+        </div>
+
+        <div class="claim-box">
+          <strong>Contatta questa attività</strong>
+          <% if (artigiano.call_enabled) { %>
+            <a class="cta" href="tel:<%= artigiano.telefono.replace(/\s+/g, '') %>">Chiama ora</a>
+          <% } else { %>
+            <span class="cta disabled"><%= artigiano.telefono %></span>
+          <% } %>
+        </div>
+
+        <% if (artigiano.claim_status !== 'claimed') { %>
+          <div class="claim-box">
+            <strong>Sei il titolare di questa attività?</strong>
+            <p class="muted">Rivendica la tua scheda per aggiungere altri dati o correggere quelli già presenti.</p>
+            <button
+              class="cta"
+              type="button"
+              data-claim-trigger
+              data-claim-url="/claim/<%= artigiano.slug %>"
+              data-phone-type="<%= artigiano.phone_type %>">
+              Rivendica questa scheda
+            </button>
+          </div>
+        <% } %>
+      </section>
+
+      <% if (artigiano.descrizione_attivita) { %>
+        <section class="panel">
+          <div class="eyebrow">Presentazione</div>
+          <h2>Servizi offerti</h2>
+          <p><%= artigiano.descrizione_attivita %></p>
+        </section>
+      <% } %>
+
+      <% if (artigiano.hours && artigiano.hours.length) { %>
+        <section class="panel">
+          <div class="eyebrow">Informazioni utili</div>
+          <h2>Orari di apertura</h2>
+          <div class="hours-list">
+            <% artigiano.hours.forEach(function(item) { %>
+              <div class="hours-row">
+                <strong><%= item.day %></strong>
+                <div class="muted"><%= item.display %></div>
+              </div>
+            <% }) %>
+          </div>
+        </section>
+      <% } %>
+
+      <section class="panel">
+        <div class="eyebrow">Lavori pubblicati</div>
+        <h2>Portfolio pubblico</h2>
+        <% if (!lavori.length) { %>
+          <p class="muted">Questo artigiano non ha ancora lavori pubblicati nella V2.</p>
+        <% } else { %>
+          <div class="jobs-summary">
+            <div class="summary-box">
+              <strong><%= lavori.length %></strong>
+              <div class="muted">lavori pubblicati</div>
+            </div>
+            <div class="summary-box">
+              <strong><%= lavori.filter(function(lavoro) { return Number(lavoro.reviews_count || 0) > 0; }).length %></strong>
+              <div class="muted">lavori con recensioni</div>
+            </div>
+          </div>
+          <div class="grid">
+            <% lavori.forEach(function(lavoro) { %>
+              <a class="job" href="<%= lavoro.detail_path || '#' %>">
+                <div class="job-media">
+                  <% if (lavoro.cover_path) { %>
+                    <img src="<%= lavoro.cover_path.startsWith('data:') ? lavoro.cover_path : '/uploads/' + lavoro.cover_path %>" alt="<%= lavoro.cover_alt || lavoro.titolo %>" />
+                  <% } else { %>
+                    <span>Copertina lavoro</span>
+                  <% } %>
+                </div>
+                <div class="job-body">
+                  <strong><%= lavoro.titolo %></strong>
+                  <div class="row">
+                    <span><%= lavoro.categoria_nome %></span>
+                    <% if (lavoro.tipo_nome) { %><span><%= lavoro.tipo_nome %></span><% } %>
+                  </div>
+                  <div class="row">
+                    <span><%= lavoro.citta %></span>
+                    <% if (lavoro.quartiere) { %><span><%= lavoro.quartiere %></span><% } %>
+                  </div>
+                  <p class="muted"><%= lavoro.descrizione %></p>
+                  <strong style="color: var(--accent); font-size: 14px;">Vedi dettaglio lavoro</strong>
+                </div>
+              </a>
+            <% }) %>
+          </div>
+        <% } %>
+      </section>
+    </main>
+
+    <% if (artigiano.claim_status !== 'claimed') { %>
+      <div class="modal-shell" data-claim-modal>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="claim-modal-title">
+          <div class="eyebrow">Rivendica la scheda</div>
+          <h3 id="claim-modal-title">Verifica del numero</h3>
+          <p class="muted" data-claim-modal-text></p>
+          <div class="modal-actions">
+            <a class="cta" href="/claim/<%= artigiano.slug %>" data-claim-continue>Continua</a>
+            <button class="cta secondary" type="button" data-claim-close>Chiudi</button>
+          </div>
+        </div>
+      </div>
+      <script>
+        (function () {
+          const trigger = document.querySelector('[data-claim-trigger]');
+          const modal = document.querySelector('[data-claim-modal]');
+          const closeButton = document.querySelector('[data-claim-close]');
+          const continueLink = document.querySelector('[data-claim-continue]');
+          const modalText = document.querySelector('[data-claim-modal-text]');
+          if (!trigger || !modal || !continueLink || !modalText) return;
+
+          const messages = {
+            mobile: 'Per rivendicare questa scheda ti invieremo un codice OTP via SMS al numero pubblicato su StelleVere.',
+            landline: 'Per rivendicare questa scheda ti chiameremo sul numero fisso pubblicato su StelleVere con un messaggio vocale contenente il codice OTP.',
+            unknown: 'Per rivendicare questa scheda useremo la modalità di verifica disponibile per il numero pubblicato su StelleVere.'
+          };
+
+          trigger.addEventListener('click', function () {
+            const phoneType = trigger.dataset.phoneType || 'unknown';
+            modalText.textContent = messages[phoneType] || messages.unknown;
+            continueLink.href = trigger.dataset.claimUrl;
+            modal.classList.add('open');
+          });
+
+          function closeModal() {
+            modal.classList.remove('open');
+          }
+
+          closeButton.addEventListener('click', closeModal);
+          modal.addEventListener('click', function (event) {
+            if (event.target === modal) closeModal();
+          });
+        })();
+      </script>
+    <% } %>
+  </body>
+</html>

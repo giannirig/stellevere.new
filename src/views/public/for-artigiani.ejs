@@ -1,0 +1,386 @@
+<%
+  const timeOptions = [''];
+  for (let hour = 0; hour < 24; hour += 1) {
+    for (let minute = 0; minute < 60; minute += 15) {
+      const hh = String(hour).padStart(2, '0');
+      const mm = String(minute).padStart(2, '0');
+      timeOptions.push(`${hh}:${mm}`);
+    }
+  }
+  const weekDays = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
+  const showRegistration = Boolean(register || (searched && !results.length) || (duplicateCandidates && duplicateCandidates.length));
+%>
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Artigiani | Crea o rivendica la tua attivit&agrave; | StelleVere.it</title>
+    <style>
+      :root { --bg:#f7f0e7; --surface:rgba(255,250,243,.94); --ink:#241913; --muted:#69584e; --line:#ead7c3; --accent:#b85b10; --trust:#174f5a; --soft:#fff8f0; }
+      * { box-sizing:border-box; }
+      body { margin:0; font-family:Georgia, serif; color:var(--ink); background:linear-gradient(180deg,#fbf6f0 0%,#f0e2d1 100%); }
+      main { max-width:1100px; margin:0 auto; padding:18px 14px 54px; display:grid; gap:14px; }
+      .panel { background:var(--surface); border:1px solid var(--line); border-radius:28px; padding:20px; }
+      .eyebrow { font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); font-weight:700; }
+      h1,h2,h3,p { margin:0; } h1 { font-size:clamp(34px,9vw,58px); line-height:1; } h2 { font-size:clamp(24px,5vw,34px); line-height:1.05; } h3 { font-size:19px; line-height:1.1; } p { color:var(--muted); line-height:1.45; }
+      .stack,.search-grid,.results-grid,.request-grid,.hours-grid,.slot-grid,.checks,.media-grid { display:grid; gap:14px; }
+      .card { border:1px solid var(--line); border-radius:22px; background:var(--soft); padding:16px; }
+      label { display:grid; gap:6px; font-size:14px; }
+      input,textarea,select { width:100%; border:1px solid var(--line); border-radius:16px; padding:14px 15px; font:inherit; font-size:16px; background:#fff; }
+      textarea { min-height:120px; resize:vertical; }
+      .cta,.ghost,.danger { display:inline-flex; align-items:center; justify-content:center; width:100%; padding:15px 18px; border-radius:999px; font:inherit; font-size:16px; font-weight:700; text-decoration:none; cursor:pointer; border:0; }
+      .cta { background:var(--accent); color:#fff; }
+      .ghost { background:#fff; color:var(--trust); border:1px solid var(--line); }
+      .danger { background:#efe2d5; color:#6d5744; }
+      .meta { display:flex; flex-wrap:wrap; gap:8px; color:var(--muted); font-size:14px; }
+      .badge { display:inline-flex; align-items:center; border-radius:999px; padding:8px 12px; background:#fff; border:1px solid var(--line); }
+      .success { background:#f2fbf6; border-color:#b7dfc3; } .error { background:#fff3ee; border-color:#e6b5a2; }
+      .check { display:flex; align-items:flex-start; gap:10px; font-size:14px; color:var(--muted); }
+      .check input { width:18px; height:18px; margin-top:2px; padding:0; }
+      .email-box,.hours-row,.media-card { background:#fff; border:1px solid #e5c7a7; border-radius:18px; padding:14px; }
+      .hours-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+      .hours-slots { display:grid; gap:12px; }
+      .slot-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .checkline { display:inline-flex; align-items:center; gap:8px; font-size:14px; }
+      .checkline input { width:auto; }
+      .media-preview { min-height:120px; border-radius:16px; border:1px dashed #d8b89a; background:#fffaf4; display:grid; place-items:center; overflow:hidden; color:var(--muted); text-align:center; padding:10px; }
+      .media-preview img { width:100%; height:100%; object-fit:cover; display:block; }
+      .helper,.dev-link { font-size:13px; color:var(--muted); }
+      input[type="file"] { padding:10px; }
+      @media (min-width:820px) {
+        main { padding:24px 18px 64px; }
+        .search-grid { grid-template-columns:1.1fr .7fr auto; align-items:end; }
+        .results-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+        .request-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+        .media-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+        .cta,.ghost,.danger { width:auto; }
+        .hours-slots { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="panel stack">
+        <div class="eyebrow">Per Artigiani</div>
+        <h1>Cerca la tua attivit&agrave; su StelleVere</h1>
+        <p>Prima controlla se la tua attivit&agrave; &egrave; gi&agrave; presente nel nostro database. Se la trovi, puoi rivendicarla. Se non la trovi, puoi procedere con una nuova registrazione.</p>
+        <p>(solo per aziende artigiane con partita IVA)</p>
+      </section>
+
+      <% if (created) { %>
+        <section class="panel card success">
+          <strong>Registrazione avviata.</strong>
+          <p>Abbiamo preparato il passaggio di conferma via email per <strong><%= confirmationEmail || 'l’indirizzo inserito' %></strong>. Il titolare dovr&agrave; cliccare il link ricevuto per confermare la creazione dell’attivit&agrave;.</p>
+          <% if (confirmationPreview) { %>
+            <div class="email-box">
+              <strong>Anteprima link di conferma</strong>
+              <p class="dev-link"><a href="<%= confirmationPreview %>"><%= confirmationPreview %></a></p>
+            </div>
+          <% } %>
+        </section>
+      <% } %>
+
+      <% if (typeof error !== 'undefined' && error) { %>
+        <section class="panel card error">
+          <strong>Controlla i dati inseriti.</strong>
+          <p><%= error %></p>
+        </section>
+      <% } %>
+
+      <section class="panel stack">
+        <div>
+          <div class="eyebrow">Ricerca aziende</div>
+          <h2>Trova la tua attivit&agrave; nel database</h2>
+        </div>
+        <form class="stack" method="get" action="/for-artigiani">
+          <div class="search-grid">
+            <label>
+              Nome attivit&agrave;, telefono o categoria
+              <input name="q" value="<%= (searchState && searchState.q) || '' %>" placeholder="Es. Idratest, 391..., idraulico" />
+            </label>
+            <label>
+              Citt&agrave;
+              <input name="citta" value="<%= (searchState && searchState.citta) || '' %>" placeholder="Es. Roma" />
+            </label>
+            <button class="cta" type="submit">Cerca la tua attivit&agrave;</button>
+          </div>
+        </form>
+
+        <% if (searched && results.length) { %>
+          <div class="results-grid">
+            <% results.forEach(function(artigiano) { %>
+              <article class="card stack">
+                <h3><%= artigiano.nome %></h3>
+                <div class="meta">
+                  <span class="badge"><%= artigiano.categoria_nome %></span>
+                  <span class="badge"><%= artigiano.telefono %></span>
+                </div>
+                <p><strong>Indirizzo:</strong> <%= artigiano.indirizzo_completo || artigiano.sede_legale || artigiano.citta_principale || 'Non disponibile' %></p>
+                <p>Questa attivit&agrave; assomiglia alla tua. Se &egrave; corretta, aprila e rivendicala.</p>
+                <div class="stack">
+                  <a class="cta" href="/artigiano/<%= artigiano.slug %>">Apri attivit&agrave;</a>
+                  <a class="ghost" href="/claim/<%= artigiano.slug %>">Rivendica ora</a>
+                </div>
+              </article>
+            <% }) %>
+          </div>
+          <div class="stack">
+            <p>Nessuna di queste corrisponde alla tua attivit&agrave;?</p>
+            <a class="ghost" href="/for-artigiani?register=1&q=<%= encodeURIComponent((searchState && searchState.q) || '') %>&citta=<%= encodeURIComponent((searchState && searchState.citta) || '') %>">Continua con una nuova registrazione</a>
+          </div>
+        <% } else if (searched) { %>
+          <article class="card stack">
+            <strong>Nessuna attivit&agrave; trovata.</strong>
+            <p>Puoi procedere con la registrazione della tua attivit&agrave;.</p>
+          </article>
+        <% } %>
+      </section>
+
+      <% if (duplicateCandidates && duplicateCandidates.length) { %>
+        <section class="panel stack">
+          <div>
+            <div class="eyebrow">Verifica attività simili</div>
+            <h2>Abbiamo trovato denominazioni molto simili</h2>
+            <p>Prima di creare una nuova attivit&agrave;, controlla se una di queste corrisponde gi&agrave; alla tua.</p>
+          </div>
+          <div class="results-grid">
+            <% duplicateCandidates.forEach(function(artigiano) { %>
+              <article class="card stack">
+                <h3><%= artigiano.nome %></h3>
+                <div class="meta">
+                  <span class="badge"><%= artigiano.categoria_nome %></span>
+                  <span class="badge"><%= artigiano.telefono %></span>
+                </div>
+                <p><strong>Indirizzo:</strong> <%= artigiano.indirizzo_completo || artigiano.sede_legale || artigiano.citta_principale || 'Non disponibile' %></p>
+                <div class="stack">
+                  <a class="cta" href="/artigiano/<%= artigiano.slug %>">Apri attività</a>
+                  <a class="ghost" href="/claim/<%= artigiano.slug %>">Rivendica ora</a>
+                </div>
+              </article>
+            <% }) %>
+          </div>
+          <form method="post" action="/for-artigiani/nuova-scheda" class="stack">
+            <% Object.keys(draft || {}).forEach(function(key) { %>
+              <% if (key !== 'duplicate_confirmed') { %>
+                <input type="hidden" name="<%= key %>" value="<%= typeof draft[key] === 'boolean' ? (draft[key] ? 'on' : '') : String(draft[key] || '') %>" />
+              <% } %>
+            <% }) %>
+            <input type="hidden" name="duplicate_confirmed" value="no" />
+            <button class="danger" type="submit">Nessuna coincide, continua con la registrazione</button>
+          </form>
+        </section>
+      <% } %>
+
+      <% if (showRegistration) { %>
+        <section class="panel stack">
+          <div>
+            <div class="eyebrow">Nuova attivit&agrave;</div>
+            <h2>Registra la tua attivit&agrave;</h2>
+            <p>Inserisci i dati principali della tua azienda artigiana. L’indirizzo email sar&agrave; usato per inviarti il link di conferma che completa la registrazione.</p>
+          </div>
+          <form class="stack" method="post" action="/for-artigiani/nuova-scheda">
+            <div class="email-box">
+              <label>
+                Indirizzo email
+                <input name="email" type="email" value="<%= (draft && draft.email) || '' %>" placeholder="Es. info@azienda.it" />
+              </label>
+            </div>
+
+            <div class="request-grid">
+              <label>
+                Nome attivit&agrave;
+                <input name="nome_attivita" value="<%= (draft && draft.nome_attivita) || '' %>" placeholder="Es. Rossi Impianti" />
+              </label>
+              <label>
+                Categoria
+                <input name="categoria" value="<%= (draft && draft.categoria) || '' %>" placeholder="Es. Idraulica" />
+              </label>
+              <label>
+                Via
+                <input name="indirizzo_via" value="<%= (draft && draft.indirizzo_via) || '' %>" placeholder="Es. Via Milano" />
+              </label>
+              <label>
+                Numero civico
+                <input name="indirizzo_numero_civico" value="<%= (draft && draft.indirizzo_numero_civico) || '' %>" placeholder="Es. 58" />
+              </label>
+              <label>
+                CAP
+                <input name="indirizzo_cap" value="<%= (draft && draft.indirizzo_cap) || '' %>" placeholder="Es. 00199" />
+              </label>
+              <label>
+                Citt&agrave;
+                <input name="citta" value="<%= (draft && draft.citta) || '' %>" placeholder="Es. Roma" />
+              </label>
+              <label>
+                Provincia
+                <input name="indirizzo_provincia" value="<%= (draft && draft.indirizzo_provincia) || 'RM' %>" placeholder="Es. RM" />
+              </label>
+              <label>
+                Numero di telefono
+                <input name="telefono" value="<%= (draft && draft.telefono) || '' %>" placeholder="Es. 391 156 6400" />
+              </label>
+              <label>
+                Partita IVA
+                <input name="partita_iva" value="<%= (draft && draft.partita_iva) || '' %>" placeholder="Es. 12345678901" />
+              </label>
+              <label>
+                Sito web
+                <input name="sito_web" value="<%= (draft && draft.sito_web) || '' %>" placeholder="Es. https://www.azienda.it" />
+              </label>
+              <label>
+                Facebook
+                <input name="facebook_url" value="<%= (draft && draft.facebook_url) || '' %>" placeholder="Link profilo o pagina Facebook" />
+              </label>
+              <label>
+                Instagram
+                <input name="instagram_url" value="<%= (draft && draft.instagram_url) || '' %>" placeholder="Link profilo Instagram" />
+              </label>
+              <label>
+                TikTok
+                <input name="tiktok_url" value="<%= (draft && draft.tiktok_url) || '' %>" placeholder="Link profilo TikTok" />
+              </label>
+              <label>
+                Referente
+                <input name="referente" value="<%= (draft && draft.referente) || '' %>" placeholder="Nome e cognome" />
+              </label>
+            </div>
+
+            <div class="stack">
+              <div class="eyebrow">Descrizione Attivit&agrave;</div>
+              <article class="card">
+                <strong>Come scrivere una descrizione utile</strong>
+                <p class="helper">Spiega in poche righe chi siete, quali interventi fate più spesso, su quali zone lavorate e cosa vi distingue. Un testo ben scritto aiuta sia la ricerca interna su StelleVere sia la visibilità generale sui motori di ricerca.</p>
+                <p class="helper">Esempio: “Azienda specializzata in impianti idraulici, sostituzione caldaie, rifacimento bagni e ricerca perdite a Roma e provincia. Interveniamo rapidamente su abitazioni, condomini e attività commerciali.”</p>
+              </article>
+              <label>
+                Descrivi la tua attivit&agrave;
+                <textarea name="descrizione_attivita" placeholder="Racconta chi siete, quali lavori svolgete, le vostre specializzazioni, le zone in cui operate e cosa vi distingue."><%= (draft && draft.descrizione_attivita) || '' %></textarea>
+              </label>
+            </div>
+
+            <div class="stack">
+              <div class="eyebrow">Orari Di Apertura</div>
+              <div class="hours-grid">
+                <% weekDays.forEach(function(day, index) { %>
+                  <section class="hours-row">
+                    <div class="hours-head">
+                      <strong><%= day %></strong>
+                      <label class="checkline">
+                        <input type="checkbox" name="orari_<%= index %>_closed" <%= draft && draft[`orari_${index}_closed`] ? 'checked' : '' %> />
+                        Chiuso
+                      </label>
+                    </div>
+                    <div class="hours-slots">
+                      <div>
+                        <div class="helper">Mattina</div>
+                        <div class="slot-grid">
+                          <label>
+                            Dalle
+                            <select name="orari_<%= index %>_mattina_da">
+                              <% timeOptions.forEach(function(option) { %>
+                                <option value="<%= option %>" <%= ((draft && draft[`orari_${index}_mattina_da`]) || '') === option ? 'selected' : '' %>><%= option || '--' %></option>
+                              <% }) %>
+                            </select>
+                          </label>
+                          <label>
+                            Alle
+                            <select name="orari_<%= index %>_mattina_a">
+                              <% timeOptions.forEach(function(option) { %>
+                                <option value="<%= option %>" <%= ((draft && draft[`orari_${index}_mattina_a`]) || '') === option ? 'selected' : '' %>><%= option || '--' %></option>
+                              <% }) %>
+                            </select>
+                          </label>
+                        </div>
+                      </div>
+                      <div>
+                        <div class="helper">Pomeriggio</div>
+                        <div class="slot-grid">
+                          <label>
+                            Dalle
+                            <select name="orari_<%= index %>_pomeriggio_da">
+                              <% timeOptions.forEach(function(option) { %>
+                                <option value="<%= option %>" <%= ((draft && draft[`orari_${index}_pomeriggio_da`]) || '') === option ? 'selected' : '' %>><%= option || '--' %></option>
+                              <% }) %>
+                            </select>
+                          </label>
+                          <label>
+                            Alle
+                            <select name="orari_<%= index %>_pomeriggio_a">
+                              <% timeOptions.forEach(function(option) { %>
+                                <option value="<%= option %>" <%= ((draft && draft[`orari_${index}_pomeriggio_a`]) || '') === option ? 'selected' : '' %>><%= option || '--' %></option>
+                              <% }) %>
+                            </select>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                <% }) %>
+              </div>
+            </div>
+
+            <div class="stack">
+              <div class="eyebrow">Immagini Attivit&agrave;</div>
+              <p class="helper">Puoi caricare il logo e fino a 3 fotografie dell’attivit&agrave;, per esempio esterno, interno e furgone con scritte.</p>
+              <div class="media-grid">
+                <% ['logo', 'foto_1', 'foto_2', 'foto_3'].forEach(function(key, index) { %>
+                  <section class="media-card stack">
+                    <strong><%= key === 'logo' ? 'Logo attività' : 'Foto attività ' + index %></strong>
+                    <div class="media-preview" id="preview-<%= key %>"><%= key === 'logo' ? 'Logo non ancora caricato' : 'Foto non ancora caricata' %></div>
+                    <input type="file" accept="image/*" <%= key === 'logo' ? '' : 'capture="environment"' %> data-media-input="<%= key %>" />
+                    <input type="hidden" name="<%= key %>_data" value="<%= (draft && draft[key + '_data']) || '' %>" />
+                  </section>
+                <% }) %>
+              </div>
+            </div>
+
+            <div class="checks">
+              <label class="check">
+                <input name="consenso_termini" type="checkbox" <%= draft && draft.consenso_termini ? 'checked' : '' %> />
+                <span>Dichiaro di avere titolo per registrare questa attivit&agrave; e di accettare i termini del servizio.</span>
+              </label>
+              <label class="check">
+                <input name="consenso_privacy" type="checkbox" <%= draft && draft.consenso_privacy ? 'checked' : '' %> />
+                <span>Acconsento al trattamento dei dati necessari per la gestione della registrazione e della presenza su StelleVere.</span>
+              </label>
+              <label class="check">
+                <input name="consenso_email" type="checkbox" <%= draft && draft.consenso_email ? 'checked' : '' %> />
+                <span>Autorizzo l'invio via email del link di conferma necessario a completare la registrazione della mia attivit&agrave;.</span>
+              </label>
+            </div>
+
+            <button class="cta" type="submit">Registra la tua attivit&agrave;</button>
+          </form>
+        </section>
+      <% } %>
+    </main>
+    <script>
+      (function () {
+        function setPreview(key, dataUrl) {
+          const preview = document.getElementById('preview-' + key);
+          const hidden = document.querySelector('input[name="' + key + '_data"]');
+          if (!preview || !hidden) return;
+          hidden.value = dataUrl || '';
+          if (dataUrl) {
+            preview.innerHTML = '<img src="' + dataUrl + '" alt="' + key + '" />';
+          } else {
+            preview.textContent = key === 'logo' ? 'Logo non ancora caricato' : 'Foto non ancora caricata';
+          }
+        }
+        document.querySelectorAll('[data-media-input]').forEach(function (input) {
+          const key = input.getAttribute('data-media-input');
+          const hidden = document.querySelector('input[name="' + key + '_data"]');
+          if (hidden && hidden.value) setPreview(key, hidden.value);
+          input.addEventListener('change', function () {
+            const file = input.files && input.files[0];
+            if (!file) return setPreview(key, '');
+            const reader = new FileReader();
+            reader.onload = function (event) { setPreview(key, String(event.target.result || '')); };
+            reader.readAsDataURL(file);
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>

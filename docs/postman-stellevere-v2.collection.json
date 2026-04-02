@@ -1,0 +1,188 @@
+{
+  "info": {
+    "name": "StelleVere V2 API",
+    "_postman_id": "d5df4e2b-4f73-4f89-9f6f-1f9672b6e8d1",
+    "description": "Collezione Postman per gli endpoint REST della V2 di StelleVere.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5001" },
+    { "key": "writeKey", "value": "" },
+    { "key": "adminKey", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Artigiani - Lista",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/artigiani?page=1&per_page=20",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "artigiani"],
+          "query": [
+            { "key": "page", "value": "1" },
+            { "key": "per_page", "value": "20" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Artigiani - Ricerca",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/artigiani?q=doccia&categoria=idraulica&citta=Roma&page=1&per_page=20",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "artigiani"],
+          "query": [
+            { "key": "q", "value": "doccia" },
+            { "key": "categoria", "value": "idraulica" },
+            { "key": "citta", "value": "Roma" },
+            { "key": "page", "value": "1" },
+            { "key": "per_page", "value": "20" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Artigiani - Dettaglio",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/artigiani/idratest",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "artigiani", "idratest"]
+        }
+      }
+    },
+    {
+      "name": "Lavori - Lista",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/lavori?page=1&per_page=20",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "lavori"],
+          "query": [
+            { "key": "page", "value": "1" },
+            { "key": "per_page", "value": "20" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Lavori - Ricerca",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/lavori?q=caldaia&categoria=idraulica&citta=roma&page=1&per_page=20",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "lavori"],
+          "query": [
+            { "key": "q", "value": "caldaia" },
+            { "key": "categoria", "value": "idraulica" },
+            { "key": "citta", "value": "roma" },
+            { "key": "page", "value": "1" },
+            { "key": "per_page", "value": "20" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Lavori - Dettaglio",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/lavori/idratest/sostituzione-caldaia-a-condensazione-roma-1774339190198",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "lavori", "idratest", "sostituzione-caldaia-a-condensazione-roma-1774339190198"]
+        }
+      }
+    },
+    {
+      "name": "Recensioni - Lista",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/recensioni?page=1&per_page=20",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "recensioni"],
+          "query": [
+            { "key": "page", "value": "1" },
+            { "key": "per_page", "value": "20" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Lavori - Crea",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "x-api-key", "value": "{{writeKey}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"artigiano_slug\": \"idratest\",\n  \"categoria_slug\": \"idraulica\",\n  \"titolo\": \"Sostituzione rubinetto cucina\",\n  \"descrizione\": \"Sostituzione miscelatore cucina e verifica finale della tenuta.\",\n  \"citta\": \"Roma\",\n  \"quartiere\": \"Salario\",\n  \"cliente_whatsapp\": \"3911566400\",\n  \"lat\": 41.9326,\n  \"lng\": 12.4994,\n  \"immagini\": [\n    {\n      \"src\": \"data:image/jpeg;base64,...\",\n      \"name\": \"rubinetto-1.jpg\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/lavori",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "lavori"]
+        }
+      }
+    },
+    {
+      "name": "Recensioni - Crea",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "x-api-key", "value": "{{writeKey}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"artigiano_slug\": \"idratest\",\n  \"lavoro_slug\": \"sostituzione-caldaia-a-condensazione-roma-1774339190198\",\n  \"cliente_nome\": \"Mario Rossi\",\n  \"voto\": 5,\n  \"testo\": \"Lavoro preciso, puntuale e pulito.\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/recensioni",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "recensioni"]
+        }
+      }
+    },
+    {
+      "name": "Claims - Crea",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"artigiano_id\": 12,\n  \"telefono\": \"3911566400\",\n  \"metodo\": \"sms\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/claims",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "claims"]
+        }
+      }
+    },
+    {
+      "name": "Admin - Overview",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "x-api-key", "value": "{{adminKey}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/admin/overview",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "admin", "overview"]
+        }
+      }
+    }
+  ]
+}

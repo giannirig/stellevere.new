@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#bc5d08" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="manifest" href="<%= manifestUrl %>" />
+    <link rel="apple-touch-icon" href="/assets/pwa/icon-192.svg" />
+    <title><%= isEditMode ? 'Modifica lavoro' : 'Nuovo Lavoro' %></title>
+    <style>
+      body { margin: 0; font-family: Georgia, serif; background: linear-gradient(180deg, #111317 0%, #171b21 100%); color: #f2ece5; }
+      main { max-width: 620px; margin: 0 auto; padding: 12px 12px 96px; display: grid; gap: 14px; }
+      .panel { background: #1a1e24; border: 1px solid #343b45; border-radius: 16px; padding: 16px; box-shadow: 0 20px 40px rgba(0,0,0,.28); }
+      .muted { color: #b1a79a; }
+      .success { background: #15271f; border: 1px solid #2f5a46; border-radius: 12px; padding: 12px 14px; color: #c9f0d4; }
+      .error { background: #2a1717; border: 1px solid #72403c; border-radius: 12px; padding: 12px 14px; color: #ffb3a7; }
+      .back-link { color: #d48a53; text-decoration: none; }
+      .form-grid { display: grid; gap: 14px; margin-top: 18px; }
+      label, .gps-row { display: grid; gap: 6px; font-size: 14px; }
+      .field-title { display: block; font-weight: 700; }
+      input, textarea, select { width: 100%; padding: 14px 15px; border-radius: 12px; border: 1px solid #343b45; font: inherit; font-size: 16px; background: #13171c; color: #f2ece5; box-sizing: border-box; }
+      textarea { min-height: 140px; resize: vertical; }
+      .cta { display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(180deg, #c4793d 0%, #a85f28 100%); color: #fff; border: 0; border-radius: 999px; padding: 14px 18px; font: inherit; font-size: 16px; cursor: pointer; text-decoration: none; box-sizing: border-box; box-shadow: 0 12px 22px rgba(184,106,47,.22); }
+      .secondary { background: #232931; color: #d48a53; border: 1px solid #343b45; }
+      .sticky-submit { position: sticky; bottom: 8px; z-index: 10; background: linear-gradient(180deg, rgba(17,19,23,0), rgba(17,19,23,0.96) 28%); padding-top: 16px; }
+      .gps-badge { min-height: 20px; display: inline-flex; align-items: center; gap: 8px; }
+      .gps-icon { width: 14px; height: 14px; border-radius: 50%; display: inline-block; background: #d35a4b; box-shadow: 0 0 0 3px rgba(211, 90, 75, 0.18); }
+      .gps-icon.ok { background: #2d8a43; box-shadow: 0 0 0 3px rgba(45, 138, 67, 0.18); }
+      .gps-hint { font-size: 13px; color: #cfb49a; background: #2a211c; border: 1px solid #5a4331; border-radius: 12px; padding: 10px 12px; }
+      .map-shell { display: none; gap: 10px; margin-top: 8px; }
+      .map-shell.visible { display: grid; }
+      .map-frame { width: 100%; height: 240px; border: 1px solid #343b45; border-radius: 14px; overflow: hidden; background: #13171c; }
+      .map-frame iframe { width: 100%; height: 100%; border: 0; }
+      .map-note { font-size: 13px; color: #b1a79a; }
+      .images-grid { display: grid; gap: 12px; margin-top: 12px; }
+      .image-slot { background: #20252c; border: 1px solid #343b45; border-radius: 14px; padding: 14px; display: grid; gap: 10px; }
+      .preview { aspect-ratio: 4 / 3; border-radius: 12px; background: #15191e; border: 1px dashed #4b535f; display: grid; place-items: center; overflow: hidden; color: #cfb49a; font-size: 13px; }
+      .preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .image-actions { display: grid; gap: 8px; grid-template-columns: 1fr 1fr; }
+      .file-trigger { display: inline-flex; align-items: center; justify-content: center; background: #232931; color: #d48a53; border: 1px solid #343b45; border-radius: 999px; padding: 12px 14px; font: inherit; font-size: 15px; cursor: pointer; text-align: center; box-sizing: border-box; }
+      .file-trigger input { display: none; }
+      .examples { display: grid; gap: 10px; margin-top: 14px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .example-card { background: #20252c; border: 1px solid #343b45; border-radius: 14px; padding: 10px; display: grid; gap: 8px; align-content: start; }
+      .example-card.blank { border-style: dashed; background: #1c2127; }
+      .example-image { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 10px; display: block; }
+      .example-card strong { font-size: 14px; line-height: 1.2; color: #f2ece5; }
+      .example-card p { margin: 0; font-size: 12px; line-height: 1.35; color: #b1a79a; }
+      .example-card .cta { padding: 10px 12px; font-size: 14px; }
+      .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+      .install-box { background: linear-gradient(145deg, rgba(28,33,40,0.94), rgba(40,30,24,0.92)); border: 1px solid #4b3a2d; border-radius: 14px; padding: 14px; display: grid; gap: 8px; }
+      dialog { width: min(640px, calc(100vw - 24px)); border: 0; border-radius: 18px; padding: 0; box-shadow: 0 30px 60px rgba(0,0,0,0.32); }
+      dialog::backdrop { background: rgba(31, 26, 23, 0.5); }
+      .modal-body { padding: 22px; background: #1a1e24; }
+      a { color: #d48a53; text-decoration: none; }
+      @media (max-width: 720px) {
+        .actions { flex-direction: column; align-items: stretch; }
+        .cta, .secondary, .file-trigger { width: 100%; text-align: center; }
+        .image-actions { grid-template-columns: 1fr; }
+        .examples { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <a class="back-link" href="/dashboard/<%= artigiano.slug %>">&larr; Torna alla dashboard</a>
+
+      <section class="panel install-box">
+        <strong>Accedi senza login</strong>
+        <p class="muted">Aggiungi l’icona sul telefono o sul desktop per entrare subito nella tua area lavori e aprire direttamente l’inserimento nuovi lavori.</p>
+        <div class="actions" style="margin-top:0;">
+          <button class="cta secondary" type="button" id="install-app-button">Accedi senza login</button>
+          <span class="muted" id="install-app-hint">Se il browser non mostra il popup, usa "Aggiungi a schermata Home" o "Installa app" dal menu del browser.</span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h1><%= isEditMode ? 'Modifica lavoro' : 'Nuovo lavoro' %></h1>
+        <h2 style="font-size:20px; margin: 14px 0 6px;">Esempi da copiare</h2>
+        <p class="muted" style="margin-top:0;">Scegli una base pronta oppure una scheda vuota. Gli esempi cambiano in base alla categoria selezionata.</p>
+        <div class="examples" id="examples-container" style="margin-bottom: 16px;"></div>
+
+        <% if (saved) { %>
+          <div class="success">Lavoro pubblicato correttamente nella dashboard V2.</div>
+        <% } %>
+        <% if (error) { %>
+          <div class="error"><%= error %></div>
+        <% } %>
+
+        <form method="post" action="<%= isEditMode ? ('/dashboard/' + artigiano.slug + '/lavori/' + editJobSlug + '/modifica') : ('/dashboard/' + artigiano.slug + '/lavori/nuovo') %>" id="job-form">
+          <input type="hidden" id="lat" name="lat" value="<%= values.lat %>" />
+          <input type="hidden" id="lng" name="lng" value="<%= values.lng %>" />
+          <input type="hidden" id="immagini_json" name="immagini_json" value="<%- values.immagini_json %>" />
+
+          <div class="form-grid">
+            <label>
+              <span class="field-title">Categoria</span>
+              <select name="categoria_slug" id="categoria_slug" required>
+                <option value="">Seleziona categoria</option>
+                <% categories.forEach(function(category) { %>
+                  <option value="<%= category.slug %>" <%= values.categoria_slug === category.slug ? 'selected' : '' %>><%= category.nome %></option>
+                <% }) %>
+              </select>
+            </label>
+
+            <label>
+              <span class="field-title">Titolo</span>
+              <input id="titolo" name="titolo" value="<%= values.titolo %>" required />
+            </label>
+
+            <label>
+              <span class="field-title">Descrizione</span>
+              <textarea id="descrizione" name="descrizione" required><%= values.descrizione %></textarea>
+            </label>
+
+            <label>
+              <span class="field-title">Città</span>
+              <input name="citta" value="<%= values.citta %>" required />
+            </label>
+
+            <label>
+              <span class="field-title">Quartiere</span>
+              <input name="quartiere" value="<%= values.quartiere %>" required />
+            </label>
+
+            <label>
+              <span class="field-title">WhatsApp cliente</span>
+              <input name="cliente_whatsapp" value="<%= values.cliente_whatsapp || '' %>" placeholder="+39..." />
+            </label>
+
+            <div class="gps-row">
+              <span class="field-title">Conferma la zona</span>
+              <button class="cta secondary" type="button" id="gps-button">Conferma la zona</button>
+              <span class="muted gps-badge" id="gps-status"><span class="gps-icon <%= values.lat && values.lng ? 'ok' : '' %>" id="gps-icon"></span><span id="gps-status-text"><%= values.lat && values.lng ? 'Zona già confermata' : 'Zona non ancora confermata' %></span></span>
+              <div class="gps-hint" id="gps-hint">Se il browser lo chiede, consenti la posizione. Se hai già negato il permesso, riattivalo dalle impostazioni del browser.</div>
+              <div class="map-shell <%= values.lat && values.lng ? 'visible' : '' %>" id="gps-map-shell">
+                <div class="map-frame">
+                  <iframe
+                    id="gps-map-frame"
+                    title="Mappa zona lavoro"
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                    src="<%= values.lat && values.lng ? ('https://www.openstreetmap.org/export/embed.html?bbox=' + (Number(values.lng) - 0.01) + '%2C' + (Number(values.lat) - 0.01) + '%2C' + (Number(values.lng) + 0.01) + '%2C' + (Number(values.lat) + 0.01) + '&layer=mapnik&marker=' + values.lat + '%2C' + values.lng) : 'about:blank' %>"></iframe>
+                </div>
+                <div class="map-note" id="gps-map-note"><%= values.lat && values.lng ? 'Pin posizionato sulla zona confermata.' : 'Dopo la conferma comparirà qui la mappa con il pin della zona.' %></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:18px;">
+            <strong>Immagine 1</strong>
+            <div class="images-grid">
+              <div class="image-slot">
+                <div class="preview" id="preview-1">Immagine 1</div>
+                <div class="image-actions">
+                  <label class="file-trigger">
+                    Scegli file
+                    <input type="file" accept="image/*" data-image-index="0" />
+                  </label>
+                  <label class="file-trigger">
+                    Apri fotocamera
+                    <input type="file" accept="image/*" capture="environment" data-image-index="0" />
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:18px;">
+            <strong>Immagine 2</strong>
+            <div class="images-grid">
+              <div class="image-slot">
+                <div class="preview" id="preview-2">Immagine 2</div>
+                <div class="image-actions">
+                  <label class="file-trigger">
+                    Scegli file
+                    <input type="file" accept="image/*" data-image-index="1" />
+                  </label>
+                  <label class="file-trigger">
+                    Apri fotocamera
+                    <input type="file" accept="image/*" capture="environment" data-image-index="1" />
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:18px;">
+            <strong>Immagine 3</strong>
+            <div class="images-grid">
+              <div class="image-slot">
+                <div class="preview" id="preview-3">Immagine 3</div>
+                <div class="image-actions">
+                  <label class="file-trigger">
+                    Scegli file
+                    <input type="file" accept="image/*" data-image-index="2" />
+                  </label>
+                  <label class="file-trigger">
+                    Apri fotocamera
+                    <input type="file" accept="image/*" capture="environment" data-image-index="2" />
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sticky-submit">
+            <button class="cta" type="submit"><%= isEditMode ? 'Salva modifiche' : 'Invia' %></button>
+          </div>
+        </form>
+      </section>
+
+    </main>
+
+    <dialog id="upgrade-modal">
+      <div class="modal-body">
+        <h3>Hai raggiunto il limite dei 5 lavori gratuiti</h3>
+        <p>Per pubblicare altri lavori puoi attivare un piano a pagamento e aumentare il numero di lavori pubblicabili.</p>
+        <div class="actions">
+          <a class="cta" href="/dashboard/<%= artigiano.slug %>/piani">Vedi piani disponibili</a>
+          <button class="cta secondary" type="button" id="close-upgrade-modal">Chiudi</button>
+        </div>
+      </div>
+    </dialog>
+
+    <script>
+      const examplesByCategory = <%- JSON.stringify(examplesByCategory) %>;
+      const categorySelect = document.getElementById('categoria_slug');
+      const examplesContainer = document.getElementById('examples-container');
+      const titoloInput = document.getElementById('titolo');
+      const descrizioneInput = document.getElementById('descrizione');
+      const latInput = document.getElementById('lat');
+      const lngInput = document.getElementById('lng');
+      const gpsButton = document.getElementById('gps-button');
+      const gpsStatus = document.getElementById('gps-status');
+      const gpsIcon = document.getElementById('gps-icon');
+      const gpsStatusText = document.getElementById('gps-status-text');
+      const gpsHint = document.getElementById('gps-hint');
+      const gpsMapShell = document.getElementById('gps-map-shell');
+      const gpsMapFrame = document.getElementById('gps-map-frame');
+      const gpsMapNote = document.getElementById('gps-map-note');
+      const immaginiInput = document.getElementById('immagini_json');
+      const upgradeModal = document.getElementById('upgrade-modal');
+      const closeUpgradeModal = document.getElementById('close-upgrade-modal');
+      const installButton = document.getElementById('install-app-button');
+      const installHint = document.getElementById('install-app-hint');
+      const imageState = [null, null, null];
+      const upgradeRequired = <%- JSON.stringify(upgradeRequired) %>;
+      let deferredInstallPrompt = null;
+
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/assets/pwa/sw.js').catch(() => {});
+      }
+
+      window.addEventListener('beforeinstallprompt', (event) => {
+        event.preventDefault();
+        deferredInstallPrompt = event;
+        if (installHint) {
+          installHint.textContent = 'L’accesso rapido è pronto: tocca "Accedi senza login" per aggiungere l’icona al dispositivo.';
+        }
+      });
+
+      if (installButton) {
+        installButton.addEventListener('click', async () => {
+          if (!deferredInstallPrompt) {
+            if (installHint) {
+              installHint.textContent = 'Su iPhone usa Condividi > Aggiungi a schermata Home. Su desktop usa il menu del browser > Installa app.';
+            }
+            return;
+          }
+          deferredInstallPrompt.prompt();
+          await deferredInstallPrompt.userChoice.catch(() => null);
+          deferredInstallPrompt = null;
+        });
+      }
+
+      function renderExamples() {
+        const category = categorySelect.value;
+        const examples = examplesByCategory[category] || [];
+        if (!examples.length) {
+          examplesContainer.innerHTML = '<div class="muted">Seleziona una categoria per vedere gli esempi disponibili.</div>';
+          return;
+        }
+
+        examplesContainer.innerHTML = examples.map((example, index) => `
+          <article class="example-card ${example.is_blank ? 'blank' : ''}">
+            <img class="example-image" src="${example.image_src}" alt="${example.titolo}">
+            <strong>${example.titolo}</strong>
+            <p>${example.descrizione || 'Parti da una scheda completamente vuota e scrivi tutto tu.'}</p>
+            <button class="cta secondary" type="button" data-example-index="${index}">${example.is_blank ? 'Usa scheda vuota' : 'Usa esempio'}</button>
+          </article>
+        `).join('');
+
+        examplesContainer.querySelectorAll('[data-example-index]').forEach((button) => {
+          button.addEventListener('click', () => {
+            const example = examples[Number(button.getAttribute('data-example-index'))];
+            if (!example) return;
+            titoloInput.value = example.is_blank ? '' : example.titolo;
+            descrizioneInput.value = example.is_blank ? '' : example.descrizione;
+          });
+        });
+      }
+
+      function roundApprox(value) {
+        return (Math.round(Number(value) * 1000) / 1000).toFixed(3);
+      }
+
+      function buildMapUrl(lat, lng) {
+        const latitude = Number(lat);
+        const longitude = Number(lng);
+        const delta = 0.01;
+        const left = (longitude - delta).toFixed(3);
+        const bottom = (latitude - delta).toFixed(3);
+        const right = (longitude + delta).toFixed(3);
+        const top = (latitude + delta).toFixed(3);
+        return `https://www.openstreetmap.org/export/embed.html?bbox=${left}%2C${bottom}%2C${right}%2C${top}&layer=mapnik&marker=${latitude.toFixed(3)}%2C${longitude.toFixed(3)}`;
+      }
+
+      function updateMapPreview(lat, lng) {
+        if (!gpsMapShell || !gpsMapFrame || !gpsMapNote) return;
+        gpsMapShell.classList.add('visible');
+        gpsMapFrame.src = buildMapUrl(lat, lng);
+        gpsMapNote.textContent = 'Pin posizionato sulla zona confermata.';
+      }
+
+      function syncImagesField() {
+        immaginiInput.value = JSON.stringify(imageState.filter(Boolean));
+      }
+
+      function bindImageInputs() {
+        document.querySelectorAll('[data-image-index]').forEach((input) => {
+          input.addEventListener('change', () => {
+            const file = input.files && input.files[0];
+            const index = Number(input.getAttribute('data-image-index'));
+            const preview = document.getElementById(`preview-${index + 1}`);
+            if (!file || !preview) {
+              imageState[index] = null;
+              syncImagesField();
+              return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = () => {
+              imageState[index] = {
+                name: file.name,
+                src: reader.result,
+              };
+              preview.innerHTML = `<img src="${reader.result}" alt="${file.name}">`;
+              syncImagesField();
+            };
+            reader.readAsDataURL(file);
+          });
+        });
+      }
+
+      function hydrateExistingImages() {
+        let existingImages = [];
+        try {
+          existingImages = JSON.parse(immaginiInput.value || '[]');
+        } catch (_) {
+          existingImages = [];
+        }
+
+        existingImages.slice(0, 3).forEach((image, index) => {
+          if (!image || !image.src) return;
+          imageState[index] = image;
+          const preview = document.getElementById(`preview-${index + 1}`);
+          if (preview) {
+            preview.innerHTML = `<img src="${image.src}" alt="${image.name || ('Immagine ' + (index + 1))}">`;
+          }
+        });
+        syncImagesField();
+      }
+
+      if (categorySelect) {
+        categorySelect.addEventListener('change', renderExamples);
+        renderExamples();
+      }
+      hydrateExistingImages();
+
+      bindImageInputs();
+
+      if (latInput.value && lngInput.value) {
+        updateMapPreview(latInput.value, lngInput.value);
+      }
+
+      if (gpsButton) {
+        gpsButton.addEventListener('click', () => {
+          if (!navigator.geolocation) {
+            alert('Geolocalizzazione non disponibile su questo dispositivo.');
+            return;
+          }
+          gpsButton.disabled = true;
+          gpsButton.textContent = 'Conferma in corso...';
+          navigator.geolocation.getCurrentPosition((position) => {
+            latInput.value = roundApprox(position.coords.latitude);
+            lngInput.value = roundApprox(position.coords.longitude);
+            updateMapPreview(latInput.value, lngInput.value);
+            if (gpsIcon) gpsIcon.classList.add('ok');
+            if (gpsStatusText) gpsStatusText.textContent = 'Zona confermata';
+            if (gpsHint) {
+              gpsHint.textContent = 'Posizione rilevata correttamente. Le coordinate restano approssimative per identificare solo la zona.';
+            }
+            gpsButton.disabled = false;
+            gpsButton.textContent = 'Conferma la zona';
+          }, (error) => {
+            gpsButton.disabled = false;
+            gpsButton.textContent = 'Conferma la zona';
+            if (error && error.code === 1) {
+              if (gpsIcon) gpsIcon.classList.remove('ok');
+              if (gpsStatusText) gpsStatusText.textContent = 'Permesso posizione non concesso';
+              if (gpsHint) {
+                gpsHint.textContent = 'Per confermare la zona devi consentire la posizione al browser. Su smartphone puoi riaprirla dalle impostazioni del sito.';
+              }
+              return;
+            }
+            if (gpsIcon) gpsIcon.classList.remove('ok');
+            if (gpsStatusText) gpsStatusText.textContent = 'Non sono riuscito a rilevare la zona';
+            if (gpsHint) {
+              gpsHint.textContent = 'Riprova tra qualche secondo oppure controlla che la geolocalizzazione del telefono sia attiva.';
+            }
+          }, {
+            enableHighAccuracy: false,
+            timeout: 10000,
+            maximumAge: 60000,
+          });
+        });
+      }
+
+      if (upgradeRequired && upgradeModal) {
+        upgradeModal.showModal();
+      }
+      if (closeUpgradeModal && upgradeModal) {
+        closeUpgradeModal.addEventListener('click', () => upgradeModal.close());
+      }
+    </script>
+  </body>
+</html>

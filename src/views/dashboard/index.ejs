@@ -1,0 +1,759 @@
+<%
+  const timeOptions = [''];
+  for (let hour = 0; hour < 24; hour += 1) {
+    for (let minute = 0; minute < 60; minute += 15) {
+      const hh = String(hour).padStart(2, '0');
+      const mm = String(minute).padStart(2, '0');
+      timeOptions.push(`${hh}:${mm}`);
+    }
+  }
+%>
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#b85b10" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="manifest" href="<%= manifestUrl %>" />
+    <link rel="apple-touch-icon" href="/assets/pwa/icon-192.svg" />
+    <title>Area Artigiano | <%= artigiano.nome %></title>
+    <style>
+      :root {
+        --bg: #111317;
+        --surface: #1a1e24;
+        --surface-strong: #20252c;
+        --ink: #f2ece5;
+        --muted: #b1a79a;
+        --line: #343b45;
+        --accent: #b86a2f;
+        --accent-dark: #d48a53;
+        --accent-soft: #2a211c;
+        --ok: #15271f;
+        --ok-line: #2f5a46;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Georgia, serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top right, rgba(184, 106, 47, 0.18), transparent 24%),
+          radial-gradient(circle at top left, rgba(212, 138, 83, 0.10), transparent 26%),
+          linear-gradient(180deg, #111317 0%, #171b21 100%);
+      }
+      main { max-width: 760px; margin: 0 auto; padding: 14px 12px 54px; display: grid; gap: 14px; }
+      .panel {
+        background: rgba(26, 30, 36, 0.96);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 18px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.28);
+        backdrop-filter: blur(10px);
+      }
+      .eyebrow {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: .12em;
+        color: var(--accent);
+        font-weight: 700;
+      }
+      h1, h2, h3, p { margin: 0; }
+      h1 { font-size: clamp(30px, 8vw, 48px); line-height: 1.02; }
+      h2 { font-size: 24px; line-height: 1.1; }
+      h3 { font-size: 18px; line-height: 1.15; }
+      .muted { color: var(--muted); }
+      .hero {
+        background:
+          linear-gradient(145deg, rgba(24, 28, 34, 0.98), rgba(34, 26, 22, 0.98)),
+          var(--surface);
+        overflow: hidden;
+        position: relative;
+      }
+      .hero::after {
+        content: "";
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        right: -50px;
+        top: -30px;
+        background: radial-gradient(circle, rgba(184, 106, 47, 0.22), transparent 70%);
+        pointer-events: none;
+      }
+      .hero-grid { display: grid; gap: 16px; position: relative; z-index: 1; }
+      .hero-copy { display: grid; gap: 12px; }
+      .hero-copy p { font-size: 16px; line-height: 1.45; }
+      .hero-badges, .row, .mini-row { display: flex; flex-wrap: wrap; gap: 8px; }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 8px 12px;
+        background: rgba(255,255,255,0.04);
+        font-size: 14px;
+      }
+      .cta, button.cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 15px 18px;
+        border-radius: 999px;
+        background: linear-gradient(180deg, #c4793d 0%, #a85f28 100%);
+        color: #fff;
+        text-decoration: none;
+        border: 0;
+        cursor: pointer;
+        font: inherit;
+        font-size: 16px;
+        font-weight: 700;
+        box-shadow: 0 12px 22px rgba(184, 106, 47, 0.22);
+      }
+      .secondary {
+        background: #232931;
+        color: var(--accent);
+        border: 1px solid var(--line);
+        box-shadow: none;
+      }
+      .ghost {
+        background: transparent;
+        color: var(--accent-dark);
+        border: 1px dashed #d8b89a;
+        box-shadow: none;
+      }
+      .stack { display: grid; gap: 10px; }
+      .notice {
+        background: var(--ok);
+        border: 1px solid var(--ok-line);
+        border-radius: 18px;
+        padding: 13px 14px;
+      }
+      .stats-grid, .jobs-grid, .plans-grid, .profile-grid, .why-grid {
+        display: grid;
+        gap: 12px;
+      }
+      .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .stat, .job-card, .plan-card, .profile-card, .why-card, .action-card {
+        background: #20252c;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 14px;
+      }
+      .stat strong {
+        display: block;
+        font-size: 28px;
+        line-height: 1;
+        margin-bottom: 8px;
+      }
+      .section-head { display: grid; gap: 6px; margin-bottom: 12px; }
+      .action-grid { display: grid; gap: 10px; }
+      .action-card {
+        background: var(--surface-strong);
+        border-style: solid;
+      }
+      .why-card { display: grid; gap: 6px; }
+      .jobs-grid { grid-template-columns: 1fr; }
+      .job-card { padding: 0; overflow: hidden; }
+      .job-media {
+        aspect-ratio: 16 / 10;
+        background: linear-gradient(135deg, #2a3139, #3a2d24);
+        display: grid;
+        place-items: center;
+        color: #caa17a;
+      }
+      .job-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .job-body { padding: 14px; display: grid; gap: 10px; }
+      .job-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 13px; color: var(--muted); }
+      .profile-grid { grid-template-columns: 1fr; }
+      .profile-card ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+      .profile-card li { font-size: 14px; line-height: 1.35; }
+      .embed-box {
+        display: grid;
+        gap: 12px;
+      }
+      .embed-code {
+        width: 100%;
+        min-height: 150px;
+        padding: 14px;
+        border-radius: 18px;
+        border: 1px solid #46372b;
+        background: #121418;
+        color: #f8eee2;
+        font: 14px/1.45 Consolas, monospace;
+        resize: vertical;
+      }
+      .embed-preview {
+        width: 100%;
+        min-height: 420px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: #13161b;
+      }
+      .embed-links {
+        display: grid;
+        gap: 8px;
+      }
+      .embed-links code {
+        display: block;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: #20252c;
+        font: 13px/1.4 Consolas, monospace;
+        overflow-wrap: anywhere;
+      }
+      .plans-grid { grid-template-columns: 1fr; }
+      .plan-card.active { border-color: #d7a87b; box-shadow: 0 0 0 2px rgba(184, 91, 16, 0.12); }
+      .install-box {
+        background: linear-gradient(145deg, rgba(28,33,40,0.94), rgba(40,30,24,0.92));
+        border: 1px solid #4b3a2d;
+        border-radius: 14px;
+        padding: 14px;
+        display: grid;
+        gap: 8px;
+      }
+      .install-box .muted { font-size: 14px; line-height: 1.35; }
+      dialog { width: min(940px, calc(100vw - 20px)); border: 0; border-radius: 24px; padding: 0; box-shadow: 0 30px 60px rgba(0,0,0,0.18); }
+      dialog::backdrop { background: rgba(26, 18, 13, 0.45); }
+      .modal-body { padding: 18px; background: var(--surface); }
+      .alert {
+        background: var(--accent-soft);
+        border: 1px solid #5a4331;
+        border-radius: 14px;
+        padding: 14px;
+      }
+      .form-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: 1fr;
+        margin-top: 16px;
+      }
+      label { display: grid; gap: 6px; font-size: 14px; }
+      input, select {
+        width: 100%;
+        padding: 13px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        font: inherit;
+        font-size: 16px;
+        background: #13171c;
+        color: var(--ink);
+      }
+      textarea {
+        width: 100%;
+        min-height: 150px;
+        padding: 13px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        font: inherit;
+        font-size: 16px;
+        background: #13171c;
+        color: var(--ink);
+        resize: vertical;
+      }
+      .full { grid-column: 1 / -1; }
+      .hours-grid { display: grid; gap: 12px; margin-top: 18px; }
+      .hours-row { border: 1px solid var(--line); border-radius: 14px; padding: 14px; background: #20252c; display: grid; gap: 12px; }
+      .hours-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+      .hours-slots, .slot-grid { display: grid; gap: 10px; grid-template-columns: 1fr; }
+      .checkline { display: inline-flex; align-items: center; gap: 8px; }
+      .checkline input { width: auto; }
+      .bottom-space { height: 24px; }
+      @media (min-width: 760px) {
+        main { max-width: 1180px; padding: 24px 18px 64px; }
+        .panel { padding: 22px; }
+        .hero-grid { grid-template-columns: 1.2fr .8fr; align-items: start; }
+        .cta { width: auto; }
+        .action-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .stats-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .jobs-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .profile-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .plans-grid, .why-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .actions-inline { display: flex; flex-wrap: wrap; gap: 10px; }
+        .hours-slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .slot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="panel hero">
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <div class="eyebrow">Area Artigiano</div>
+            <h1>Pubblica i tuoi lavori e fatti scegliere per quello che hai già realizzato.</h1>
+            <p class="muted">La tua attività è stata rivendicata. Ora puoi trasformare ogni intervento in una pagina che mostra foto, zona del lavoro, recensione del cliente e visibilità online.</p>
+
+            <% if (saved) { %>
+              <div class="notice">Profilo aggiornato correttamente.</div>
+            <% } %>
+            <% if (jobSaved) { %>
+              <div class="notice">Lavoro pubblicato correttamente. Più sotto trovi la scheda con il tasto WhatsApp per chiedere la recensione.</div>
+            <% } %>
+
+            <div class="hero-badges">
+              <span class="pill">Attività: <strong><%= artigiano.nome %></strong></span>
+              <span class="pill">Piano: <strong><%= activePlan.nome %></strong></span>
+              <span class="pill">Lavori online: <strong><%= stats.activeJobs %></strong></span>
+            </div>
+
+            <div class="stack">
+              <a class="cta" href="/dashboard/<%= artigiano.slug %>/lavori/nuovo">Pubblica subito un nuovo lavoro</a>
+              <div class="actions-inline">
+                <button class="cta secondary" type="button" id="open-profile-modal">Aggiorna i dati attività</button>
+                <a class="cta secondary" href="<%= website.previewUrl %>">Guarda l’anteprima del sito</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="stack">
+            <div class="install-box">
+              <strong>Accedi senza login</strong>
+              <p class="muted">Aggiungi l’icona sul telefono o sul desktop per entrare direttamente nella tua area lavori e pubblicare più in fretta.</p>
+              <button class="cta secondary" type="button" id="install-app-button">Accedi senza login</button>
+              <span class="muted" id="install-app-hint">Se il browser non mostra il popup, usa “Aggiungi a schermata Home” o “Installa app” dal menu del browser.</span>
+            </div>
+
+            <div class="why-grid">
+              <article class="why-card">
+                <strong>Più fiducia</strong>
+                <p class="muted">Le foto dei lavori reali fanno capire subito cosa sai fare.</p>
+              </article>
+              <article class="why-card">
+                <strong>Più pagine visibili</strong>
+                <p class="muted">Ogni lavoro genera pagine utili per categoria, città e quartiere.</p>
+              </article>
+              <article class="why-card">
+                <strong>Più recensioni vere</strong>
+                <p class="muted">Dalla scheda del lavoro puoi inviare al cliente il link WhatsApp per recensirti.</p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div class="eyebrow">Prossimo Passo</div>
+          <h2>La strada più veloce per iniziare</h2>
+          <p class="muted">Da smartphone il percorso migliore è sempre questo: pubblica un lavoro, aggiungi le foto, conferma la zona e poi chiedi la recensione al cliente.</p>
+        </div>
+        <div class="action-grid">
+          <article class="action-card">
+            <strong>1. Pubblica il lavoro</strong>
+            <p class="muted">Titolo, descrizione, zona e immagini. In pochi minuti hai la tua prima prova pubblica.</p>
+          </article>
+          <article class="action-card">
+            <strong>2. Fatti recensire</strong>
+            <p class="muted">Invia il messaggio WhatsApp dalla scheda lavoro e raccogli una recensione legata a quell’intervento.</p>
+          </article>
+          <article class="action-card">
+            <strong>3. Aumenta la visibilità</strong>
+            <p class="muted">Ogni nuovo lavoro aumenta le pagine indicizzabili e rafforza la tua presenza locale.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="stats-grid">
+        <article class="stat">
+          <strong><%= stats.activeJobs %></strong>
+          <span class="muted">lavori pubblicati</span>
+        </article>
+        <article class="stat">
+          <strong><%= stats.availableSlots === null ? '∞' : stats.availableSlots %></strong>
+          <span class="muted">slot ancora disponibili</span>
+        </article>
+        <article class="stat">
+          <strong><%= stats.reviewsCount %></strong>
+          <span class="muted">recensioni ricevute</span>
+        </article>
+        <article class="stat">
+          <strong><%= stats.averageRating %></strong>
+          <span class="muted">valutazione media</span>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div class="eyebrow">Le Tue Schede</div>
+          <h2>I lavori che stanno già parlando per te</h2>
+          <p class="muted">Qui trovi i lavori pubblicati. Se il cliente ha WhatsApp, da ogni scheda puoi inviargli il link recensione del singolo intervento.</p>
+          <% if (/localhost/i.test(publicBaseUrl || '')) { %>
+            <p class="muted">Nota: finché lavori in locale, il link recensione userà <strong>localhost</strong>. Su WhatsApp non è un link utile per il cliente: per renderlo davvero cliccabile serve un dominio pubblico in <code>APP_BASE_URL</code>.</p>
+          <% } %>
+        </div>
+
+        <% if (!lavori.length) { %>
+          <div class="action-card">
+            <strong>Nessun lavoro pubblicato per ora</strong>
+            <p class="muted">Inizia dal primo: è il modo più rapido per far capire ai clienti che tipo di interventi realizzi davvero.</p>
+            <div class="stack" style="margin-top: 10px;">
+              <a class="cta" href="/dashboard/<%= artigiano.slug %>/lavori/nuovo">Pubblica il primo lavoro</a>
+            </div>
+          </div>
+        <% } else { %>
+          <div class="jobs-grid">
+            <% lavori.forEach(function(lavoro) { %>
+              <article class="job-card">
+                <div class="job-media">
+                  <% if (lavoro.cover_path) { %>
+                    <img src="<%= lavoro.cover_path.startsWith('data:') ? lavoro.cover_path : '/uploads/' + lavoro.cover_path %>" alt="<%= lavoro.cover_alt || lavoro.titolo %>" />
+                  <% } else { %>
+                    <span>Copertina lavoro</span>
+                  <% } %>
+                </div>
+                <div class="job-body">
+                  <strong><%= lavoro.titolo %></strong>
+                  <div class="job-meta">
+                    <span><%= lavoro.citta %></span>
+                    <% if (lavoro.quartiere) { %><span><%= lavoro.quartiere %></span><% } %>
+                  </div>
+                  <div class="job-meta">
+                    <span>Recensioni: <%= lavoro.reviews_count || 0 %></span>
+                    <span>Valutazione: <%= Number(lavoro.rating_avg || 0).toFixed(1) %></span>
+                  </div>
+                  <a class="cta secondary" href="/dashboard/<%= artigiano.slug %>/lavori/<%= lavoro.slug %>/modifica">Modifica descrizione e immagini</a>
+                  <% if (lavoro.cliente_whatsapp) { %>
+                    <button
+                      class="cta secondary whatsapp-review"
+                      type="button"
+                      data-phone="<%= lavoro.cliente_whatsapp %>"
+                      data-review-path="/recensione/<%= artigiano.slug %>/<%= lavoro.slug %>"
+                      data-base-url="<%= publicBaseUrl %>"
+                      data-title="<%= lavoro.titolo.replace(/"/g, '&quot;') %>">Invia richiesta recensione su WhatsApp</button>
+                  <% } else { %>
+                    <p class="muted">Per chiedere la recensione, inserisci il numero WhatsApp del cliente quando pubblichi il lavoro.</p>
+                  <% } %>
+                </div>
+              </article>
+            <% }) %>
+          </div>
+        <% } %>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div class="eyebrow">Profilo Attività</div>
+          <h2>Controlla che la tua scheda sia completa</h2>
+          <p class="muted">Più la scheda è chiara, più sarà semplice per il cliente fidarsi e contattarti dopo aver visto i lavori pubblicati.</p>
+        </div>
+        <div class="profile-grid">
+          <div class="profile-card">
+            <strong>Dati azienda</strong>
+            <ul>
+              <li>Nome attività: <span class="muted"><%= artigiano.nome %></span></li>
+              <li>Indirizzo: <span class="muted"><%= artigiano.sede_legale || 'Non impostato' %></span></li>
+              <li>Telefono: <span class="muted"><%= artigiano.telefono %></span></li>
+              <li>Email interna: <span class="muted"><%= artigiano.internal_email || 'Non impostata' %></span></li>
+            </ul>
+          </div>
+          <div class="profile-card">
+            <strong>Orari</strong>
+            <ul>
+              <% artigiano.hours.forEach(function(item) { %>
+                <li><%= item.day %>: <span class="muted"><%= item.display || item.value %></span></li>
+              <% }) %>
+            </ul>
+          </div>
+          <div class="profile-card">
+            <strong>Presenza online</strong>
+            <ul>
+              <li>Sito web: <span class="muted"><%= artigiano.website_url || 'Non impostato' %></span></li>
+              <li>Facebook: <span class="muted"><%= artigiano.facebook_url || 'Non impostato' %></span></li>
+              <li>Instagram: <span class="muted"><%= artigiano.instagram_url || 'Non impostato' %></span></li>
+              <li>TikTok: <span class="muted"><%= artigiano.tiktok_url || 'Non impostato' %></span></li>
+            </ul>
+          </div>
+          <div class="profile-card">
+            <strong>Descrizione attività</strong>
+            <p class="muted"><%= artigiano.descrizione_attivita || 'Non ancora impostata' %></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div class="eyebrow">Widget Sito</div>
+          <h2>Mostra i tuoi lavori anche sul tuo sito web</h2>
+          <p class="muted">Incolla questo codice nel tuo sito per mostrare i lavori pubblicati su StelleVere. Il widget porta traffico ai singoli lavori e alla tua scheda pubblica.</p>
+          <p class="muted">Con il piano <strong><%= activePlan.nome %></strong> il widget può mostrare <strong><%= activePlan.maxLavori === null ? 'tutti i lavori pubblicati' : 'fino a ' + activePlan.maxLavori + ' lavori' %></strong>.</p>
+          <p class="muted">Per il massimo valore SEO fai usare al webmaster il frammento HTML server-rendered o il feed JSON, così i lavori possono essere stampati direttamente nel markup del sito.</p>
+        </div>
+        <div class="embed-box">
+          <div class="row">
+            <a class="cta secondary" href="<%= publicBaseUrl %>/embed/<%= artigiano.slug %>" target="_blank" rel="noopener">Apri il widget da solo</a>
+            <button class="cta secondary" type="button" id="copy-embed-code">Copia il codice embed</button>
+          </div>
+          <textarea class="embed-code" id="embed-code" readonly><%= `<div id="stellevere-widget-${artigiano.slug}"></div>
+<script
+  src="${publicBaseUrl}/assets/embed/stellevere-widget.js"
+  data-artigiano="${artigiano.slug}"
+  data-target="#stellevere-widget-${artigiano.slug}"
+  data-limit="${activePlan.maxLavori === null ? 12 : Math.min(activePlan.maxLavori, 12)}"><\/script>` %></textarea>
+          <iframe
+            class="embed-preview"
+            src="<%= publicBaseUrl %>/embed/<%= artigiano.slug %>"
+            title="Anteprima widget StelleVere"
+            loading="lazy"></iframe>
+          <div class="embed-links">
+            <strong>Per integrazione SEO-friendly</strong>
+            <code><%= publicBaseUrl %>/embed/<%= artigiano.slug %>/html?limit=<%= activePlan.maxLavori === null ? 12 : Math.min(activePlan.maxLavori, 12) %></code>
+            <code><%= publicBaseUrl %>/api/artigiani/<%= artigiano.slug %>/lavori-feed?limit=<%= activePlan.maxLavori === null ? 12 : Math.min(activePlan.maxLavori, 12) %></code>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div class="eyebrow">Piani</div>
+          <h2>Scegli quanto vuoi spingere la tua visibilità</h2>
+          <p class="muted">Più lavori puoi pubblicare, più pagine indicizzabili crei e più occasioni hai di mostrare cosa hai già realizzato.</p>
+        </div>
+        <div class="plans-grid">
+          <% plans.forEach(function(plan) { %>
+            <article class="plan-card <%= plan.slug === activePlan.slug ? 'active' : '' %>">
+              <strong><%= plan.nome %></strong>
+              <p class="muted">€ <%= plan.prezzo %><%= plan.slug === 'free' ? '' : '/mese' %></p>
+              <p><%= plan.maxLavori === null ? 'Lavori illimitati' : 'Fino a ' + plan.maxLavori + ' lavori pubblicati' %></p>
+              <% if (plan.slug === activePlan.slug) { %>
+                <p><strong>Piano attivo</strong></p>
+              <% } %>
+            </article>
+          <% }) %>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div class="eyebrow">Sito Web</div>
+          <h2>Attiva il sito già preparato per la tua attività</h2>
+          <p class="muted">L’attivazione del sito a €<%= website.activationPrice %> include il piano base fino a 10 lavori pubblicati per 12 mesi.</p>
+        </div>
+        <div class="row">
+          <span class="pill">Stato sito: <strong><%= website.enabled ? 'Attivo' : 'Non attivo' %></strong></span>
+          <span class="pill">Bundle incluso: <strong><%= website.includesPlan %></strong></span>
+          <span class="pill">Durata: <strong><%= website.includesDuration %></strong></span>
+        </div>
+      </section>
+
+      <div class="bottom-space"></div>
+    </main>
+
+    <dialog id="profile-warning-modal">
+      <div class="modal-body">
+        <div class="eyebrow">Attenzione</div>
+        <h3>Prima di modificare i dati profilo</h3>
+        <div class="alert">
+          <p>Assicurati che i dati inseriti siano coerenti con quelli già presenti su Google Maps.</p>
+          <p>Se aggiorni nome attività, telefono, sito web o profili social, conviene mantenere allineate anche le informazioni pubbliche su Google, sul sito e sui canali Facebook, Instagram e TikTok.</p>
+        </div>
+
+        <form method="post" action="/dashboard/<%= artigiano.slug %>/profilo">
+          <div class="form-grid">
+            <label>
+              Nome attività
+              <input name="nome" value="<%= artigiano.nome %>" required />
+            </label>
+            <label class="full">
+              Via
+              <input name="indirizzo_via" value="<%= artigiano.indirizzo ? artigiano.indirizzo.via : '' %>" />
+            </label>
+            <label>
+              Numero civico
+              <input name="indirizzo_numero_civico" value="<%= artigiano.indirizzo ? artigiano.indirizzo.numeroCivico : '' %>" />
+            </label>
+            <label>
+              CAP
+              <input name="indirizzo_cap" value="<%= artigiano.indirizzo ? artigiano.indirizzo.cap : '' %>" />
+            </label>
+            <label>
+              Città
+              <input name="indirizzo_citta" value="<%= artigiano.indirizzo && artigiano.indirizzo.citta ? artigiano.indirizzo.citta : 'Roma' %>" />
+            </label>
+            <label>
+              Provincia
+              <input name="indirizzo_provincia" value="<%= artigiano.indirizzo && artigiano.indirizzo.provincia ? artigiano.indirizzo.provincia : 'RM' %>" />
+            </label>
+            <label>
+              Numero di telefono
+              <input name="telefono" value="<%= artigiano.telefono %>" required />
+            </label>
+            <label>
+              Email interna
+              <input name="internal_email" type="email" value="<%= artigiano.internal_email || '' %>" placeholder="email usata solo per scopi interni" />
+            </label>
+            <label class="full">
+              Sito web
+              <input name="website_url" value="<%= artigiano.website_url %>" placeholder="https://..." />
+            </label>
+            <label class="full">
+              Descrivi la tua azienda e le tue specializzazioni
+              <span class="muted">Suggerimento: indica da quanto tempo lavori, in quali interventi sei più forte, su quali zone operi e cosa ti distingue. Un testo chiaro aiuta sia la ricerca interna su StelleVere sia la visibilità generale sui motori di ricerca.</span>
+              <textarea name="descrizione_attivita" placeholder="Es. Siamo specializzati in rifacimento bagni, sostituzione caldaie, ricerca perdite e pronto intervento a Roma nord e zone limitrofe. Lavoriamo con impianti civili, condomini e piccoli esercizi commerciali."><%= artigiano.descrizione_attivita || '' %></textarea>
+            </label>
+            <label>
+              Facebook
+              <input name="facebook_url" value="<%= artigiano.facebook_url %>" placeholder="https://facebook.com/..." />
+            </label>
+            <label>
+              Instagram
+              <input name="instagram_url" value="<%= artigiano.instagram_url %>" placeholder="https://instagram.com/..." />
+            </label>
+            <label>
+              TikTok
+              <input name="tiktok_url" value="<%= artigiano.tiktok_url %>" placeholder="https://tiktok.com/@..." />
+            </label>
+          </div>
+
+          <div class="hours-grid">
+            <% artigiano.hours.forEach(function(item, index) { %>
+              <section class="hours-row">
+                <div class="hours-head">
+                  <strong><%= item.day %></strong>
+                  <label class="checkline">
+                    <input type="checkbox" name="orari_<%= index %>_closed" <%= item.closed ? 'checked' : '' %> />
+                    Chiuso
+                  </label>
+                </div>
+                <div class="hours-slots">
+                  <div>
+                    <div class="muted">Mattina</div>
+                    <div class="slot-grid">
+                      <label>
+                        Dalle
+                        <select name="orari_<%= index %>_mattina_da">
+                          <% timeOptions.forEach(function(option) { %>
+                            <option value="<%= option %>" <%= (item.morningOpen || '') === option ? 'selected' : '' %>><%= option || '--' %></option>
+                          <% }) %>
+                        </select>
+                      </label>
+                      <label>
+                        Alle
+                        <select name="orari_<%= index %>_mattina_a">
+                          <% timeOptions.forEach(function(option) { %>
+                            <option value="<%= option %>" <%= (item.morningClose || '') === option ? 'selected' : '' %>><%= option || '--' %></option>
+                          <% }) %>
+                        </select>
+                      </label>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="muted">Pomeriggio</div>
+                    <div class="slot-grid">
+                      <label>
+                        Dalle
+                        <select name="orari_<%= index %>_pomeriggio_da">
+                          <% timeOptions.forEach(function(option) { %>
+                            <option value="<%= option %>" <%= (item.afternoonOpen || '') === option ? 'selected' : '' %>><%= option || '--' %></option>
+                          <% }) %>
+                        </select>
+                      </label>
+                      <label>
+                        Alle
+                        <select name="orari_<%= index %>_pomeriggio_a">
+                          <% timeOptions.forEach(function(option) { %>
+                            <option value="<%= option %>" <%= (item.afternoonClose || '') === option ? 'selected' : '' %>><%= option || '--' %></option>
+                          <% }) %>
+                        </select>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            <% }) %>
+          </div>
+
+          <div class="stack" style="margin-top: 18px;">
+            <button class="cta" type="submit">Salva modifiche</button>
+            <button class="cta secondary" type="button" id="close-profile-modal">Annulla</button>
+          </div>
+        </form>
+      </div>
+    </dialog>
+
+    <script>
+      const modal = document.getElementById('profile-warning-modal');
+      const openButton = document.getElementById('open-profile-modal');
+      const closeButton = document.getElementById('close-profile-modal');
+      const whatsappButtons = document.querySelectorAll('.whatsapp-review');
+      const installButton = document.getElementById('install-app-button');
+      const installHint = document.getElementById('install-app-hint');
+      const copyEmbedButton = document.getElementById('copy-embed-code');
+      const embedCode = document.getElementById('embed-code');
+      let deferredInstallPrompt = null;
+
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/assets/pwa/sw.js').catch(() => {});
+      }
+
+      window.addEventListener('beforeinstallprompt', (event) => {
+        event.preventDefault();
+        deferredInstallPrompt = event;
+        if (installHint) {
+          installHint.textContent = 'L’accesso rapido è pronto: tocca "Accedi senza login" per aggiungere l’icona al dispositivo.';
+        }
+      });
+
+      if (installButton) {
+        installButton.addEventListener('click', async () => {
+          if (!deferredInstallPrompt) {
+            if (installHint) {
+              installHint.textContent = 'Su iPhone usa Condividi > Aggiungi a schermata Home. Su desktop usa il menu del browser > Installa app.';
+            }
+            return;
+          }
+          deferredInstallPrompt.prompt();
+          await deferredInstallPrompt.userChoice.catch(() => null);
+          deferredInstallPrompt = null;
+        });
+      }
+
+      whatsappButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const phone = String(button.getAttribute('data-phone') || '').replace(/\D/g, '');
+          const reviewPath = button.getAttribute('data-review-path') || '/';
+          const baseUrl = button.getAttribute('data-base-url') || window.location.origin;
+          const title = button.getAttribute('data-title') || 'questo lavoro';
+          if (!phone) return;
+          const normalizedBaseUrl = baseUrl.replace(/\/+$/, '');
+          const reviewUrl = `${normalizedBaseUrl}${reviewPath}`;
+          const text = `${reviewUrl}\n\nCiao, ti va di lasciare una recensione per il lavoro ${title}?\nGrazie.`;
+          window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+        });
+      });
+
+      if (copyEmbedButton && embedCode) {
+        copyEmbedButton.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(embedCode.value);
+            copyEmbedButton.textContent = 'Codice copiato';
+            setTimeout(() => {
+              copyEmbedButton.textContent = 'Copia il codice embed';
+            }, 2000);
+          } catch (_) {
+            embedCode.focus();
+            embedCode.select();
+          }
+        });
+      }
+
+      if (openButton && modal) {
+        openButton.addEventListener('click', () => modal.showModal());
+      }
+      if (closeButton && modal) {
+        closeButton.addEventListener('click', () => modal.close());
+      }
+      if (modal) {
+        modal.addEventListener('click', (event) => {
+          const box = modal.getBoundingClientRect();
+          const outside = event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom;
+          if (outside) modal.close();
+        });
+      }
+    </script>
+  </body>
+</html>

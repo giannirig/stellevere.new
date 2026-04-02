@@ -1,0 +1,43 @@
+<section class="stellevere-portfolio" itemscope itemtype="https://schema.org/ItemList">
+  <header style="margin-bottom:16px;">
+    <h2 style="margin:0 0 8px;font-family:Georgia,serif;color:#241d18;">Lavori svolti da <%= artigiano.nome %></h2>
+    <p style="margin:0;color:#6e6258;font-family:Georgia,serif;"><%= artigiano.categoria_nome %><% if (artigiano.citta_principale) { %> a <%= artigiano.citta_principale %><% } %></p>
+  </header>
+
+  <div style="display:grid;gap:16px;">
+    <% lavori.forEach(function(lavoro, index) { %>
+      <article itemprop="itemListElement" itemscope itemtype="https://schema.org/CreativeWork" style="display:grid;grid-template-columns:120px 1fr;gap:14px;padding:14px;border:1px solid #e7d8c8;border-radius:18px;background:#fffaf5;">
+        <meta itemprop="position" content="<%= index + 1 %>" />
+        <div style="background:#f1dfc7;border-radius:14px;overflow:hidden;min-height:120px;">
+          <% if (lavoro.cover_path) { %>
+            <img
+              src="<%= lavoro.cover_path.startsWith('data:') ? lavoro.cover_path : baseUrl + '/uploads/' + lavoro.cover_path %>"
+              alt="<%= lavoro.cover_alt || lavoro.titolo %>"
+              itemprop="image"
+              style="width:100%;height:100%;object-fit:cover;display:block;" />
+          <% } %>
+        </div>
+        <div style="display:grid;gap:8px;">
+          <h3 itemprop="name" style="margin:0;font-family:Georgia,serif;font-size:20px;color:#241d18;"><%= lavoro.titolo %></h3>
+          <% if (lavoro.display_description) { %>
+            <p itemprop="description" style="margin:0;color:#6e6258;font-family:Georgia,serif;"><%= lavoro.display_description %></p>
+          <% } %>
+          <p style="margin:0;color:#241d18;font-family:Georgia,serif;font-weight:700;">
+            <%= [lavoro.citta, lavoro.quartiere ? 'zona ' + lavoro.quartiere : ''].filter(Boolean).join(', ') %>
+          </p>
+          <div itemprop="contentLocation" itemscope itemtype="https://schema.org/Place" style="display:none;">
+            <meta itemprop="name" content="<%= [lavoro.quartiere ? 'Zona ' + lavoro.quartiere : '', lavoro.citta].filter(Boolean).join(', ') %>" />
+            <div itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">
+              <% if (lavoro.quartiere) { %><meta itemprop="addressLocality" content="<%= lavoro.quartiere %>" /><% } %>
+              <% if (lavoro.citta) { %><meta itemprop="addressRegion" content="<%= lavoro.citta %>" /><% } %>
+              <meta itemprop="addressCountry" content="IT" />
+            </div>
+          </div>
+          <p style="margin:0;font-family:Georgia,serif;">
+            <a itemprop="url" href="<%= baseUrl %><%= lavoro.detail_path %>" target="_blank" rel="noopener" style="color:#bc5d08;font-weight:700;text-decoration:none;">Apri il lavoro su StelleVere</a>
+          </p>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+</section>

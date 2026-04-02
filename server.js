@@ -1,6 +1,29 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const { createMysqlStore } = require('./lib/mysql-store');
+
+function loadEnvFile() {
+  const envPath = path.join(__dirname, '.env');
+  if (!fs.existsSync(envPath)) return;
+
+  const lines = fs.readFileSync(envPath, 'utf8').split(/\r?\n/);
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eqIndex = trimmed.indexOf('=');
+    if (eqIndex <= 0) continue;
+
+    const key = trimmed.slice(0, eqIndex).trim();
+    let value = trimmed.slice(eqIndex + 1).trim();
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1);
+    }
+    if (!(key in process.env)) process.env[key] = value;
+  }
+}
+
+loadEnvFile();
 
 const app = express();
 
@@ -371,6 +394,12 @@ const ARTIGIANI = {
   },
 };
 
+const mysqlStore = createMysqlStore({
+  env: process.env,
+  categorie: CATEGORIE,
+  logger: console,
+});
+
 const ESEMPI_PER_CATEGORIA = {
   Idraulica: [
     { titolo: 'Sostituzione Caldaia a Condensazione', descrizione: 'Sostituzione caldaia murale con modello a condensazione classe A. Collaudo e certificazione inclusi.' },
@@ -440,6 +469,7 @@ const ESEMPI_PER_CATEGORIA = {
 app.locals.CATEGORIE = CATEGORIE;
 app.locals.SOTTOCATEGORIE = SOTTOCATEGORIE;
 app.locals.ARTIGIANI = ARTIGIANI;
+app.locals.dataSource = mysqlStore.getStatus();
 
 function trovaLavoro(artigianoId, lavoroId) {
   const artigiano = ARTIGIANI[artigianoId];
@@ -662,7 +692,7 @@ app.get('/api/esempi/:categoria', (req, res) => {
   res.json(esempi);
 });
 
-app.post('/api/lavoro/salva', (req, res) => {
+app.post('/api/lavoro/salva', async (req, res) => {
   const data = req.body || {};
   const uploadsDir = path.join(__dirname, 'static', 'uploads');
   fs.mkdirSync(uploadsDir, { recursive: true });
@@ -756,6 +786,11 @@ app.post('/api/lavoro/salva', (req, res) => {
     };
     art.lavori.push(nuovoLavoro);
     persistAddedJob(art.id, nuovoLavoro);
+    try {
+      await mysqlStore.saveJob(art, nuovoLavoro);
+    } catch (error) {
+      console.warn('[mysql] Salvataggio lavoro non riuscito, continuo con fallback locale:', error.message);
+    }
     lavoroId = nuovoLavoro.id;
     urlLavoro = buildJobUrl(art.cat_slug, nuovoLavoro);
   }
@@ -786,7 +821,7 @@ app.get('/recensione/:artigianoId/:lavoroId', (req, res) => {
   });
 });
 
-app.post('/recensione/:artigianoId/:lavoroId', (req, res) => {
+app.post('/recensione/:artigianoId/:lavoroId', async (req, res) => {
   const { artigiano, lavoro } = trovaLavoro(req.params.artigianoId, req.params.lavoroId);
   if (!artigiano || !lavoro) return res.status(404).send('Lavoro non trovato');
 
@@ -814,6 +849,11 @@ app.post('/recensione/:artigianoId/:lavoroId', (req, res) => {
   lavoro.data_recensione = new Date().toISOString().split('T')[0];
   aggiornaRatingArtigiano(artigiano);
   persistUpdatedJob(artigiano.id, lavoro);
+  try {
+    await mysqlStore.saveReview(artigiano, lavoro);
+  } catch (error) {
+    console.warn('[mysql] Salvataggio recensione non riuscito, continuo con fallback locale:', error.message);
+  }
 
   res.redirect(`/recensione/${artigiano.id}/${lavoro.id}?ok=1`);
 });
@@ -1088,6 +1128,22 @@ app.get('/:categoriaSlug/:subcatSlug/:titoloSlug/:locSlug', (req, res) => {
 
 // ── Start ──
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`StelleVere running on http://localhost:${PORT}`);
-});
+
+async function startServer() {
+  try {
+    const dbSync = await mysqlStore.syncData(ARTIGIANI);
+    app.locals.dataSource = mysqlStore.getStatus();
+    if (dbSync.enabled) {
+      console.log(`[mysql] Dati sincronizzati dal database (${dbSync.artisanCount} artigiani disponibili)`);
+    }
+  } catch (error) {
+    console.warn('[mysql] Sincronizzazione iniziale non riuscita, uso i dati locali:', error.message);
+    app.locals.dataSource = mysqlStore.getStatus();
+  }
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`StelleVere running on http://localhost:${PORT}`);
+  });
+}
+
+startServer();

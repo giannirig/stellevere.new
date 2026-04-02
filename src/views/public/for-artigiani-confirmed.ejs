@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Conferma registrazione | StelleVere.it</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Georgia, serif;
+        color: #241913;
+        background: linear-gradient(180deg, #fbf6f0 0%, #f0e2d1 100%);
+      }
+      main {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 24px 16px 60px;
+        display: grid;
+        gap: 16px;
+      }
+      .panel {
+        background: rgba(255, 250, 243, 0.94);
+        border: 1px solid #ead7c3;
+        border-radius: 28px;
+        padding: 22px;
+      }
+      .eyebrow {
+        font-size: 12px;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+        color: #b85b10;
+        font-weight: 700;
+      }
+      h1, p { margin: 0; }
+      h1 { font-size: clamp(34px, 9vw, 54px); line-height: 1; }
+      p { color: #69584e; line-height: 1.5; }
+      .cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 15px 18px;
+        border-radius: 999px;
+        background: #b85b10;
+        color: #fff;
+        text-decoration: none;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="panel">
+        <div class="eyebrow">Registrazione completata</div>
+        <h1>Hai confermato la tua attività</h1>
+        <p style="margin-top: 12px;">L'indirizzo email <strong><%= request.email %></strong> è stato confermato correttamente per l'attività <strong><%= request.nome_attivita %></strong>.</p>
+        <p style="margin-top: 12px;">Ora la registrazione può proseguire con i passaggi successivi previsti da StelleVere.</p>
+        <div style="margin-top: 18px;">
+          <a class="cta" href="/for-artigiani">Torna all'area attività</a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

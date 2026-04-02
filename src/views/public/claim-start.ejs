@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rivendica <%= artigiano.nome %></title>
+    <style>
+      body { margin: 0; font-family: Georgia, serif; background: #f6f1e8; color: #241d18; }
+      main { max-width: 860px; margin: 0 auto; padding: 32px 20px 56px; display: grid; gap: 20px; }
+      .panel { background: #fffaf5; border: 1px solid #e7d8c8; border-radius: 24px; padding: 24px; }
+      .eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #bc5d08; }
+      .muted { color: #6e6258; }
+      .badge { display: inline-flex; padding: 8px 12px; border: 1px solid #e7d8c8; border-radius: 999px; background: #fff; margin-right: 8px; margin-top: 10px; }
+      .btn { display: inline-block; background: #bc5d08; color: #fff; border: 0; border-radius: 999px; padding: 12px 18px; font: inherit; cursor: pointer; text-decoration: none; }
+      .notice { background: #fff; border: 1px solid #e7d8c8; border-radius: 18px; padding: 16px; margin-top: 16px; }
+      a { color: #bc5d08; text-decoration: none; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <a href="/artigiano/<%= artigiano.slug %>">← Torna alla scheda</a>
+      <section class="panel">
+        <div class="eyebrow">Rivendica la scheda</div>
+        <h1><%= artigiano.nome %></h1>
+        <p class="muted">Il numero pubblico importato da Google Maps sarà usato per inviare un OTP di verifica.</p>
+        <div>
+          <span class="badge">Telefono: <strong>&nbsp;<%= artigiano.telefono %></strong></span>
+          <span class="badge">Tipo numero: <strong>&nbsp;<%= artigiano.phone_type_label %></strong></span>
+          <span class="badge">Canale claim: <strong>&nbsp;<%= artigiano.phone_type === 'mobile' ? 'SMS' : 'Voce' %></strong></span>
+        </div>
+
+        <% if (!started) { %>
+          <form method="post" action="/claim/<%= artigiano.slug %>" style="margin-top: 20px;">
+            <button class="btn" type="submit">Invia codice OTP</button>
+          </form>
+        <% } %>
+
+        <% if (started && delivery) { %>
+          <div class="notice">
+            <p><strong>Richiesta avviata.</strong></p>
+            <p><%= delivery.deliveryMessage %></p>
+            <p class="muted">Canale scelto: <%= delivery.channel === 'sms' ? 'SMS' : 'Messaggio vocale' %>.</p>
+            <% if (!delivery.twilioEnabled) { %>
+              <p><strong>Codice demo:</strong> <%= delivery.demoCode %></p>
+            <% } %>
+            <p><a class="btn" href="/claim/<%= artigiano.slug %>/verifica">Vai alla verifica</a></p>
+          </div>
+        <% } else if (pendingClaim) { %>
+          <div class="notice">
+            <p>Esiste già un codice OTP attivo per questa scheda.</p>
+            <p><a class="btn" href="/claim/<%= artigiano.slug %>/verifica">Vai alla verifica</a></p>
+          </div>
+        <% } %>
+      </section>
+    </main>
+  </body>
+</html>

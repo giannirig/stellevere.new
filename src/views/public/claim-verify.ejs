@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Verifica claim <%= artigiano.nome %></title>
+    <style>
+      body { margin: 0; font-family: Georgia, serif; background: #f6f1e8; color: #241d18; }
+      main { max-width: 760px; margin: 0 auto; padding: 32px 20px 56px; display: grid; gap: 20px; }
+      .panel { background: #fffaf5; border: 1px solid #e7d8c8; border-radius: 24px; padding: 24px; }
+      .eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #bc5d08; }
+      .muted { color: #6e6258; }
+      .error { color: #a12f1f; background: #fff0ec; border: 1px solid #f0c2b7; border-radius: 16px; padding: 12px 14px; }
+      .success { color: #1f5b2d; background: #eef9f0; border: 1px solid #b7ddb9; border-radius: 16px; padding: 12px 14px; }
+      input { width: 100%; padding: 12px 14px; border-radius: 14px; border: 1px solid #d9c9b7; font: inherit; margin-top: 8px; }
+      .btn { display: inline-block; background: #bc5d08; color: #fff; border: 0; border-radius: 999px; padding: 12px 18px; font: inherit; cursor: pointer; text-decoration: none; margin-top: 16px; }
+      a { color: #bc5d08; text-decoration: none; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <a href="/claim/<%= artigiano.slug %>">← Torna al claim</a>
+      <section class="panel">
+        <div class="eyebrow">Verifica OTP</div>
+        <h1><%= artigiano.nome %></h1>
+        <p class="muted">Inserisci il codice ricevuto sul numero pubblico associato alla scheda.</p>
+
+        <% if (errore) { %>
+          <div class="error"><%= errore %></div>
+        <% } %>
+        <% if (successo) { %>
+          <div class="success">Codice verificato. La scheda può passare allo stato rivendicata nel prossimo step dashboard.</div>
+        <% } %>
+
+        <% if (!successo) { %>
+          <form method="post" action="/claim/<%= artigiano.slug %>/verifica">
+            <label for="codice">Codice OTP</label>
+            <input id="codice" name="codice" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required />
+            <button class="btn" type="submit">Verifica codice</button>
+          </form>
+        <% } %>
+
+        <% if (!pendingClaim && !successo) { %>
+          <p class="muted">Non risulta un OTP attivo per questa scheda. <a href="/claim/<%= artigiano.slug %>">Richiedine uno nuovo</a>.</p>
+        <% } %>
+      </section>
+    </main>
+  </body>
+</html>

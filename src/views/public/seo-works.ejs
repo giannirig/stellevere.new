@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><%= pageTitle %></title>
+    <meta name="description" content="<%= metaDescription %>" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <style>
+      body { margin: 0; font-family: Georgia, serif; background: #f6f1e8; color: #241d18; }
+      main { max-width: 1120px; margin: 0 auto; padding: 28px 16px 52px; display: grid; gap: 18px; }
+      .panel { background: #fffaf5; border: 1px solid #e7d8c8; border-radius: 24px; padding: 22px; }
+      .muted { color: #6e6258; }
+      .breadcrumbs { display: flex; flex-wrap: wrap; gap: 8px; font-size: 14px; color: #6e6258; }
+      .breadcrumbs a { color: #bc5d08; text-decoration: none; }
+      .map-layout { display: grid; gap: 18px; }
+      .map-box { min-height: 360px; border-radius: 20px; overflow: hidden; border: 1px solid #e7d8c8; background: #f0e3d2; }
+      #similar-map { width: 100%; height: 100%; min-height: 360px; }
+      .grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+      .job { background: #fff; border: 1px solid #ead8c3; border-radius: 18px; overflow: hidden; }
+      .job-media { aspect-ratio: 16 / 10; background: #f0e3d2; display: grid; place-items: center; color: #8a6b4f; }
+      .job-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .job-body { padding: 16px; display: grid; gap: 10px; }
+      .row { display: flex; gap: 8px; flex-wrap: wrap; font-size: 14px; color: #6e6258; }
+      .badge { border: 1px solid #e7d8c8; border-radius: 999px; padding: 7px 11px; background: #fff; }
+      .cta { display: inline-block; padding: 12px 16px; border-radius: 999px; background: #bc5d08; color: #fff; text-decoration: none; }
+      .popup-link { color: #bc5d08; text-decoration: none; font-weight: 700; }
+      @media (min-width: 860px) {
+        .map-layout { grid-template-columns: 1.05fr .95fr; align-items: start; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="panel">
+        <div class="breadcrumbs">
+          <% breadcrumbs.forEach(function(item, index) { %>
+            <% if (index > 0) { %><span>/</span><% } %>
+            <a href="<%= item.href %>"><%= item.label %></a>
+          <% }) %>
+        </div>
+        <h1><%= intro %></h1>
+        <div class="row">
+          <% if (labels.intervento) { %><span class="badge">Intervento: <%= labels.intervento %></span><% } %>
+          <% if (labels.categoria) { %><span class="badge">Categoria: <%= labels.categoria %></span><% } %>
+          <% if (labels.citta) { %><span class="badge">Città: <%= labels.citta %></span><% } %>
+          <% if (labels.quartiere) { %><span class="badge">Quartiere: <%= labels.quartiere %></span><% } %>
+          <span class="badge"><%= lavori.length %> lavori pubblicati</span>
+        </div>
+        <p class="muted">Scopri chi ha svolto in questa zona lavori simili.</p>
+      </section>
+
+      <section class="panel">
+        <div class="map-layout">
+          <div>
+            <h2>Lavori simili nella tua zona</h2>
+            <p class="muted">Scopri chi ha svolto in questa zona lavori simili. Tocca un pin per aprire il dettaglio del lavoro.</p>
+            <div class="map-box">
+              <div id="similar-map"></div>
+            </div>
+          </div>
+          <div>
+            <h2>Artigiani e lavori trovati</h2>
+            <div class="grid">
+              <% lavori.forEach(function(lavoro) { %>
+                <article class="job">
+                  <div class="job-media">
+                    <% if (lavoro.cover_path) { %>
+                      <img src="<%= lavoro.cover_path.startsWith('data:') ? lavoro.cover_path : '/uploads/' + lavoro.cover_path %>" alt="<%= lavoro.cover_alt || lavoro.titolo %>" />
+                    <% } else { %>
+                      <span>Copertina lavoro</span>
+                    <% } %>
+                  </div>
+                  <div class="job-body">
+                    <strong><%= lavoro.titolo %></strong>
+                    <div class="row">
+                      <span><%= lavoro.categoria_nome %></span>
+                      <span><%= lavoro.tipo_nome %></span>
+                    </div>
+                    <div class="row">
+                      <% if (lavoro.citta) { %><span><%= lavoro.citta %></span><% } %>
+                      <% if (lavoro.quartiere) { %><span><%= lavoro.quartiere %></span><% } %>
+                    </div>
+                    <p class="muted"><%= lavoro.descrizione || 'Lavoro pubblicato su StelleVere.' %></p>
+                    <div class="row">
+                      <span>Artigiano: <%= lavoro.artigiano_nome %></span>
+                      <span>Valutazione: <%= Number(lavoro.rating_avg || 0).toFixed(1) %></span>
+                    </div>
+                    <div class="row">
+                      <a class="cta" href="<%= lavoro.detail_path %>">Vedi lavoro</a>
+                      <a class="cta" href="/artigiano/<%= lavoro.artigiano_slug %>">Vedi artigiano</a>
+                    </div>
+                  </div>
+                </article>
+              <% }) %>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script>
+      (function () {
+        const jobs = <%- JSON.stringify(lavori.map((lavoro) => ({
+          titolo: lavoro.titolo,
+          artigiano_nome: lavoro.artigiano_nome,
+          detail_path: lavoro.detail_path,
+          categoria_nome: lavoro.categoria_nome,
+          citta: lavoro.citta,
+          quartiere: lavoro.quartiere,
+          map_lat: lavoro.map_lat,
+          map_lng: lavoro.map_lng
+        }))) %>;
+
+        const points = jobs.filter((job) => Number.isFinite(Number(job.map_lat)) && Number.isFinite(Number(job.map_lng)));
+        if (!points.length) return;
+
+        const map = L.map('similar-map', { scrollWheelZoom: false });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        const bounds = [];
+        points.forEach((job) => {
+          const lat = Number(job.map_lat);
+          const lng = Number(job.map_lng);
+          bounds.push([lat, lng]);
+          L.marker([lat, lng]).addTo(map).bindPopup(
+            '<strong>' + job.titolo + '</strong><br />' +
+            (job.artigiano_nome || '') + '<br />' +
+            [job.citta, job.quartiere].filter(Boolean).join(' · ') + '<br />' +
+            '<a class="popup-link" href="' + job.detail_path + '">Apri lavoro</a>'
+          );
+        });
+
+        if (bounds.length === 1) {
+          map.setView(bounds[0], 13);
+        } else {
+          map.fitBounds(bounds, { padding: [28, 28] });
+        }
+      })();
+    </script>
+  </body>
+</html>

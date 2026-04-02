@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Recensione lavoro</title>
+    <style>
+      body { margin: 0; font-family: Georgia, serif; background: #f6f1e8; color: #241d18; }
+      main { max-width: 760px; margin: 0 auto; padding: 24px 14px 48px; display: grid; gap: 18px; }
+      .panel { background: #fffaf5; border: 1px solid #e7d8c8; border-radius: 24px; padding: 20px; }
+      .muted { color: #6e6258; }
+      .success { background: #eef8f0; border: 1px solid #b9d9bf; border-radius: 16px; padding: 12px 14px; color: #245732; }
+      .error { background: #fff0ec; border: 1px solid #edc2b6; border-radius: 16px; padding: 12px 14px; color: #a13626; }
+      label { display: grid; gap: 6px; font-size: 14px; }
+      input, textarea, select { width: 100%; padding: 14px 15px; border-radius: 14px; border: 1px solid #d9c9b7; font: inherit; font-size: 16px; background: #fff; box-sizing: border-box; }
+      textarea { min-height: 140px; resize: vertical; }
+      .cta { display: inline-flex; align-items: center; justify-content: center; background: #bc5d08; color: #fff; border: 0; border-radius: 999px; padding: 14px 18px; font: inherit; font-size: 16px; cursor: pointer; text-decoration: none; }
+      .form-grid { display: grid; gap: 14px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="panel">
+        <h1>Lascia una recensione</h1>
+        <p class="muted">Stai recensendo il lavoro "<strong><%= lavoro.titolo %></strong>"<% if (lavoro.citta) { %> a <%= lavoro.citta %><% } %><% if (lavoro.quartiere) { %>, zona <%= lavoro.quartiere %><% } %>.</p>
+        <% if (success) { %>
+          <div class="success">Grazie, la tua recensione è stata salvata correttamente.</div>
+        <% } %>
+        <% if (error) { %>
+          <div class="error"><%= error %></div>
+        <% } %>
+        <% if (!success) { %>
+          <form method="post" class="form-grid">
+            <label>
+              Il tuo nome
+              <input name="cliente_nome" value="<%= values.cliente_nome %>" required />
+            </label>
+            <label>
+              Valutazione
+              <select name="voto" required>
+                <% ['5','4','3','2','1'].forEach(function(v) { %>
+                  <option value="<%= v %>" <%= values.voto === v ? 'selected' : '' %>><%= v %> stelle</option>
+                <% }) %>
+              </select>
+            </label>
+            <label>
+              La tua recensione
+              <textarea name="testo" required><%= values.testo %></textarea>
+            </label>
+            <button class="cta" type="submit">Invia recensione</button>
+          </form>
+        <% } %>
+      </section>
+    </main>
+  </body>
+</html>
