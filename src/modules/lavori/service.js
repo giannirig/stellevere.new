@@ -313,7 +313,7 @@ async function getSeoWorksPage(pool, filters) {
 
   const lavori = allWorks.filter((lavoro) => {
     if (categoriaSlug && normalizeSlug(lavoro.categoria_slug) !== categoriaSlug) return false;
-    if (interventoSlug && normalizeSlug(lavoro.seo_intervento_slug || lavoro.tipo_slug || lavoro.titolo) !== interventoSlug) return false;
+    if (interventoSlug && compactInterventoSlug(lavoro.tipo_nome || lavoro.titolo) !== interventoSlug) return false;
     if (cittaSlug && normalizeSlug(lavoro.seo_citta_slug || lavoro.citta) !== cittaSlug) return false;
     if (quartiereSlug && normalizeSlug(lavoro.seo_quartiere_slug || lavoro.quartiere) !== quartiereSlug) return false;
     return true;
@@ -388,8 +388,8 @@ async function getCategoryWorksDirectory(pool, filters) {
   const availableInterventi = Array.from(new Map(
     categoryWorks
       .filter((lavoro) => !cittaSlug || normalizeSlug(lavoro.citta) === cittaSlug)
-      .map((lavoro) => [normalizeSlug(lavoro.tipo_nome || lavoro.titolo), {
-        slug: normalizeSlug(lavoro.tipo_nome || lavoro.titolo),
+      .map((lavoro) => [compactInterventoSlug(lavoro.tipo_nome || lavoro.titolo), {
+        slug: compactInterventoSlug(lavoro.tipo_nome || lavoro.titolo),
         label: lavoro.tipo_nome || lavoro.titolo,
       }])
   ).values()).sort((a, b) => a.label.localeCompare(b.label, 'it'));
@@ -397,7 +397,7 @@ async function getCategoryWorksDirectory(pool, filters) {
   const lavori = categoryWorks.filter((lavoro) => {
     if (cittaSlug && normalizeSlug(lavoro.citta) !== cittaSlug) return false;
     if (quartiereSlug && normalizeSlug(lavoro.quartiere) !== quartiereSlug) return false;
-    if (interventoSlug && normalizeSlug(lavoro.tipo_nome || lavoro.titolo) !== interventoSlug) return false;
+    if (interventoSlug && compactInterventoSlug(lavoro.tipo_nome || lavoro.titolo) !== interventoSlug) return false;
     return true;
   });
 
@@ -418,7 +418,7 @@ async function getSeoWorkDetail(pool, filters) {
 
   return allWorks.find((lavoro) =>
     normalizeSlug(lavoro.categoria_slug) === categoriaSlug &&
-    normalizeSlug(lavoro.seo_intervento_slug || lavoro.tipo_slug || lavoro.titolo) === interventoSlug &&
+    compactInterventoSlug(lavoro.tipo_nome || lavoro.titolo) === interventoSlug &&
     normalizeSlug(lavoro.seo_citta_slug || lavoro.citta) === cittaSlug &&
     normalizeSlug(lavoro.seo_quartiere_slug || lavoro.quartiere) === quartiereSlug &&
     normalizeSlug(lavoro.artigiano_slug) === artigianoSlug &&
