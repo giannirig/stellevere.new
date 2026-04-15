@@ -94,7 +94,7 @@
 
         <div class="row" style="margin-top: 10px;">
           <a class="cta" href="/artigiano/<%= lavoro.artigiano_slug %>">Vedi scheda artigiano</a>
-          <a class="cta secondary" href="/<%= lavoro.categoria_slug %>/<%= lavoro.seo_intervento_slug || lavoro.tipo_slug %>/<%= lavoro.seo_citta_slug || lavoro.citta %>/<%= lavoro.seo_quartiere_slug || lavoro.quartiere %>">Altri lavori simili nella tua zona</a>
+          <a class="cta secondary" href="<%= lavoro.similar_zone_path || ('/' + lavoro.categoria_slug + '/' + (lavoro.tipo_slug || '') + '/' + (lavoro.seo_citta_slug || lavoro.citta) + '/' + (lavoro.seo_quartiere_slug || lavoro.quartiere)) %>">Altri lavori simili nella tua zona</a>
         </div>
       </section>
     </main>

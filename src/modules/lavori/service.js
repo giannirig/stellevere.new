@@ -195,6 +195,10 @@ function buildPublicWorkPath(job) {
   return `/${normalizeSlug(job.categoria_slug)}/${compactInterventoSlug(job.tipo_nome || job.titolo)}/${normalizeSlug(job.citta)}/${normalizeSlug(job.quartiere)}/${normalizeSlug(job.artigiano_slug)}`;
 }
 
+function buildPublicWorksZonePath(job) {
+  return `/${normalizeSlug(job.categoria_slug)}/${compactInterventoSlug(job.tipo_nome || job.titolo)}/${normalizeSlug(job.citta)}/${normalizeSlug(job.quartiere)}`;
+}
+
 function enrichLocalJob(job) {
   const legacyProfile = getLegacyArtigianoProfile(job.artigiano_slug);
   const immagini = Array.isArray(job.immagini)
@@ -215,6 +219,7 @@ function enrichLocalJob(job) {
     seo_quartiere_slug: normalizeSlug(job.quartiere),
     review_path: `/recensione/${job.artigiano_slug}/${job.slug}`,
     detail_path: buildPublicWorkPath(job),
+    similar_zone_path: buildPublicWorksZonePath(job),
     immagini,
   };
 }
@@ -248,6 +253,7 @@ function enrichAnyJob(job) {
     seo_quartiere_slug: normalizeSlug(job.quartiere),
     review_path: `/recensione/${job.artigiano_slug}/${job.slug}`,
     detail_path: buildPublicWorkPath(job),
+    similar_zone_path: buildPublicWorksZonePath(job),
     map_lat: coords.lat,
     map_lng: coords.lng,
     map_is_approximate: coords.isApproximate,
