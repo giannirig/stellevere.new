@@ -154,7 +154,7 @@ async function createLavoro(pool, payload) {
   }
 
   const tipo = await createTipoIntervento(pool, categoria.id, payload.tipoNome);
-  const slug = slugify(`${payload.titolo}-${payload.citta}-${payload.quartiere}`);
+  const slug = String(payload.slugOverride || '').trim() || slugify(`${payload.titolo}-${payload.citta}-${payload.quartiere}`);
   const immaginiSalvate = saveJobImages(payload.artigianoSlug, slug, payload.immagini || []);
 
   const [result] = await pool.query(`
